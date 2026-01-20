@@ -1,5 +1,5 @@
 /**
- * Generates Apollo/Docusaurus navigation config.
+ * Generates Astro Starlight sidebar config.
  */
 
 import { writeFileSync } from "node:fs";
@@ -10,29 +10,30 @@ import type { PlanNode, NodeKind } from "../schema.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
 
-interface NavItem {
+interface StarlightNavItem {
   label: string;
-  path: string;
+  slug: string;
 }
 
-interface NavGroup {
+interface StarlightNavGroup {
   label: string;
-  items: NavItem[];
+  items: StarlightNavItem[];
 }
 
 const KIND_LABELS: Record<NodeKind, string> = {
   thesis: "Thesis",
+  product: "Products",
   capability: "Capabilities",
   primitive: "Primitives",
   risk: "Risks",
 };
 
-const KIND_ORDER: NodeKind[] = ["thesis", "capability", "primitive", "risk"];
+const KIND_ORDER: NodeKind[] = ["thesis", "product", "capability", "primitive", "risk"];
 
 /**
  * Generate navigation structure from nodes
  */
-export function generateNav(nodes: PlanNode[]): NavGroup[] {
+export function generateSidebar(nodes: PlanNode[]): StarlightNavGroup[] {
   const grouped = new Map<NodeKind, PlanNode[]>();
 
   // Initialize groups
@@ -46,29 +47,38 @@ export function generateNav(nodes: PlanNode[]): NavGroup[] {
   }
 
   // Build nav structure
-  const nav: NavGroup[] = [];
+  const sidebar: StarlightNavGroup[] = [];
 
   for (const kind of KIND_ORDER) {
     const nodesOfKind = grouped.get(kind) ?? [];
     if (nodesOfKind.length === 0) continue;
 
-    nav.push({
+    sidebar.push({
       label: KIND_LABELS[kind],
       items: nodesOfKind.map((node) => ({
         label: node.title,
-        path: `/docs/${node.kind}/${node.id}`,
+        slug: `${node.kind}/${node.id}`,
       })),
     });
   }
 
-  return nav;
+  return sidebar;
 }
 
 /**
- * Write navigation config to site/nav.json
+ * Write navigation config to src/starlight-sidebar.ts
  */
-export function writeNav(nodes: PlanNode[]): void {
-  const nav = generateNav(nodes);
-  const outPath = resolve(ROOT, "site/nav.json");
-  writeFileSync(outPath, JSON.stringify(nav, null, 2), "utf-8");
+export function writeSidebar(nodes: PlanNode[]): void {
+  const sidebar = generateSidebar(nodes);
+  const outPath = resolve(ROOT, "src/starlight-sidebar.ts");
+  
+  const content = `/**
+ * Generated Starlight sidebar configuration.
+ * DO NOT EDIT MANUALLY.
+ */
+
+export default ${JSON.stringify(sidebar, null, 2)};
+`;
+  
+  writeFileSync(outPath, content, "utf-8");
 }

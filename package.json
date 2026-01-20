@@ -6,12 +6,20 @@
   "scripts": {
     "check": "tsx kernel/validate-cli.ts",
     "compile": "tsx kernel/compile/compile.ts",
-    "build": "npm run check && npm run compile"
+    "build": "npm run compile && astro build",
+    "dev": "npm run compile && astro dev",
+    "preview": "astro preview",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name graph-of-plan --commit-dirty=true",
+    "astro": "astro"
   },
   "devDependencies": {
+    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/starlight": "^0.30.0",
     "@types/node": "^22.0.0",
+    "astro": "^5.0.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "wrangler": "^4.59.3"
   },
   "engines": {
     "node": ">=20.0.0"

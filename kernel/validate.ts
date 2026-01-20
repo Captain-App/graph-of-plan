@@ -19,9 +19,11 @@ import {
   Thesis,
   Capability,
   Risk,
+  Product,
   isThesis,
   isCapability,
   isRisk,
+  isProduct,
 } from "./schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -73,6 +75,8 @@ export function validatePlan(nodes: PlanNode[]): ValidationResult {
       validateCapability(node, errors);
     } else if (isRisk(node)) {
       validateRisk(node, errors);
+    } else if (isProduct(node)) {
+      validateProduct(node, errors);
     }
   }
 
@@ -109,6 +113,15 @@ function validateRisk(risk: Risk, errors: ValidationError[]): void {
       nodeId: risk.id,
       message:
         "Risk must have at least one mitigation (or be explicitly marked as accepted)",
+    });
+  }
+}
+
+function validateProduct(product: Product, errors: ValidationError[]): void {
+  if (product.enabledBy.length === 0) {
+    errors.push({
+      nodeId: product.id,
+      message: "Product must be enabled by at least one capability",
     });
   }
 }

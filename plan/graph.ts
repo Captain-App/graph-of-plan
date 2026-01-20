@@ -11,6 +11,7 @@ import {
   Capability,
   Primitive,
   Risk,
+  Product,
 } from "../kernel/schema.js";
 
 // ============================================================================
@@ -55,6 +56,34 @@ export const NomosDomainApi = new Capability(
 );
 
 // ============================================================================
+// PRODUCTS
+// ============================================================================
+
+export const SmartBoxes = new Product(
+  "smartboxes",
+  "SmartBoxes",
+  [Smartbox]
+);
+
+export const NomosCloud = new Product(
+  "nomos-cloud",
+  "Nomos Cloud",
+  [NomosDomainApi]
+);
+
+export const P4gent = new Product(
+  "p4gent",
+  "P4gent",
+  [Smartbox, NomosDomainApi]
+);
+
+export const Murphy = new Product(
+  "murphy",
+  "Murphy",
+  [Smartbox, NomosDomainApi]
+);
+
+// ============================================================================
 // THESIS
 // ============================================================================
 
@@ -77,6 +106,11 @@ export const PLAN = [
   // Capabilities
   Smartbox,
   NomosDomainApi,
+  // Products
+  SmartBoxes,
+  NomosCloud,
+  P4gent,
+  Murphy,
   // Thesis
   AgentNativePlatform,
 ];

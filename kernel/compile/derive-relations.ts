@@ -8,8 +8,9 @@ import type {
   Capability,
   Primitive,
   Risk,
+  Product,
 } from "../schema.js";
-import { isThesis, isCapability, isRisk } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct } from "../schema.js";
 
 export interface DerivedRelations {
   /** Which nodes justify this node (reverse of justifiedBy) */
@@ -20,6 +21,8 @@ export interface DerivedRelations {
   risksFor: Map<PlanNode, Capability[]>;
   /** Which nodes mitigate this risk (reverse of mitigatedBy) */
   mitigates: Map<PlanNode, Risk[]>;
+  /** Which products this capability enables (reverse of enabledBy) */
+  enables: Map<PlanNode, Product[]>;
 }
 
 /**
@@ -30,6 +33,7 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const dependedOnBy = new Map<PlanNode, Capability[]>();
   const risksFor = new Map<PlanNode, Capability[]>();
   const mitigates = new Map<PlanNode, Risk[]>();
+  const enables = new Map<PlanNode, Product[]>();
 
   // Initialize empty arrays for all nodes
   for (const node of nodes) {
@@ -37,6 +41,7 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     dependedOnBy.set(node, []);
     risksFor.set(node, []);
     mitigates.set(node, []);
+    enables.set(node, []);
   }
 
   // Derive relations
@@ -61,7 +66,13 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
         mitigates.get(prim)?.push(node);
       }
     }
+
+    if (isProduct(node)) {
+      for (const cap of node.enabledBy) {
+        enables.get(cap)?.push(node);
+      }
+    }
   }
 
-  return { justifies, dependedOnBy, risksFor, mitigates };
+  return { justifies, dependedOnBy, risksFor, mitigates, enables };
 }

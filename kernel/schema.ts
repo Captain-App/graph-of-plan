@@ -7,7 +7,7 @@
  * - Never changes shape lightly
  */
 
-export type NodeKind = "thesis" | "capability" | "primitive" | "risk";
+export type NodeKind = "thesis" | "capability" | "primitive" | "risk" | "product";
 
 export abstract class PlanNode {
   readonly id: string;
@@ -58,6 +58,16 @@ export class Risk extends PlanNode {
   }
 }
 
+export class Product extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly enabledBy: Capability[]
+  ) {
+    super("product", id, title);
+  }
+}
+
 /**
  * Type guard utilities
  */
@@ -75,4 +85,8 @@ export function isPrimitive(node: PlanNode): node is Primitive {
 
 export function isRisk(node: PlanNode): node is Risk {
   return node.kind === "risk";
+}
+
+export function isProduct(node: PlanNode): node is Product {
+  return node.kind === "product";
 }
