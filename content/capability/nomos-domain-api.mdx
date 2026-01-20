@@ -1,0 +1,27 @@
+# Nomos: domains compiled to OpenAPI, MCP, CLI and SDKs
+
+Nomos is a system for expressing business domains in a way that compiles to multiple interface formats.
+
+## The problem
+
+Every domain ends up implemented multiple times:
+
+- Once as an API (REST, GraphQL)
+- Once as CLI commands
+- Once as SDK methods
+- Once as agent tool definitions
+
+Each implementation drifts. Invariants are enforced inconsistently. Documentation lags reality.
+
+## The solution
+
+Define the domain once, in a typed, validated format. Compile to all targets.
+
+Nomos provides:
+
+- **Single source of truth**: The domain model is authoritative
+- **Generated interfaces**: OpenAPI, MCP tools, CLI, SDKs all derived
+- **Enforced invariants**: Business rules checked at compile time
+- **Consistent documentation**: Generated from the same source
+
+For agents, this means they interact with domains through well-typed, well-documented interfaces that cannot contradict each other.

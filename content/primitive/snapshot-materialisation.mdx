@@ -1,0 +1,12 @@
+# Snapshot materialisation
+
+Snapshot materialisation is the ability to capture and restore the complete state of an execution environment at any point in time.
+
+This primitive enables:
+
+- **Reproducibility**: Any previous state can be recreated exactly
+- **Branching**: Multiple execution paths can diverge from a common snapshot
+- **Recovery**: Failed operations can roll back to known-good states
+- **Auditing**: Complete history of state changes is preserved
+
+For agents, this means they can experiment freely knowing that any mistake is reversible. The cost of failure approaches zero.

@@ -1,0 +1,20 @@
+# Smartbox: capability-scoped execution workspaces
+
+A Smartbox is an execution environment where intent is materialised into state and arbitrary computation is permitted within explicit bounds.
+
+Agents operate on files and SDKs, not tools. This mirrors how developers already work.
+
+## Core concept
+
+A Smartbox combines:
+
+- **A sandboxed filesystem**: Isolated from the host, snapshotted at will
+- **Capability-based permissions**: Fine-grained control over what the agent can access
+- **Stateful execution**: The environment persists across agent interactions
+- **Materialised context**: The workspace reflects the current state of the task
+
+## Why this matters
+
+Traditional agent architectures pass context through message history. This is fundamentally limited—you cannot pass a running database or a complex file tree through a prompt.
+
+Smartbox inverts this: the agent operates *inside* the context. Files exist. Databases run. APIs are reachable. The agent manipulates reality, not representations of reality.

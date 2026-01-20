@@ -1,0 +1,12 @@
+# Capability-scoped sandbox execution
+
+Capability-scoped execution restricts what an agent can do based on explicit, fine-grained permissions rather than coarse access controls.
+
+Key properties:
+
+- **Least privilege by default**: Agents start with no permissions
+- **Explicit grants**: Each capability must be explicitly granted
+- **Auditable boundaries**: Every permission grant is logged
+- **Revocable**: Capabilities can be withdrawn at any time
+
+This model mirrors capability-based security systems but applied to agent execution contexts. An agent cannot access a file, network endpoint, or API unless that specific capability has been granted to its execution context.

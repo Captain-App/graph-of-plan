@@ -1,0 +1,16 @@
+# Autonomy increases blast radius
+
+As agents gain more autonomy, the potential impact of their mistakes grows proportionally.
+
+An agent with broad file system access can delete critical data. An agent with network access can exfiltrate information. An agent with execution privileges can run arbitrary code.
+
+This is the fundamental tension in agent systems: **capability enables productivity, but also enables harm**.
+
+The mitigation is not to restrict autonomy—that defeats the purpose of agents. Instead, we must ensure that:
+
+1. Autonomy is always scoped to the minimum necessary
+2. State changes are reversible
+3. Damage is contained to well-defined boundaries
+4. Human oversight remains possible at critical junctures
+
+Capability-scoped execution addresses this by making blast radius explicitly configurable per execution context.
