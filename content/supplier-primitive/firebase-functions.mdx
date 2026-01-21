@@ -1,0 +1,27 @@
+# Cloud Functions for Firebase
+
+Serverless backend compute.
+
+## What It Is
+
+Cloud Functions for Firebase lets you run backend code in response to events triggered by Firebase features and HTTPS requests. Functions scale automatically and you pay only for what you use.
+
+## How We Use It
+
+Cloud Functions handle server-side logic in `nomos_persistence`:
+
+- **HTTP endpoints**: API routes for Nomos operations
+- **Event triggers**: Respond to Firestore writes
+- **Scheduled tasks**: Periodic maintenance and cleanup
+- **Auth hooks**: Custom logic on user events
+
+## Cloudflare Equivalent
+
+In the Cloudflare stack, this role is filled by:
+- **Workers** for HTTP handling
+- **Queues** for event-driven processing
+- **Workflows** for long-running tasks
+
+## Why It Matters
+
+Cloud Functions provide familiar serverless compute for teams already in the Firebase ecosystem. Integration with Firestore triggers enables reactive architectures.

@@ -18,7 +18,7 @@ import { deriveRelations } from "./derive-relations.js";
 import { writePages } from "./render-pages.js";
 import { writeSidebar } from "./render-nav.js";
 import type { PlanNode } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling } from "../schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
@@ -63,9 +63,31 @@ function generateGraphJson(nodes: PlanNode[]): GraphJson {
       for (const prim of node.dependsOn) {
         edges.push({ from: node.id, to: prim.id, relation: "dependsOn" });
       }
+      for (const sp of node.supplierPrimitives) {
+        edges.push({ from: node.id, to: sp.id, relation: "usesSupplierPrimitive" });
+      }
+      for (const tool of node.tooling) {
+        edges.push({ from: node.id, to: tool.id, relation: "usesTooling" });
+      }
       for (const risk of node.risks) {
         edges.push({ from: node.id, to: risk.id, relation: "hasRisk" });
       }
+      for (const supplier of node.suppliers) {
+        edges.push({ from: node.id, to: supplier.id, relation: "suppliedBy" });
+      }
+    }
+
+    if (isTooling(node)) {
+      for (const prim of node.dependsOn) {
+        edges.push({ from: node.id, to: prim.id, relation: "dependsOn" });
+      }
+      for (const sp of node.supplierPrimitives) {
+        edges.push({ from: node.id, to: sp.id, relation: "usesSupplierPrimitive" });
+      }
+    }
+
+    if (isSupplierPrimitive(node)) {
+      edges.push({ from: node.id, to: node.supplier.id, relation: "providedBy" });
     }
 
     if (isRisk(node)) {
@@ -77,6 +99,24 @@ function generateGraphJson(nodes: PlanNode[]): GraphJson {
     if (isProduct(node)) {
       for (const cap of node.enabledBy) {
         edges.push({ from: node.id, to: cap.id, relation: "enabledBy" });
+      }
+      for (const tool of node.tooling) {
+        edges.push({ from: node.id, to: tool.id, relation: "usesTooling" });
+      }
+      for (const customer of node.customers) {
+        edges.push({ from: node.id, to: customer.id, relation: "targets" });
+      }
+      for (const competitor of node.competitors) {
+        edges.push({ from: node.id, to: competitor.id, relation: "competesWith" });
+      }
+    }
+
+    if (isProject(node)) {
+      for (const cap of node.enabledBy) {
+        edges.push({ from: node.id, to: cap.id, relation: "enabledBy" });
+      }
+      for (const tool of node.tooling) {
+        edges.push({ from: node.id, to: tool.id, relation: "usesTooling" });
       }
     }
   }

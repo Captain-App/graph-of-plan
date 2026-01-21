@@ -1,0 +1,20 @@
+# Cloudflare D1
+
+SQLite at the edge.
+
+## What It Is
+
+D1 is a serverless SQL database built on SQLite. It runs at the edge, close to Workers, with automatic replication and scaling.
+
+## How We Use It
+
+D1 handles structured data queries:
+
+- **Index storage**: Query indexes for Nomos event streams
+- **Metadata**: User accounts, billing, and configuration
+- **Search**: Fast lookups by various dimensions
+- **Analytics**: Aggregated usage data
+
+## Why It Matters
+
+SQLite's simplicity combined with edge distribution means fast queries without managing database infrastructure. The familiar SQL interface makes development straightforward.

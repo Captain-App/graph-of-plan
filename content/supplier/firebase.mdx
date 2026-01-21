@@ -1,0 +1,32 @@
+# Firebase (Google Cloud)
+
+Firebase provides an alternative backend infrastructure for Nomos persistence, offering a different deployment model than Cloudflare.
+
+## Why Firebase
+
+Firebase offers a mature, battle-tested platform with strong mobile and real-time capabilities:
+
+- **Real-time sync**: Firestore's real-time listeners for live updates
+- **Offline support**: Built-in offline persistence and sync
+- **Authentication**: Comprehensive auth with multiple providers
+- **Ecosystem**: Deep integration with Google Cloud services
+
+## Supplier Choice
+
+Nomos supports multiple persistence backends. Firebase is the alternative to Cloudflare for teams that:
+
+- Already use Google Cloud infrastructure
+- Need Firebase Authentication integration
+- Prefer Firestore's real-time sync model
+- Want to deploy to existing Firebase projects
+
+## nomos_persistence
+
+The `nomos_persistence` Dart packages provide Firebase-backed storage:
+
+- **Event storage**: Firestore collections for event streams
+- **Blob storage**: Cloud Storage for large artifacts
+- **Auth integration**: Firebase Auth for identity
+- **Functions**: Cloud Functions for server-side logic
+
+This allows the same Nomos domain models to work across different infrastructure choices.

@@ -1,0 +1,25 @@
+# Stripe
+
+Stripe is our payments infrastructure provider, handling all billing, subscriptions, and marketplace payments across products.
+
+## Why Stripe
+
+- **Developer experience**: Best-in-class APIs and documentation
+- **Global coverage**: Supports 135+ currencies and local payment methods
+- **Subscription billing**: Native support for usage-based and tiered pricing
+- **Connect**: Enables marketplace payments for capability pack creators
+
+## How We Use It
+
+| Product | Stripe Feature | Purpose |
+|---------|---------------|---------|
+| All products | Stripe Billing | Subscription management, usage metering |
+| SmartBoxes | Stripe Billing | Credits-based PAYG billing |
+| SmartBoxes | Stripe Connect | Capability pack creator payouts |
+| Nomos Cloud | Stripe Billing | Usage-based metering |
+
+## Risk Considerations
+
+- **Dependency**: Critical path for all revenue
+- **Mitigation**: Stripe has 99.99%+ uptime; alternative processors exist if needed
+- **Cost**: ~2.9% + 30p per transaction (standard for the industry)

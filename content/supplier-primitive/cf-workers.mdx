@@ -1,0 +1,20 @@
+# Cloudflare Workers
+
+Serverless JavaScript/TypeScript execution at the edge.
+
+## What It Is
+
+Workers are serverless functions that run on Cloudflare's global network. Code executes within milliseconds of users, with no cold starts and automatic scaling.
+
+## How We Use It
+
+Workers handle all HTTP traffic in our platform:
+
+- API endpoints for SmartBoxes, Nomos Cloud, and Murphy
+- Request routing and authentication
+- Lightweight compute for fast operations
+- Integration point for other Cloudflare primitives
+
+## Why It Matters
+
+Workers eliminate traditional server infrastructure. We don't manage EC2 instances, Kubernetes clusters, or load balancers. The platform scales automatically from zero to millions of requests.

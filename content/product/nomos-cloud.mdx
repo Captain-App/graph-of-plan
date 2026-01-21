@@ -1,22 +1,289 @@
 # Nomos Cloud
 
-Nomos Cloud is the hosted platform for domain-driven API generation.
+Nomos Cloud is the hosted platform for domain-driven API generation and agent execution auditing. It makes AI systems auditable and debuggable via append-only decision traces.
 
-## What it is
+## The Short Version
 
-Nomos Cloud allows teams to:
+Every AI agent takes actions. Most leave no trace of why. Nomos Cloud is an agent execution gateway that emits "chains of truth"—append-only, queryable decision traces that capture not just what happened, but why it was allowed. Think of it as event sourcing for AI: every intent, directive, policy evaluation, and approval becomes a permanent, auditable record.
 
-- Define business domains in a typed, validated format
-- Generate APIs, SDKs, CLIs, and MCP tools from a single source
-- Deploy and version domain interfaces without code
-- Ensure consistency across all interface formats
+## The Problem
 
-## Target users
+The industry is waking up to context graphs—the idea that the most valuable thing you can store isn't the AI's chain-of-thought, but the decision context: who requested it, what policy approved it, what precedent justified it, and what artifacts it produced.
 
-- API platform teams
-- Backend engineers building domain services
-- Teams exposing functionality to AI agents via MCP
+Most agent systems either:
+- Have no audit trail at all
+- Log raw text that's impossible to query
+- Lose context when sessions end
 
-## Differentiation
+Nomos captures the decision graph as first-class data, making every agent action traceable back to its authorization and forward to its consequences.
 
-Traditional API-first approaches still require manual SDK generation and documentation. Nomos compiles everything from the domain model, eliminating drift and inconsistency.
+## Our Approach
+
+### Event-Sourced Architecture
+
+Nomos is built on event sourcing principles: every change is captured as an immutable event. This means:
+- **Deterministic replay**: Rebuild any state by replaying events
+- **Local-first**: Work offline, sync when connected
+- **Full auditability**: Every decision is traceable
+
+### Core Concepts: Intents → Directives → Events
+
+The data model follows a clear flow:
+1. **Intents**: What the user or agent wants to do
+2. **Directives**: What actions are permitted based on policy
+3. **Events**: What actually happened, with full context
+
+This isn't a blockchain—there's no global consensus. Instead, Nomos models many overlapping, queryable chains by workspace, run, timeline, correlation, or entity.
+
+### Stories, Not Logs
+
+A normal audit log is a crime against human attention. Nomos stores templates and variables, rendering human-readable stories on the read path:
+
+> "Sarah asked: Who owes us money? Agent queried Xero. Found 12 overdue invoices totaling £47,230. Agent drafted reminders. Finance approved. Messages sent."
+
+The raw structured trace remains canonical—stories are just a view. This avoids persisting PII-heavy narratives while keeping the audit trail complete.
+
+## How It Works
+
+### OpenAPI/MCP Generation from Domain Models
+
+Define business domains in a typed, validated format. Nomos generates:
+- REST APIs with OpenAPI specs
+- SDKs in multiple languages
+- CLI tools
+- MCP tools for AI agent integration
+
+Everything compiles from the domain model, eliminating drift between documentation, API, and implementation.
+
+### Cloudflare-Native Hosting
+
+Built entirely on Cloudflare primitives:
+- **Workers**: HTTP APIs
+- **Durable Objects**: Per-timeline sequencing
+- **R2**: Immutable ledger storage
+- **Queues**: Async indexing
+- **Workflows**: Heavy derivations
+- **D1**: Query indexes
+
+Every tenant gets logically isolated storage. Compute scales to zero. No Kubernetes to manage.
+
+### Adapters for Everything
+
+The SDK includes adapters that transform existing telemetry into Nomos entries:
+- OpenTelemetry spans become events with correlation preserved
+- OpenAI and Anthropic tool calls become directives
+- MCP tool invocations become policy-checked directives
+
+You don't rewrite your agent—you instrument it with a few lines.
+
+## Product Features
+
+### @nomos/router-sdk
+
+The open-source TypeScript SDK: entry schema definitions, ID generation (UUIDv7 for time-sortable IDs), story template helpers, safe redaction utilities, and adapters. MIT-licensed.
+
+### Nomos Cloud Service
+
+The managed service: ingest API, query API, story rendering, web dashboard, and all compliance/enterprise features. Customers get a workspace URL, drop in the SDK, and start capturing traces immediately.
+
+### Web Dashboard
+
+Timeline visualization showing entries as a scrollable, zoomable graph. Story view rendering human-readable narratives. Chain explorer for following correlation links. Entity history showing all actions affecting a specific customer/account/resource.
+
+## Who It's For
+
+### AI Agent Developers
+
+Anyone building autonomous systems needs to understand what their agents did and why, debug unexpected behavior, and demonstrate compliance. Nomos gives them a single place to capture and query decision traces across their entire agent fleet.
+
+### Regulated Industries
+
+Finance, healthcare, legal, and government need audit trails that survive legal scrutiny. Nomos provides tamper-evident logs, cryptographic proofs, and the ability to reconstruct exactly what happened at any point.
+
+### Enterprise AI Teams
+
+Large organizations deploying AI across multiple teams need centralized visibility: which agents are running, what actions they're taking, which policies are being applied. Nomos is the control plane for enterprise AI governance.
+
+## Business Model
+
+### The Neo4j Model
+
+The underlying technology—the ledger schema, the SDK, the adapters—is fully open-source under a permissive license. Anyone can run Nomos on their own infrastructure.
+
+The business model is convenience: businesses pay for hosted infrastructure, compliance guarantees, a web dashboard with visualizations, and enterprise features they don't want to build themselves.
+
+### Pricing
+
+- **Free Tier**: Generous limits for hobbyists and startups
+- **Usage-Based**: Pay for entries stored and queries executed
+- **Enterprise**: SOC 2, SSO, RBAC, custom retention, dedicated support
+
+### Pricing Rationale
+
+**Competitor benchmark:**
+
+| Product | Price | Model |
+|---------|-------|-------|
+| LangSmith | £31-400/mo | Usage-based tiers |
+| Helicone | Free-£12-120/mo | Usage-based |
+| Datadog APM | £25+/host/mo | Per-host + usage |
+| New Relic | Usage-based | Per-ingest volume |
+
+**Our positioning:**
+
+Nomos Cloud charges for value delivered: entries stored and queries executed. This scales naturally with agent deployment—small experiments are cheap; production workloads pay proportionally.
+
+**Value anchor:**
+
+- ARPU: £150/mo for production usage
+- Compare to: Building internal audit infrastructure (£50k+ engineering time)
+- Compare to: Compliance audit failure (£100k+ fines, reputation damage)
+- Breakeven: One avoided compliance incident pays for years of Nomos
+
+**Price confidence:**
+
+- Free tier enables SDK adoption without friction
+- Usage-based grows with customer value
+- Enterprise tier captures compliance requirements
+- 90% gross margin supports sales investment
+
+### Compliance & Certifications
+
+For regulated industries: SOC 2 Type II certification, GDPR data processing agreements, HIPAA BAAs for healthcare, and custom data residency options. Tamper-evident hash chaining with cryptographic proofs available for audit.
+
+## Unit Economics
+
+### Revenue Formula
+
+```
+Monthly Revenue = (SDK Conversions × ARPU) + Enterprise MRR
+
+SDK conversions:
+  Downloads/mo × Conversion rate = Customers
+  1,000 × 3% = 30 new customers/mo
+
+Revenue mix:
+  Usage-based:  Customers × £150/mo ARPU
+  Enterprise:   1 deal/quarter × £25k ACV = £2,083/mo
+```
+
+### Cost Structure
+
+| Type | Amount | Notes |
+|------|--------|-------|
+| Base ops | £5,000/mo | Platform, support, compliance |
+| Per-customer | £15/mo | Cloudflare compute, R2 storage |
+
+**Unit margin**: £150 ARPU - £15 infra = £135 gross profit (90% margin).
+
+### Key Metrics
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ARPU: £150       │  Margin: 90%      │  LTV: £4,500   │
+│  CAC: £100        │  Payback: <1mo    │  LTV:CAC: 45:1 │
+│  Conversion: 3%   │  Enterprise: £25k ACV              │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Acquisition Strategy
+
+**Primary channel: Open-source SDK → hosted conversion (the Neo4j model)**
+
+The £100 CAC reflects a developer-led, open-source-first acquisition model:
+
+| Channel | % of Acquisition | Why It Works |
+|---------|------------------|--------------|
+| Open-source SDK adoption | 50% | MIT-licensed SDK gets usage; cloud converts convenience buyers |
+| Agent framework integrations | 25% | Adapters for LangChain, AutoGPT, CrewAI bring SDK to existing users |
+| Technical content | 15% | "Event sourcing for AI agents" positions Nomos as the authority |
+| Enterprise inbound | 10% | Compliance teams searching for "AI audit trails" find Nomos |
+
+**The Neo4j playbook:**
+
+1. **Open source first**: SDK is MIT-licensed, anyone can self-host
+2. **Cloud convenience**: Managed service removes operational burden
+3. **Enterprise pull**: Compliance requirements make hosted version necessary
+4. **Land and expand**: Start with one team's audit needs, expand across the org
+
+**Why this CAC is achievable:**
+
+1. **Zero-friction trial**: SDK download → cloud sync is one config change
+2. **Developer advocacy**: Every SDK user is a potential advocate to their org
+3. **Enterprise deal size**: £25k ACV makes higher-touch sales economical
+4. **Regulatory tailwinds**: AI governance requirements create demand
+
+**Conversion funnel:**
+- SDK downloads: 1,000/month (target)
+- Free tier signup: 30% of downloaders
+- Paid conversion: 10% of free tier
+- Enterprise upgrade: 1 deal/quarter at £25k ACV
+
+**Proof points needed**: 3 enterprise logos using Nomos for compliance audit trails.
+
+### Year 1 Projection
+
+| Month | Customers | Usage MRR | Ent MRR | Total | Expenses | Net | Cumulative |
+|-------|-----------|-----------|---------|-------|----------|-----|------------|
+| M1 | 30 | £4,500 | £0 | £4,500 | £5,450 | -£950 | -£950 |
+| M3 | 90 | £13,500 | £2,083 | £15,583 | £6,350 | £9,233 | £11,400 |
+| M6 | 180 | £27,000 | £4,166 | £31,166 | £7,700 | £23,466 | £65,500 |
+| M12 | 360 | £54,000 | £8,333 | £62,333 | £10,400 | £51,933 | £302,000 |
+
+*Assumes: 1,000 SDK downloads/mo, 3% conversion, 1 enterprise deal/quarter.*
+
+### Sensitivity
+
+| Scenario | M12 Customers | M12 MRR | Y1 Net |
+|----------|---------------|---------|--------|
+| **Base** (3% conv, 1 ent/qtr) | 360 | £62k | £302k |
+| Higher conversion (5%) | 600 | £98k | £520k |
+| No enterprise | 360 | £54k | £230k |
+| Slower downloads (500/mo) | 180 | £35k | £140k |
+
+## Roadmap
+
+### M0: Schema & Conventions
+Define the canonical ledger entry schema, ID conventions, and story template format. Publish the TypeScript SDK.
+
+### M1: Ingest & Persistence
+Implement the ingest API, per-timeline sequencing via Durable Objects, and append-only storage in R2.
+
+### M2: Query & Story Rendering
+Add the query API with filtering by runId, correlationId, entityRef, and time range. Implement story rendering.
+
+### M3: Dashboard MVP
+Build the web dashboard with timeline visualization, story view, and chain exploration.
+
+### M4: Multi-Tenancy & Billing
+Implement workspace provisioning, usage metering, Stripe billing, and free tier.
+
+### M5: Compliance & Enterprise
+Add tamper-evident hash chaining, SOC 2 controls, SSO/RBAC, and audit-of-audit logging. Pursue SOC 2 Type II certification.
+
+### Year 2: Growth Phase
+
+**Product expansion:**
+- Advanced query language for complex trace analysis
+- Anomaly detection (automatic flagging of unusual agent behavior)
+- Policy engine (define rules, auto-enforce on new entries)
+
+**Target metrics:**
+- 500+ paying customers
+- £100K MRR
+- 5 enterprise contracts
+- 2 compliance certifications (SOC 2 + ISO 27001)
+
+### Year 3: Scale Phase
+
+**Platform maturity:**
+- Multi-region data residency (EU, US, APAC)
+- Real-time streaming API for live dashboards
+- Regulatory reporting templates (EU AI Act, industry-specific)
+- Self-hosted enterprise edition
+
+**Revenue targets:**
+- £500K MRR (highest revenue product due to enterprise ACV)
+- 1,000+ SDK installations in production
+- 20+ enterprise contracts
+- HIPAA certification for healthcare vertical

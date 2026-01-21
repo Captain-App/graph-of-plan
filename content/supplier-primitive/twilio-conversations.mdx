@@ -1,0 +1,40 @@
+# Twilio Conversations
+
+Unified multi-channel messaging with persistent history.
+
+## What It Is
+
+Twilio Conversations provides a single API for managing conversations across multiple channels (WhatsApp, SMS, chat). It maintains message history, supports multiple participants, and handles channel-specific formatting automatically.
+
+## How We Use It
+
+Conversations unifies SmartBox messaging:
+
+- **Channel bridging**: Start on WhatsApp, continue on SMS, same thread
+- **Message history**: Full conversation history across all channels
+- **Team collaboration**: Multiple users in one SmartBox conversation
+- **Webhook integration**: Connect conversations to SmartBox event streams
+
+## Architecture Role
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  WhatsApp   │     │    SMS      │     │  Web Chat   │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │
+       └───────────────────┼───────────────────┘
+                           ▼
+                ┌─────────────────────┐
+                │ Twilio Conversations │
+                │   (Unified Thread)   │
+                └──────────┬──────────┘
+                           ▼
+                ┌─────────────────────┐
+                │     SmartBox        │
+                │  (Claude Agent)     │
+                └─────────────────────┘
+```
+
+## Why It Matters
+
+Users shouldn't have to remember which channel they used. Conversations ensures the SmartBox sees one continuous thread regardless of how the user chooses to communicate.

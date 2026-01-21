@@ -1,0 +1,139 @@
+# CO2 Target Asset Tracking
+
+A customer project tracking carbon reduction targets across commercial property portfolios. The first production validation of Nomos Cloud's event-sourced domain capabilities.
+
+## The Problem
+
+Property portfolio managers face a compliance nightmare: tracking carbon reduction commitments across hundreds of buildings, each with different:
+
+- Baseline emissions (when the commitment was made)
+- Target pathways (linear, accelerated, or phased reductions)
+- Measurement intervals (monthly, quarterly, annual)
+- Reporting requirements (internal dashboards, regulatory filings, investor disclosures)
+
+The typical solution is spreadsheets—complex, error-prone, and impossible to audit. When regulators ask "why did you report X for Building Y in Q3 2024?", the answer is usually "because someone typed it into a cell."
+
+## What We Built
+
+CO2 is an asset-level carbon tracking system that treats every data point as an immutable event:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            CO2 ARCHITECTURE                             │
+│                                                                         │
+│   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    │
+│   │  Building       │    │  Target         │    │  Measurement    │    │
+│   │  Registry       │    │  Lifecycle      │    │  Capture        │    │
+│   │                 │    │                 │    │                 │    │
+│   │  • Asset ID     │    │  • Set target   │    │  • Record kWh   │    │
+│   │  • Location     │    │  • Revise path  │    │  • Log CO2e     │    │
+│   │  • Metadata     │    │  • Extend date  │    │  • Verify data  │    │
+│   └────────┬────────┘    └────────┬────────┘    └────────┬────────┘    │
+│            │                      │                      │             │
+│            └──────────────────────┼──────────────────────┘             │
+│                                   │                                     │
+│                                   ▼                                     │
+│   ┌─────────────────────────────────────────────────────────────────┐  │
+│   │                     NOMOS EVENT LEDGER                          │  │
+│   │                                                                  │  │
+│   │   Events:  BuildingRegistered → TargetSet → MeasurementLogged   │  │
+│   │            → TargetRevised → MeasurementLogged → ReportGenerated│  │
+│   │                                                                  │  │
+│   │   Every change is an event. Every report is reproducible.       │  │
+│   └─────────────────────────────────────────────────────────────────┘  │
+│                                   │                                     │
+│                                   ▼                                     │
+│   ┌─────────────────────────────────────────────────────────────────┐  │
+│   │                      GENERATED INTERFACES                        │  │
+│   │                                                                  │  │
+│   │   REST API  •  Dashboard  •  Reporting  •  Auditor Access       │  │
+│   └─────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## How It Uses Nomos
+
+CO2 was the proving ground for Nomos Cloud's core capabilities:
+
+### Event-Sourced Domain Model
+
+Every carbon-related action is captured as an event:
+
+- `BuildingRegistered`: New asset added to portfolio with baseline emissions
+- `TargetSet`: Carbon reduction commitment established (e.g., "50% reduction by 2030")
+- `PathwayDefined`: Year-by-year trajectory for reaching the target
+- `MeasurementLogged`: Actual emissions recorded for a period
+- `TargetRevised`: Commitment adjusted (with full audit trail of why)
+- `ReportGenerated`: Compliance report created from event history
+
+The key insight: regulators don't just want the current number. They want to see how you got there.
+
+### Generated APIs
+
+The CO2 domain model compiles to:
+
+- **REST API**: CRUD operations for all entities, with full audit trails
+- **Query API**: Historical queries ("show all measurements for Building X in 2024")
+- **Reporting API**: Generate compliance reports as-of any date
+- **Auditor API**: Read-only access for external verification
+
+### Story Rendering
+
+When an auditor asks "what happened to Building X?", Nomos renders a human-readable story:
+
+> "Building X was registered on 2023-01-15 with baseline emissions of 450 tCO2e. Target set: 50% reduction by 2030, linear pathway. Q1 2024 measurement: 425 tCO2e (5.5% reduction, tracking ahead of pathway). Target revised on 2024-06-01 to 60% reduction following board decision. Q2 2024 measurement: 410 tCO2e..."
+
+The structured events remain canonical; stories are just a view.
+
+## Metrics
+
+| Metric | Value |
+|--------|-------|
+| Assets under management | 340 buildings |
+| Events logged | ~45,000 (total) |
+| Events per day | ~120 (avg) |
+| Users | 12 (portfolio managers, sustainability leads, auditors) |
+| Reports generated | 180+ (quarterly compliance) |
+| Audit queries | 25 (external verification requests) |
+
+## Lessons Learned
+
+Building CO2 shaped Nomos Cloud in several ways:
+
+### 1. Story Templates Are Essential
+
+Early versions dumped raw events at auditors. They hated it. The story rendering feature—turning event sequences into narratives—came directly from auditor feedback. "I don't want to read a log. Tell me what happened."
+
+### 2. Time-Travel Queries Are Expensive
+
+The initial implementation materialised views on-read, which worked until someone asked for 3 years of monthly reports at once. We moved to incremental snapshot materialisation—precomputing views at regular intervals and only computing deltas on-demand.
+
+### 3. Immutability Requires Correction Events
+
+You can't edit an event ledger. But people make mistakes. CO2 forced us to build a proper correction model: `MeasurementCorrected` events that reference the original event and explain the correction. The original is never deleted; the correction is appended.
+
+### 4. Multi-Stakeholder Access Patterns
+
+Different users need different views:
+
+- **Portfolio managers**: Aggregate dashboards, exception alerts
+- **Sustainability leads**: Asset-level details, pathway tracking
+- **Auditors**: Full event history, reproducible reports
+- **Board**: Executive summaries, risk indicators
+
+This drove the generated API to support multiple projection types from the same event stream.
+
+## Why It Matters
+
+CO2 validates that Nomos can handle real compliance workloads:
+
+- **Auditability**: Every number can be traced to source events
+- **Reproducibility**: Reports generated today match reports from a year ago
+- **Flexibility**: Schema evolved 4 times without losing historical data
+- **Performance**: 45,000 events query in under 200ms
+
+If Nomos works for carbon compliance—where regulators scrutinise every number—it works for most business domains.
+
+## Status
+
+Production. Actively used for quarterly compliance reporting. Expanding to additional portfolios.

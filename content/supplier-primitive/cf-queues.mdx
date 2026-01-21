@@ -1,0 +1,20 @@
+# Cloudflare Queues
+
+Serverless message queues.
+
+## What It Is
+
+Queues provide reliable, at-least-once message delivery between Workers. Messages are persisted and retried automatically on failure.
+
+## How We Use It
+
+Queues handle async processing:
+
+- **Event indexing**: Background processing of Nomos events
+- **Notifications**: Delivery of alerts and webhooks
+- **Heavy compute**: Offloading expensive operations from request path
+- **Integration**: Connecting to external systems asynchronously
+
+## Why It Matters
+
+Queues decouple request handling from heavy processing, keeping APIs fast while ensuring work gets done reliably.

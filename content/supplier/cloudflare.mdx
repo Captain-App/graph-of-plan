@@ -1,0 +1,26 @@
+# Cloudflare
+
+Cloudflare provides the serverless infrastructure that powers our execution platform.
+
+## Why Cloudflare
+
+Cloudflare's developer platform offers a unique combination of primitives that align with our architecture:
+
+- **Edge-first**: Compute runs close to users globally
+- **Serverless**: No infrastructure to manage, scales to zero
+- **Integrated**: Workers, Durable Objects, R2, D1, and Queues work seamlessly together
+- **Cost-effective**: Pay only for what you use
+
+## How We Use It
+
+Our platform is built entirely on Cloudflare primitives:
+
+- **Workers**: HTTP APIs and request handling
+- **Durable Objects**: Per-entity state and coordination
+- **R2**: Object storage for files and blobs
+- **D1**: SQLite at the edge for structured data
+- **Queues**: Async job processing
+- **Workflows**: Long-running orchestration
+- **Pages**: Static site hosting and deployment
+
+This architecture means we have no traditional servers, databases, or Kubernetes clusters to manage.

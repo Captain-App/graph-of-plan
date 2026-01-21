@@ -1,22 +1,330 @@
 # SmartBoxes
 
-SmartBoxes is our flagship execution environment product for AI agents.
+SmartBoxes is a persistent agent sandbox you can leave running. It's a power tool with best-effort safety—users accept responsibility for what they permit.
 
-## What it is
+## The Short Version
 
-SmartBoxes provides isolated, capability-scoped workspaces where agents can:
+Picture this: you wake up, and overnight your AI has documented your entire codebase, fixed three bugs, and deployed a new feature to production. Not because you asked it to—because you enabled autonomous mode and it noticed they needed doing. SmartBox is an always-on AI coding agent that lives in its own persistent environment. It has a filesystem, memory, and the ability to build its own capabilities over time.
 
-- Execute code safely within defined boundaries
-- Access files, databases, and APIs through explicit grants
-- Snapshot and restore state at any point
-- Operate on real environments, not simulations
+## The Problem
 
-## Target users
+Right now, the most powerful AI coding experiences are reserved for developers who can set up Claude Code, configure MCP servers, manage API keys, and orchestrate complex toolchains. Projects like Daniel Miessler's Personal AI Infrastructure show what's possible—AI that remembers, learns, and evolves. But they require technical skill to deploy and maintain.
 
-- Development teams building AI-powered applications
-- Enterprises deploying autonomous agents at scale
-- Platform teams needing secure agent execution infrastructure
+SmartBox takes this power and packages it. One click to start. A dashboard to manage. Pay only for what you use.
 
-## Differentiation
+## Our Approach
 
-Unlike generic sandboxes or containers, SmartBoxes is purpose-built for agent workflows with first-class support for capability-based permissions and state materialisation.
+### This is a Power Tool
+
+SmartBox is a hosted, persistent agent-computer. It is not "Copilot in your repo"—it's an agent with a real compute environment: filesystem, tools, and network access that can run continuously and execute multi-step work. This inherently introduces unpredictable side-effects.
+
+We implement best-effort safeguards against obvious credential mistakes, but we do not claim the system is error-free or guaranteed secure. Users should use least-privilege, disposable credentials and assume responsibility for the actions they permit.
+
+### Explicit Risk Acceptance
+
+The onus is on the user: they explicitly opt into the risk. To enable Unlocked mode, users must complete a deliberate typed acknowledgment—not just a click. This acceptance is recorded with a timestamp and policy version. A persistent badge appears across the UI, visible in every screenshot, making it unmissable that the system is operating in power-tool mode.
+
+### Safety Baseline
+
+Even in Unlocked mode, we implement obvious guardrails that don't reduce capability:
+- Secrets never appear in transcripts or logs—redaction is automatic
+- Pre-push scanning blocks common credential files from being committed to git
+- Emergency stop kills compute and network access instantly
+- Revoke button invalidates all stored secrets
+- Activity timeline shows every command, network request, deployment, and git push
+
+We prioritise visibility, hygiene, and kill switches so it stays capable.
+
+## How It Works
+
+SmartBox hosts agent execution on [Nomos Cloud](/product/nomos-cloud), providing:
+- Persistent filesystem and session state
+- Capability-scoped access to tools and APIs
+- Integration with the Nomos event-sourced architecture for full auditability
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              USER                                           │
+│                         (Browser / API)                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          WEB DASHBOARD                                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │  Activity   │  │   Secrets   │  │   Deploy    │  │   Billing/Credits   │ │
+│  │  Timeline   │  │   Vault     │  │   Manager   │  │                     │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼                               ▼
+┌───────────────────────────────────┐   ┌─────────────────────────────────────┐
+│         SMARTBOX SANDBOX          │   │         NOMOS CLOUD                 │
+│  ┌─────────────────────────────┐  │   │  ┌───────────────────────────────┐  │
+│  │      CLAUDE AGENT           │  │   │  │     Event-Sourced Ledger      │  │
+│  │  ┌───────────────────────┐  │  │   │  │  (Audit Trail / Decisions)    │  │
+│  │  │   Reasoning Engine    │◄─┼──┼───┼──►                               │  │
+│  │  │   Tool Execution      │  │  │   │  └───────────────────────────────┘  │
+│  │  └───────────────────────┘  │  │   └─────────────────────────────────────┘
+│  └─────────────────────────────┘  │
+│                                   │
+│  ┌──────────────┐ ┌─────────────┐ │
+│  │  Filesystem  │ │  Capability │ │
+│  │  (R2 Storage)│ │    Packs    │ │
+│  └──────────────┘ └─────────────┘ │
+└───────────────────────────────────┘
+          │                   │
+          ▼                   ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      CLOUDFLARE PRIMITIVES                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌───────┐  ┌────────┐  ┌───────────────┐ │
+│  │   Workers   │  │   Durable   │  │  R2   │  │   D1   │  │    Pages      │ │
+│  │  (Compute)  │  │   Objects   │  │(Blobs)│  │ (SQL)  │  │  (Deploy)     │ │
+│  └─────────────┘  └─────────────┘  └───────┘  └────────┘  └───────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         EXTERNAL SERVICES                                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   GitHub    │  │    APIs     │  │  Databases  │  │   User Deploys      │ │
+│  │   (Git)     │  │ (via proxy) │  │ (via proxy) │  │   (CF Pages)        │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow
+
+1. **User** interacts via Dashboard or API
+2. **Dashboard** manages sandbox lifecycle, secrets, and deployments
+3. **SmartBox** runs the Claude agent with persistent filesystem
+4. **Nomos Cloud** captures every decision for audit/replay
+5. **Cloudflare** provides the underlying compute and storage
+6. **External Services** are accessed through capability-scoped proxies
+
+The capabilities are infinite because the box can build its own capabilities. Want architecture documentation? It clones RepoSwarm and configures it. Want to monitor competitors' pricing? It builds a scraper. Want to automate invoicing? It connects to your accounting API.
+
+## Product Features
+
+### Sandbox Core
+
+The foundation: a persistent, isolated environment running an AI coding agent. Includes filesystem storage, session memory, git integration, and the ability to install and run any tool. Accessible via web dashboard or API.
+
+### Capability Packs
+
+Pre-configured, tested, and optimised agent skills:
+- Architecture Documentation (RepoSwarm)
+- Competitor Monitoring
+- Invoice Automation
+- Content Publishing
+- Data Pipeline Management
+
+Some packs are free, some are premium. All are one-click installs that your agent immediately knows how to use.
+
+### Deploy Service
+
+Integrated deployment to Cloudflare Workers and Pages. Your agent builds a website, API, or scheduled job—you approve it in the dashboard—it's live globally in seconds. Includes custom domains, SSL, and basic analytics.
+
+### Secrets Vault
+
+Store API keys and tokens for your agent to use. We provide best-effort protections: redaction in logs and transcripts, scanning to prevent common accidental commits, and immediate revoke/disable controls. The proxy architecture means real credentials don't enter the sandbox directly—the agent uses short-lived tokens we can revoke instantly.
+
+### Web Dashboard
+
+Control plane for your agent: view activity, manage secrets, configure deployments, install capabilities, monitor usage, and control billing. Includes an activity timeline, kill switch, and one-click secret revocation.
+
+## Who It's For
+
+### The Non-Technical Creator
+
+You have ideas for tools, websites, automations—but you can't code. Today, you either learn to code (months), hire a developer (expensive), or use no-code tools (limited). SmartBox gives you a developer that understands plain English, works 24/7, and costs a fraction of a contractor.
+
+### The Convenience Buyer
+
+You could set up Claude Code, configure MCP servers, manage your own infrastructure. You know how. But your time is worth more than the hours it would take. SmartBox is the convenience premium: someone else handles the infrastructure, the updates, the security, the scaling.
+
+### The Small Business
+
+You need custom software—integrations, automations, internal tools—but you can't justify a full-time developer. SmartBox becomes your fractional technical team. It builds what you need, maintains it over time, and costs less than a single day of contractor rates per month.
+
+### The Content Creator
+
+Your workflow is unique. Off-the-shelf tools don't quite fit. SmartBox builds tools tailored to exactly how you work. No compromises. No workarounds. Just tools that fit.
+
+## Business Model
+
+### Credits-First PAYG
+
+Prepaid credits prevent surprise bills. Usage draws down prepaid credits; when credits run out, the sandbox pauses until topped up. No monthly minimums. No commitment. Start with a generous free trial, then top up credits as needed.
+
+This aligns incentives: we only earn when your agent delivers value, and you're never surprised by a bill.
+
+### Pricing Streams
+
+- **Compute Usage**: PAYG for agent runtime
+- **Capability Packs**: Free and premium one-click skills
+- **Deployment Credits**: Small margin on top of Cloudflare's infrastructure
+
+### Pricing Rationale
+
+**Competitor benchmark:**
+
+| Product | Price | Model |
+|---------|-------|-------|
+| Cursor Pro | £16/mo | Subscription (IDE) |
+| Replit Core | £16/mo | Subscription + usage |
+| GitHub Copilot | £8-16/mo | Subscription per user |
+| Claude Pro | £16/mo | Subscription (chat) |
+
+**Our positioning:**
+
+SmartBoxes uses PAYG because value delivery is variable. Heavy users pay more; light users pay less. This removes the "am I getting value?" question—you only pay when the agent works.
+
+**Value anchor:**
+
+- Average user: £37/mo for AI agent + hosting + capabilities
+- Compare to: £50-150/hr for a freelance developer
+- One hour of developer time saved = 1-4 months of SmartBox costs
+- Breakeven: Save 2-3 developer hours per month
+
+**Price confidence:**
+
+- PAYG aligns incentives (we earn when you get value)
+- Free tier enables trial without commitment
+- Enterprise tier captures compliance and team requirements
+- Capability packs create upsell path without raising core price
+
+### Enterprise & Teams
+
+Same sandbox core, different policy presets. Guided mode adds approval workflows, extended audit retention, and safer defaults. SSO, RBAC, and compliance controls for regulated industries. Enterprise pricing is seats plus usage, with volume discounts at scale.
+
+## Unit Economics
+
+### Revenue Formula
+
+```
+Monthly Revenue = Users × (Compute + Capabilities + Deploy)
+
+Per-user breakdown:
+  Compute:      £25/mo average
+  Capabilities: £30/mo × 20% attach = £6/mo
+  Deploy:       £15/mo × 40% usage  = £6/mo
+  ─────────────────────────────────────────
+  Total:        £37/mo per active user
+```
+
+### Cost Structure
+
+| Type | Amount | Notes |
+|------|--------|-------|
+| Base ops | £3,000/mo | Platform, support, monitoring |
+| Compute infra | 60% of compute revenue | Cloudflare, Anthropic API |
+| Deploy infra | 60% of deploy revenue | Cloudflare Pages/Workers |
+| Capabilities | ~£0 | Software, no marginal cost |
+
+**Margins by stream**: Compute 40%, Deploy 40%, Capabilities ~100%.
+
+### Key Metrics
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ARPU: £37      │  Gross Margin: 50%  │  LTV: £370     │
+│  CAC: £30       │  Payback: <1mo      │  LTV:CAC: 12:1 │
+│  Churn: 5%/mo   │  Attach: 20%        │                │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Acquisition Strategy
+
+**Primary channel: Content marketing + developer communities**
+
+The £30 CAC reflects a freemium-first, developer-native acquisition model:
+
+| Channel | % of Acquisition | Why It Works |
+|---------|------------------|--------------|
+| Content marketing | 40% | "How to run an AI agent 24/7" tutorials convert to trials |
+| Developer communities | 30% | Show up where builders are: HN, Reddit, Discord, X |
+| Free tier virality | 20% | "Built with SmartBox" attribution on deployed sites |
+| Capability pack marketplace | 10% | Packs surface SmartBox to users searching for specific automations |
+
+**Why this CAC is achievable:**
+
+1. **Self-serve onboarding**: No sales calls—credit card to running agent in minutes
+2. **Developer word-of-mouth**: Developers share tools that save them time
+3. **Content flywheel**: Every capability pack is a content piece targeting specific automation keywords
+4. **Low friction trial**: Generous free tier means users experience value before paying
+
+**Freemium conversion model:**
+- Free tier: 100 minutes compute/month
+- Conversion rate: 5% free → paid within 30 days
+- Upgrade trigger: Users hit compute limits while automations are running
+
+**Proof points needed**: 50+ public "Built with SmartBox" sites driving referral traffic.
+
+### Year 1 Projection
+
+| Month | Users | MRR | Expenses | Net | Cumulative |
+|-------|-------|-----|----------|-----|------------|
+| M1 | 50 | £1,850 | £3,900 | -£2,050 | -£2,050 |
+| M3 | 144 | £5,300 | £5,700 | -£400 | -£3,600 |
+| M6 | 267 | £9,900 | £8,100 | £1,800 | £350 |
+| M12 | 464 | £17,200 | £12,100 | £5,100 | £22,400 |
+
+*Assumes: 50 signups/mo, 5% churn, 20% capability attach, 40% deploy usage.*
+
+### Sensitivity
+
+| Scenario | M12 Users | M12 MRR | Y1 Net |
+|----------|-----------|---------|--------|
+| **Base** (50/mo, 5% churn) | 464 | £17,200 | £22k |
+| High attach (50/mo, 40% cap) | 464 | £20,400 | £36k |
+| Lower churn (50/mo, 3% churn) | 520 | £19,200 | £30k |
+| Growth mode (100/mo, 5% churn) | 928 | £34,300 | £58k |
+
+## Roadmap
+
+### M0: Foundation
+Dashboard, auth, billing, and risk acceptance. Productise the existing infrastructure: user authentication, credits-first metering, Stripe billing, and the Unlocked mode acceptance flow.
+
+### M1: Capabilities
+Build the capability system: a framework for packaging agent skills, a marketplace for discovering them, and one-click installation. Launch with 3-5 first-party capabilities including RepoSwarm integration.
+
+### M2: Deploy
+Integrate deployment to Cloudflare Workers and Pages. Users can deploy websites, APIs, and scheduled jobs directly from the dashboard.
+
+### M3: Marketplace
+Open the capability marketplace to community contributions. Creators can publish capabilities, set pricing, and earn revenue. Reviews, ratings, and quality controls.
+
+### M4: Teams & Enterprise
+Launch team workspaces with shared agents, capabilities, and deployments. Add SSO, RBAC, and audit logging. Pursue SOC 2 certification.
+
+### Year 2: Growth Phase
+
+**Product expansion:**
+- Community capability marketplace (third-party submissions)
+- Agent-to-agent collaboration (SmartBoxes that work together)
+- Scheduled automation (cron-like triggers for recurring tasks)
+- Advanced memory systems (long-term learning across sessions)
+
+**Target metrics:**
+- 1,000+ active users
+- £50K MRR
+- 50+ capability packs in marketplace
+- 20% attach rate on premium capabilities
+
+### Year 3: Scale Phase
+
+**Platform maturity:**
+- White-label SmartBox (embedded agent for other products)
+- GPU-enabled sandboxes (ML training, image generation)
+- Multi-cloud deployment options (AWS, GCP alongside Cloudflare)
+- Enterprise private cloud deployment
+
+**Revenue targets:**
+- £150K MRR
+- 3,000+ active users
+- 10+ white-label partnerships
+- SOC 2 Type II certified

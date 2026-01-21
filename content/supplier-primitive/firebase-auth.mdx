@@ -1,0 +1,24 @@
+# Firebase Authentication
+
+Identity and access management.
+
+## What It Is
+
+Firebase Authentication provides backend services, easy-to-use SDKs, and ready-made UI libraries to authenticate users. It supports email/password, phone, and federated identity providers (Google, Apple, GitHub, etc.).
+
+## How We Use It
+
+Firebase Auth handles identity in `nomos_persistence`:
+
+- **User authentication**: Sign-in flows for Nomos clients
+- **Token verification**: Validating requests in Cloud Functions
+- **Security rules**: Firestore access control based on auth state
+- **Multi-tenancy**: Workspace isolation via custom claims
+
+## Cloudflare Equivalent
+
+In the Cloudflare stack, authentication is handled by custom Workers code or third-party providers. Cloudflare Access provides similar functionality for enterprise deployments.
+
+## Why It Matters
+
+Firebase Auth provides a complete authentication solution out of the box. Teams already using Firebase Auth can integrate Nomos without adding another identity provider.

@@ -1,22 +1,311 @@
 # P4gent
 
-P4gent is an AI agent framework built on SmartBoxes and Nomos.
+P4gent is your purchasing assistant—an AI agent that tracks your suppliers, monitors your spend, finds alternatives, and drafts communications with the context of each relationship.
 
-## What it is
+## The Short Version
 
-P4gent provides:
+Small businesses and individuals spend hours managing suppliers: comparing prices, chasing invoices, finding alternatives when costs rise, and maintaining relationships. P4gent handles the operational overhead of procurement so you can focus on decisions, not administration.
 
-- A runtime for long-running autonomous agents
-- Built-in access to SmartBoxes for isolated execution
-- Nomos-generated interfaces for domain interaction
-- Observability and control plane for agent operations
+## The Problem
 
-## Target users
+**Procurement is death by a thousand cuts.**
 
-- Teams building production AI agents
-- Developers who need agents that operate beyond single-turn interactions
-- Enterprises requiring auditable, controllable agent execution
+Unless you're big enough for a procurement team, supplier management falls through the cracks:
 
-## Differentiation
+- Subscriptions auto-renew at higher rates because nobody checked
+- You're paying more than you need to because comparing alternatives takes time you don't have
+- Supplier relationships go cold because follow-up emails don't write themselves
+- Cost visibility is a spreadsheet you update once a quarter (if that)
+- When you need to cut costs, you don't know where to start
 
-Most agent frameworks focus on prompt engineering and tool calling. P4gent provides the execution infrastructure that makes agents production-ready: isolation, state management, and domain-aware interfaces.
+The irony: the information exists—in emails, invoices, bank statements—but synthesising it requires time you're supposedly saving money to buy.
+
+## Our Approach
+
+**Your purchasing department, population: one AI.**
+
+P4gent connects to your email, accounting software, and bank feeds to build a live picture of your supplier relationships. It doesn't just track spend—it understands context: who you've been with for years, who's been raising prices, who you've been meaning to review.
+
+### Relationship-Aware
+
+P4gent knows that your conversation with a supplier you've used for 5 years is different from a cold outreach to a new vendor. When it drafts emails, it uses the context you've provided plus what it's learned from your history.
+
+### Proactive, Not Reactive
+
+P4gent doesn't wait for you to ask. It notices when:
+- A renewal is coming up and prices have changed
+- A supplier you use has a competitor offering better terms
+- Your spend in a category has drifted from budget
+- An invoice doesn't match the agreed rate
+
+### Human in the Loop
+
+P4gent drafts, you decide. Every email goes through you before sending. Every significant decision surfaces for approval. It's an assistant, not an autonomous buyer.
+
+## How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              INTEGRATIONS                               │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────────┐  │
+│  │  Email   │    │ Accounts │    │  Bank    │    │   User Context   │  │
+│  │  (IMAP)  │    │ (Xero)   │    │  Feeds   │    │   (Notes/Prefs)  │  │
+│  └────┬─────┘    └────┬─────┘    └────┬─────┘    └────────┬─────────┘  │
+└───────┼───────────────┼───────────────┼───────────────────┼────────────┘
+        │               │               │                   │
+        ▼               ▼               ▼                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          P4GENT (SmartBox)                              │
+│                                                                         │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│   │  Supplier   │  │    Spend    │  │ Alternative │  │   Comms     │   │
+│   │   Graph     │  │   Tracker   │  │   Finder    │  │   Drafter   │   │
+│   └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+│                                                                         │
+│                    Nomos System of Record (Audit Trail)                 │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                               YOU                                       │
+│         Dashboard  •  WhatsApp/Email Alerts  •  Approval Requests       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+P4gent runs on [SmartBoxes](/product/smartboxes) with full audit trails via [Nomos Cloud](/product/nomos-cloud). Every action is logged, every recommendation is traceable.
+
+## Product Features
+
+### Spend Dashboard
+
+See your supplier spend across all categories. Track trends over time. Know exactly where your money goes without manually updating spreadsheets.
+
+### Supplier Intelligence
+
+For each supplier, P4gent maintains:
+- **Relationship history**: How long, how much, key contacts
+- **Pricing trends**: Are they raising rates? By how much?
+- **Contract terms**: Renewal dates, notice periods, commitments
+- **Notes**: Your context about the relationship
+
+### Alternative Finder
+
+When costs rise or contracts renew, P4gent researches alternatives:
+- Finds comparable suppliers in your market
+- Compares pricing where available
+- Flags switching costs and risks
+- Drafts outreach emails if you want to explore
+
+### Communication Drafts
+
+P4gent drafts supplier emails with context:
+- **Renewal negotiations**: "Based on our 3-year history and current market rates..."
+- **Invoice queries**: "The attached invoice shows £X but our agreed rate is £Y..."
+- **Relationship maintenance**: "It's been a while since we reviewed our arrangement..."
+
+Every draft goes to you for review. You edit, approve, and send.
+
+### Alerts & Reminders
+
+- Renewal coming up in 30 days
+- Invoice received that's higher than expected
+- Spend in category X is 20% over last quarter
+- Alternative found that could save £Y/month
+
+## Who It's For
+
+### Freelancers & Solopreneurs
+
+You're running everything yourself. P4gent handles the supplier admin so you can focus on the work that pays.
+
+### Small Businesses
+
+Big enough to have real supplier complexity, too small for a procurement person. P4gent fills the gap.
+
+### Anyone Managing Household Spend
+
+Subscriptions, utilities, insurance, services—P4gent tracks them all and makes sure you're not overpaying.
+
+## Business Model
+
+### Pricing
+
+- **Personal** (£9/mo): Up to 20 suppliers, basic integrations
+- **Pro** (£29/mo): Unlimited suppliers, full integrations, alternative finder
+- **Business** (£79/mo): Multi-user, team inbox, advanced analytics
+
+### Pricing Rationale
+
+**Competitor benchmark:**
+
+| Product | Price | Scope |
+|---------|-------|-------|
+| Ramp | Free (card interchange) | Corporate card + expense management |
+| Brex | Free-£12/user/mo | Corporate financial platform |
+| Pleo | £35-89/user/mo | Spend management |
+| Payhawk | £50+/user/mo | Corporate cards + AP |
+
+**Our positioning:**
+
+P4gent is radically cheaper because we don't provide financial infrastructure—just intelligence on top of what you already have. No corporate cards, no banking, no interchange revenue to subsidize.
+
+**Value anchor:**
+
+- Personal tier: £9/mo = cost of one forgotten subscription month
+- Pro tier: £29/mo = one coffee per week
+- Business tier: £79/mo = less than one hour of admin time
+- Breakeven: Catch one auto-renewal or find one better deal
+
+**Price confidence:**
+
+- Personal tier is impulse-purchase territory (£9)
+- Pro tier captures serious solopreneurs who want automation
+- Business tier addresses small teams without procurement staff
+- All tiers have obvious, immediate ROI potential
+
+### The Economics
+
+If P4gent saves you one hour per month on supplier admin, it's paid for itself. If it catches one auto-renewal or finds one better deal, it's paid for the year.
+
+## Unit Economics
+
+### Revenue Formula
+
+```
+MRR = Subscribers × Blended ARPU
+
+Tier breakdown (expected):
+  Personal (£9):   60% of users
+  Pro (£29):       30% of users
+  Business (£79):  10% of users
+  ─────────────────────────────
+  Blended ARPU:    £22/mo
+```
+
+### Cost Structure
+
+| Type | Amount | Notes |
+|------|--------|-------|
+| Base ops | £500/mo | Support tools, marketing baseline |
+| Per-user | £2/mo | Xero API, email service, SmartBox compute |
+
+**Key insight**: Runs on SmartBox/Nomos infrastructure. Variable costs are API calls, not compute.
+
+### Key Metrics
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ARPU: £22       │  Margin: 90%      │  LTV: £250      │
+│  CAC: £20        │  Payback: <1mo    │  LTV:CAC: 12:1  │
+│  Churn: 8%/mo    │  (Consumer product, higher churn)   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Acquisition Strategy
+
+**Primary channel: Consumer ads + word-of-mouth virality**
+
+The £20 CAC reflects a low-friction, consumer-native acquisition model:
+
+| Channel | % of Acquisition | Why It Works |
+|---------|------------------|--------------|
+| Social ads (Meta/TikTok) | 40% | Visual demos of "AI that saved me £500/month" convert |
+| Word-of-mouth | 30% | Freelancers share money-saving tools with peers |
+| SME influencers | 20% | Bookkeepers, accountants, business coaches recommend |
+| SEO/content | 10% | "How to audit your subscriptions" brings problem-aware traffic |
+
+**Why this CAC is achievable:**
+
+1. **Obvious ROI hook**: "Cancel one forgotten subscription and it pays for itself"
+2. **Screenshot-worthy moments**: Savings alerts are shareable content
+3. **Referral mechanics**: Built-in "share to save" incentives
+4. **No-code simplicity**: Anyone can connect email and Xero in 5 minutes
+
+**Consumer acquisition playbook:**
+
+- **Hook**: "Your AI accountant that actually saves you money"
+- **Proof**: Real savings numbers from real users
+- **Friction**: Free tier lets users see savings before paying
+- **Viral loop**: Share your savings dashboard, get credits
+
+**Why 8% churn is acceptable:**
+
+Consumer products naturally churn higher. The economics work because:
+- CAC is low (£20)
+- Payback is instant (under 1 month)
+- Some users return when they get new suppliers to manage
+- High-value users upgrade to Pro/Business tiers
+
+**Proof points needed**: 10 user testimonials with specific £ saved.
+
+### Year 1 Projection
+
+| Month | Subscribers | MRR | Expenses | Net | Cumulative |
+|-------|-------------|-----|----------|-----|------------|
+| M1 | 20 | £440 | £540 | -£100 | -£100 |
+| M3 | 55 | £1,210 | £610 | £600 | £700 |
+| M6 | 98 | £2,160 | £700 | £1,460 | £4,800 |
+| M12 | 158 | £3,480 | £820 | £2,660 | £18,500 |
+
+*Assumes: 20 signups/mo, 8% churn, 60/30/10 tier mix.*
+
+### Sensitivity
+
+| Scenario | M12 Subs | M12 MRR | Y1 Net |
+|----------|----------|---------|--------|
+| **Base** (20/mo, 8% churn) | 158 | £3,480 | £18.5k |
+| Higher Pro mix (40%) | 158 | £4,100 | £24k |
+| Lower churn (5%) | 185 | £4,070 | £26k |
+| Viral growth (40/mo) | 316 | £6,950 | £44k |
+
+## Roadmap
+
+### M0: Core Loop
+
+Email integration, basic spend tracking, supplier cards, manual data entry for context. The minimum to be useful.
+
+### M1: Integrations
+
+Xero/QuickBooks connection, bank feed imports, automatic invoice parsing. Less manual entry, more automatic insights.
+
+### M2: Intelligence
+
+Alternative finder, pricing trend analysis, renewal alerts. Proactive recommendations, not just tracking.
+
+### M3: Communication
+
+Draft emails with relationship context, send through connected accounts, track response status. Full procurement workflow.
+
+### Year 2: Growth Phase
+
+**Product expansion:**
+- Bank feed auto-categorization (ML-powered spend classification)
+- Contract storage and renewal calendar
+- Negotiation playbooks (AI-suggested tactics based on relationship)
+- Shared household/family accounts
+
+**Target metrics:**
+- 500+ paying subscribers
+- £15K MRR
+- 4.5+ App Store rating
+- 30% Pro tier conversion
+
+### Year 3: Scale Phase
+
+**Platform maturity:**
+- Small business team features (shared supplier management)
+- Accountant/bookkeeper portal (manage multiple clients)
+- API for fintech integrations
+- White-label for banks and accounting software
+
+**Revenue targets:**
+- £50K MRR
+- 2,000+ subscribers
+- Partnership with 1+ accounting software (Xero, QuickBooks)
+- International expansion (EU markets)
+
+## The Name
+
+P4gent: PA Agent. Personal Assistant Agent.
+
+What your granddad could afford, your dad couldn't, you can.

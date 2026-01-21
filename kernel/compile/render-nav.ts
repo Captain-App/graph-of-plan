@@ -23,12 +23,43 @@ interface StarlightNavGroup {
 const KIND_LABELS: Record<NodeKind, string> = {
   thesis: "Thesis",
   product: "Products",
+  project: "Customer Projects",
   capability: "Capabilities",
   primitive: "Primitives",
+  "supplier-primitive": "Supplier Primitives",
+  tooling: "Tooling",
   risk: "Risks",
+  supplier: "Suppliers",
+  customer: "Customers",
+  competitor: "Competitors",
 };
 
-const KIND_ORDER: NodeKind[] = ["thesis", "product", "capability", "primitive", "risk"];
+const KIND_ORDER: NodeKind[] = [
+  "thesis",
+  "product",
+  "project",
+  "capability",
+  "primitive",
+  "supplier-primitive",
+  "tooling",
+  "risk",
+  "supplier",
+  "customer",
+  "competitor",
+];
+
+/**
+ * Static pages that aren't part of the graph but should appear in navigation
+ */
+const STATIC_PAGES: StarlightNavGroup[] = [
+  {
+    label: "Team & Strategy",
+    items: [
+      { label: "Team", slug: "team" },
+      { label: "Go-to-Market Sequence", slug: "strategy/gtm-sequence" },
+    ],
+  },
+];
 
 /**
  * Generate navigation structure from nodes
@@ -61,6 +92,9 @@ export function generateSidebar(nodes: PlanNode[]): StarlightNavGroup[] {
       })),
     });
   }
+
+  // Add static pages at the end
+  sidebar.push(...STATIC_PAGES);
 
   return sidebar;
 }

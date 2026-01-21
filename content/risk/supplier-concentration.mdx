@@ -1,0 +1,60 @@
+# Supplier concentration: Cloudflare/Anthropic dependency
+
+Our entire platform runs on two suppliers: Cloudflare (compute/storage) and Anthropic (AI). Concentration creates fragility.
+
+## The Risk
+
+The architecture is elegant but concentrated:
+
+- **Cloudflare**: Workers, Durable Objects, R2, D1, Queues, Workflows, Pages—all compute and storage
+- **Anthropic**: Claude API for all AI reasoning across all products
+
+If either supplier has issues—outages, pricing changes, policy changes, or business failure—we have limited fallback options.
+
+## Specific Threats
+
+### Cloudflare
+
+1. **Outages**: Global Cloudflare outages would take all products offline
+2. **Pricing changes**: Edge compute pricing could increase significantly
+3. **Feature deprecation**: Durable Objects or Workflows could be retired
+4. **Policy enforcement**: Our workloads could be flagged by abuse detection
+5. **Acquisition/pivot**: Cloudflare could be acquired or change strategic direction
+
+### Anthropic
+
+1. **API outages**: Claude unavailability breaks all AI-dependent features
+2. **Model retirement**: Versions we depend on could be deprecated
+3. **Pricing increases**: Cost per token could rise beyond our margins
+4. **Policy restrictions**: New acceptable use policies could exclude our use cases
+5. **Company risk**: Anthropic is a startup; funding or acquisition could change availability
+
+## Mitigations
+
+### Technical
+
+- **Multi-region deployment**: Cloudflare's global network provides inherent redundancy
+- **Graceful degradation**: Products should fail gracefully when dependencies are unavailable
+- **Abstraction layers**: AI calls go through our abstraction, not directly to Anthropic
+- **Multi-model support**: Architecture supports swapping to OpenAI, Google, or local models
+
+### Business
+
+- **Relationship management**: Direct relationships with both suppliers, not just API access
+- **Cost monitoring**: Alert if supplier costs drift from budget assumptions
+- **Alternative evaluation**: Quarterly review of alternative providers
+- **Financial reserves**: Maintain runway buffer for supplier transitions if needed
+
+### Contractual
+
+- **SLAs**: Enterprise agreements with uptime commitments where available
+- **Pricing locks**: Negotiate committed-use discounts that lock in pricing
+- **Notice periods**: Ensure deprecation notices give adequate migration time
+
+## Residual Risk
+
+True multi-cloud is expensive and complex. For a startup, concentration is pragmatic—it lets us move fast. The risk is real but acceptable given our stage. As we scale, diversification becomes more important.
+
+**Probability**: Low-Medium (both suppliers are stable; total failure unlikely)
+**Impact**: Critical (could require platform rebuild)
+**Mitigation effectiveness**: Moderate (fallbacks exist but would be painful)

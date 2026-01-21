@@ -1,0 +1,37 @@
+# Wrangler CLI
+
+Cloudflare's command-line tool for developing and deploying Workers.
+
+## What It Is
+
+Wrangler is the official CLI for Cloudflare Workers, providing local development, testing, and deployment capabilities. It handles the entire development lifecycle from scaffolding new projects to deploying to production.
+
+## How We Use It
+
+Wrangler is the primary deployment and development tool for all Cloudflare-hosted services:
+
+- **Local development**: `wrangler dev` provides a local development server with hot reload
+- **Deployment**: `wrangler deploy` pushes code to Cloudflare's edge network
+- **Database management**: `wrangler d1` commands for D1 database operations
+- **Storage**: `wrangler r2` for R2 bucket management
+- **Pages**: `wrangler pages` for static site deployments
+
+## Development Workflow
+
+```bash
+# Start local development server
+wrangler dev
+
+# Deploy to production
+wrangler deploy
+
+# Run D1 migrations
+wrangler d1 migrations apply production
+
+# Tail production logs
+wrangler tail
+```
+
+## Why It Matters
+
+Wrangler provides a consistent interface across all Cloudflare primitives. It enables local development that closely mirrors production behavior, reducing the gap between development and deployment environments.

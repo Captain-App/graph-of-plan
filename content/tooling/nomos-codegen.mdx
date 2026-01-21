@@ -1,0 +1,34 @@
+# Nomos Code Generator
+
+Generates TypeScript clients, OpenAPI specs, and MCP servers from Nomos domain models.
+
+## What It Is
+
+The Nomos Code Generator takes domain model definitions and produces multiple outputs: TypeScript client libraries, OpenAPI specifications, MCP server implementations, and CLI tools. This ensures consistency across all interfaces to a domain.
+
+## How We Use It
+
+Code generation runs as part of the build process for any Nomos-based service:
+
+- **TypeScript clients**: Type-safe API clients for frontend and backend consumers
+- **OpenAPI specs**: Machine-readable API documentation
+- **MCP servers**: Model Context Protocol servers for AI agent integration
+- **CLI tools**: Command-line interfaces for human operators
+
+## Generation Pipeline
+
+```
+Domain Model (TypeScript)
+         │
+         ▼
+   Nomos Compiler
+         │
+    ┌────┴────┬─────────┬──────────┐
+    ▼         ▼         ▼          ▼
+TypeScript  OpenAPI    MCP       CLI
+ Client      Spec    Server     Tool
+```
+
+## Why It Matters
+
+Single-source domain definitions eliminate drift between API documentation, client libraries, and AI integrations. Changes to the domain model automatically propagate to all generated artifacts.

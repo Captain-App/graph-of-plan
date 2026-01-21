@@ -1,26 +1,335 @@
 # Murphy
 
-Murphy is an AI-powered operations assistant for infrastructure and DevOps.
+Murphy is a delivery autopilot: it reads Jira/Linear/GitHub, builds a live model of dependencies and constraints, and tells leaders what will slip, why, and what to do next—early enough to change the outcome.
 
-## What it is
+## The Short Version
 
-Murphy is an autonomous agent that:
+Modern teams don't miss deadlines because they "didn't work hard enough." They miss deadlines because work is a web of dependencies and bottlenecks, and humans can't continuously model the knock-on effects across their work tools. Murphy connects to your task trackers, builds a live model of how work actually flows, and continuously answers three questions: What will slip? Why will it slip? What's the smallest intervention to get back to green?
 
-- Monitors infrastructure and responds to incidents
-- Executes remediation within SmartBox boundaries
-- Interacts with systems through Nomos-generated interfaces
-- Learns from operational patterns to prevent future issues
+## The Problem
 
-## Target users
+**Status colours are a lie.**
 
-- DevOps and SRE teams
-- Platform engineering organisations
-- Companies with complex infrastructure requiring 24/7 monitoring
+Most project tools are lists and status colours. They look fine right up until the moment they don't. Common failure patterns include:
 
-## Differentiation
+- "Everything is green" until integration week
+- Teams optimising for utilisation instead of throughput
+- Safety margins hidden inside tasks which encourages slow starts and late panic
+- Hours spent in sync meetings doing what software should do: connect dots and predict risk
 
-Murphy combines the execution safety of SmartBoxes with domain-aware interfaces from Nomos. It can take action, not just alert—but only within explicitly granted capabilities.
+People spend hours doing what software should do: connecting dots and predicting risk.
+
+## Our Approach
+
+**Delivery control, not project management.**
+
+Murphy treats your task tracker like a sensor and your project like a live system. It's inspired by **Theory of Constraints**: in any complex system, throughput is limited by a constraint, and "keeping everyone busy" usually makes delivery worse.
+
+We don't promise "perfect plans." We promise fewer surprises.
+
+### The Constraint Matters
+
+Instead of asking "are tasks on schedule?", Murphy asks "what is currently limiting throughput?" Murphy identifies the **Critical Chain**: the sequence of work that dictates the delivery date when you consider both dependencies and who can actually do the work.
+
+### Project Buffers
+
+Traditional plans hide safety in every task estimate. Murphy strips safety out of individual tasks and aggregates it into a **Project Buffer** protecting the final goal. This eliminates Parkinson's Law and Student Syndrome, focusing effort where it actually impacts the delivery date.
+
+### AI Predictive Monitoring
+
+Murphy watches buffer burn vs progress. If you've used 50% of the buffer but completed only 20% of the critical chain, Murphy flags risk early and points to the specific task consuming the safety margin. This is continuous monitoring and proactive intervention, not a retrospective report.
+
+### The Look Ahead Algorithm
+
+Most planning tools treat work as a prioritised list. Murphy starts differently: **all tasks must get done**, and without explicit planning, the safe assumption is they happen sequentially.
+
+This means Murphy initialises every project as a PERT chart with all tasks in a straight line—the worst-case schedule where nothing runs in parallel:
+
+```
+INITIAL STATE: Sequential (default assumption)
+┌───────────────────────────────────────────────────────────────┐
+│                                                               │
+│  [A]───[B]───[C]───[D]───[E]───[F]───[G]───[H]               │
+│                                                               │
+│   ↑ All tasks in sequence = longest possible timeline         │
+└───────────────────────────────────────────────────────────────┘
+
+                    ↓ Look Ahead Analysis ↓
+
+OPTIMISED: Parallel paths discovered
+┌───────────────────────────────────────────────────────────────┐
+│                                                               │
+│              ┌───[B]───[D]───┐                               │
+│              │               │                               │
+│  [A]─────────┼───[C]─────────┼───[G]───[H]                   │
+│              │               │                               │
+│              └───[E]───[F]───┘                               │
+│                                                               │
+│   ↑ Same tasks, shorter timeline via parallelisation          │
+└───────────────────────────────────────────────────────────────┘
+```
+
+**How Look Ahead works:**
+
+1. **Initialise**: All tasks from Jira/Linear/GitHub are placed on the PERT chart in a single sequential chain, ordered by priority
+2. **Look Ahead**: AI scans forward through the chain asking "does this task actually depend on the one before it?"
+3. **Analyse**: For each potential dependency, Murphy examines descriptions, linked issues, code references, and historical patterns to determine if the dependency is real
+4. **Promote**: Tasks with no true dependency on their predecessor are promoted to parallel tracks
+5. **Identify Critical Chain**: The longest remaining dependent path becomes the critical chain; parallel tracks become feeding chains
+
+**The key insight:**
+
+Other tools ask "what should we work on next?" Murphy asks "what's actually blocking what?" The difference:
+
+- **List-based tools**: Assume flexibility—pick the highest priority available task
+- **Murphy**: Assumes commitment—all tasks will ship, so the only question is *how fast*
+
+By starting with the pessimistic sequential view and proving parallelisation opportunities, Murphy shows exactly how much schedule compression is possible and where the real constraints lie.
+
+## How It Works
+
+Murphy is a system of record built on [Nomos](/product/nomos-cloud), exposing its API via MCP server on Nomos Cloud. The agent interface that users chat with is powered by [SmartBox](/product/smartboxes), hosted on Nomos Cloud.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              INTEGRATIONS                               │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────────┐  │
+│  │   Jira   │    │  Linear  │    │  GitHub  │    │  Slack / Email   │  │
+│  └────┬─────┘    └────┬─────┘    └────┬─────┘    └────────▲─────────┘  │
+│       │               │               │                   │            │
+└───────┼───────────────┼───────────────┼───────────────────┼────────────┘
+        │               │               │                   │
+        ▼               ▼               ▼                   │
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           MURPHY (Nomos Cloud)                          │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │                    Nomos System of Record                       │    │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │    │
+│  │  │ Dependency   │  │   Buffer     │  │  Critical Chain      │  │    │
+│  │  │    Graph     │  │   Tracking   │  │     Analysis         │  │    │
+│  │  └──────────────┘  └──────────────┘  └──────────────────────┘  │    │
+│  │                    Event-Sourced Domain                         │    │
+│  └─────────────────────────────┬──────────────────────────────────┘    │
+│                                │                                        │
+│         ┌──────────────────────┼──────────────────────┐                │
+│         ▼                      ▼                      ▼                │
+│  ┌─────────────┐       ┌─────────────┐       ┌─────────────────┐       │
+│  │  MCP Server │       │  REST API   │       │    Webhooks     │───────┼──▶ Alerts
+│  │  (AI Tools) │       │ (Dashboard) │       │   (Triggers)    │       │
+│  └──────┬──────┘       └──────┬──────┘       └─────────────────┘       │
+│         │                     │                                        │
+└─────────┼─────────────────────┼────────────────────────────────────────┘
+          │                     │
+          ▼                     ▼
+┌─────────────────┐    ┌─────────────────┐
+│    SmartBox     │    │    Dashboard    │
+│  (Chat Agent)   │    │   (Web UI)      │
+│                 │    │                 │
+│  "What will     │    │  ┌───────────┐  │
+│   slip and      │    │  │ G │ A │ R │  │
+│   why?"         │    │  └───────────┘  │
+└────────┬────────┘    └────────┬────────┘
+         │                      │
+         ▼                      ▼
+┌─────────────────────────────────────────┐
+│              DELIVERY LEAD              │
+│         (WhatsApp / Slack / Web)        │
+└─────────────────────────────────────────┘
+```
+
+This architecture means:
+- All delivery data flows through an event-sourced, auditable system
+- The AI agent operates within capability-scoped boundaries
+- Every intervention and decision is traceable
+
+## Product Features
+
+### Delivery Dashboard
+
+Green / Amber / Red confidence for each milestone and release. See predicted slip (if any) and the single biggest driver. "What to do next" recommendations provide one intervention at a time to get the project back on track.
+
+### Control Plane
+
+A live dependency map (PERT-style view) highlighting the critical chain. View buffer status in real-time and see exactly where the safety margin is being consumed across the project graph.
+
+### Alerts & Reports
+
+Slack/email alerts when confidence changes. Weekly summaries including top risks, new constraints, interventions taken, and delivery trends. Keeps stakeholders informed without constant manual reporting.
+
+### Deep Integrations
+
+Murphy integrates with Linear, GitHub, and Jira to extract the real dependency graph and keep it current. It turns the data already in your work tools into continuous delivery control.
+
+## Who It's For
+
+### Primary: Agencies & Consultancies
+
+Agencies delivering client work with cross-team dependencies have the strongest pain, clearest ROI, and shortest adoption cycles. Murphy helps them defend timelines with clients, reduce last-minute firefighting, and protect project margins.
+
+### Secondary: R&D & Ops
+
+R&D-heavy product teams with "release trains", manufacturing or hardware-adjacent programmes, and ops/delivery leadership who need portfolio-wide early warning. These organisations face direct costs from delivery slips: revenue loss, reputation damage, or contractual penalties.
+
+## Business Model
+
+### Pricing
+
+- **Team** (£299–£499/mo): For a single delivery team
+- **Studio** (£799–£1,499/mo): For agencies with multiple client projects and client-facing views
+- **Enterprise** (£2,500+/mo): For portfolio views, SSO, and audit retention
+
+### Pricing Rationale
+
+**Competitor benchmark:**
+
+| Product | Price | Scope |
+|---------|-------|-------|
+| Linear | £8-14/user/mo | Issue tracking (no prediction) |
+| Forecast.app | £29-49/user/mo | Full PM suite with AI scheduling |
+| Monday.com | £9-19/user/mo | General project management |
+| Jira Premium | £14/user/mo | Advanced roadmaps, no AI analysis |
+
+**Our positioning:**
+
+Murphy charges per team, not per user. A 10-person delivery team pays £299-499/mo vs. £290-490/mo for Forecast at the same headcount. The value is different: Murphy predicts slips; Forecast schedules tasks.
+
+**Value anchor:**
+
+- One caught slip before it becomes a crisis = £5,000-50,000 saved (overtime, client penalty, reputation)
+- Breakeven: Catch one slip every 10-17 months at Team tier
+- Agencies report average 2-3 near-misses per quarter they wish they'd caught earlier
+
+**Price confidence:**
+
+- Team tier is accessible for agencies evaluating tools
+- Studio tier captures value from multi-project visibility
+- Enterprise tier reflects procurement and compliance requirements
+
+### Go-to-Market
+
+1. **Phase 1**: Design partners for credibility (5–10 delivery leads)
+2. **Phase 2**: Agency wedge for margin protection and client defense
+3. **Phase 3**: Expand into larger product organisations with bigger budgets and more complexity
+
+## Unit Economics
+
+### Revenue Formula
+
+```
+MRR = Teams × ARPU
+    = 15 × £600 = £9,000/mo
+
+Where ARPU = blended average across tiers:
+  Team £299-£499, Studio £799-£1,499, Enterprise £2,500+
+```
+
+### Cost Structure
+
+| Type | Amount | Notes |
+|------|--------|-------|
+| Fixed | £2,000/mo | Infrastructure, monitoring, support tooling |
+| Variable | 20% of revenue | Scales with usage: compute, storage, support |
+
+**Break-even**: 4 teams at blended ARPU covers fixed costs.
+
+### Key Metrics
+
+```
+┌───────────────────────────────────────────────────────┐
+│  ARPU: £600    │  Margin: 80%     │  LTV: £11,520    │
+│  CAC: £500     │  Payback: <1mo   │  LTV:CAC: 23:1   │
+└───────────────────────────────────────────────────────┘
+```
+
+### Acquisition Strategy
+
+**Primary channel: Agency referrals + delivery consultants**
+
+The £500 CAC reflects a trust-based, relationship-driven acquisition model:
+
+| Channel | % of Acquisition | Why It Works |
+|---------|------------------|--------------|
+| Agency referrals | 50% | Delivery leads talk to each other. One win creates warm intros |
+| Delivery consultants | 30% | Partner channel with aligned incentives (they look good when projects deliver) |
+| Content/SEO | 15% | "Critical chain" and "Theory of Constraints" keywords attract qualified traffic |
+| Direct outreach | 5% | Cold outbound to agencies with public delivery problems |
+
+**Why this CAC is achievable:**
+
+1. **High-trust sale**: Agencies don't buy from ads—they buy from peers and trusted advisors
+2. **Consultant multiplier**: One consultant relationship yields multiple client introductions
+3. **Natural word-of-mouth**: When Murphy catches a slip early, the delivery lead tells everyone
+4. **Content compounds**: Theory of Constraints content has 10+ year keyword relevance
+
+**Proof points needed**: 3 case studies showing interventions that saved timelines.
+
+### Year 1 Projection
+
+| Month | Teams | MRR | Expenses | Net | Cumulative |
+|-------|-------|-----|----------|-----|------------|
+| M1 | 1 | £600 | £2,000 | -£1,400 | -£1,400 |
+| M3 | 7 | £4,200 | £2,500 | £1,700 | -£3,300 |
+| M6 | 16 | £9,600 | £3,300 | £6,300 | £16,000 |
+| M12 | 31 | £18,600 | £4,500 | £14,100 | £68,000 |
+
+*Assumes: First paid customer M1, +3 teams/mo growth, 5% monthly churn.*
+
+### Sensitivity
+
+| Scenario | M12 Teams | M12 MRR | Y1 Net |
+|----------|-----------|---------|--------|
+| **Base** (3/mo, 5% churn) | 31 | £18,600 | £68k |
+| Aggressive (5/mo, 3% churn) | 52 | £31,200 | £120k |
+| Conservative (2/mo, 8% churn) | 18 | £10,800 | £24k |
+
+## Roadmap
+
+### M0: Make it Buyable
+Core integrations (Jira, Linear, GitHub), automated onboarding flow, the first delivery dashboard, and automated alerts. Establishing the billing and plan tiers to allow for early conversion.
+
+### M1: Make it Sticky
+Weekly delivery reports, intervention tracking (flagging X, recording Y, measuring outcome Z), and initial portfolio views for delivery leads managing multiple streams.
+
+### M2: Scale Distribution
+Agency-specific workspace templates, public case studies showing "delivery control stories", and building out a partner channel with delivery consultancies.
+
+### M3: Enterprise
+SSO and audit retention for enterprise customers. Security review packs and annual contracts to support larger procurement processes.
+
+### Year 2: Growth Phase
+
+**Product expansion:**
+- Jira Server/Data Center support (on-prem enterprise)
+- AI-generated intervention recommendations (not just alerts)
+- Team performance insights (anonymized, constraint-focused)
+- Portfolio-level constraint analysis across multiple projects
+
+**Target metrics:**
+- 50+ paying teams
+- £30K MRR
+- 3 enterprise logos
+- NPS > 50
+
+### Year 3: Scale Phase
+
+**Platform maturity:**
+- API marketplace for custom integrations
+- White-label offering for delivery consultancies
+- Predictive resource allocation recommendations
+- Multi-org portfolio views for holding companies
+
+**Revenue targets:**
+- £75K MRR
+- 100+ paying teams
+- 5+ enterprise contracts (£100K+ ACV)
+- International expansion (US market entry)
+
+## Risks & Mitigations
+
+- **Trust**: Win via accuracy of early-warning interventions, not just charts
+- **Adoption**: Avoid tool fatigue by integrating deeply into existing workflows (Jira/Linear)
+- **Culture**: Position as system-level constraint management, not individual surveillance
 
 ## Why "Murphy"
 
-Named after Murphy's Law: "Anything that can go wrong will go wrong." Murphy is there when it does.
+Named after Murphy's Law: "Anything that can go wrong will go wrong." Murphy is there when it does—but it tells you *before* it happens.

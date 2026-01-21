@@ -1,0 +1,27 @@
+# Cloud Firestore
+
+NoSQL document database with real-time sync.
+
+## What It Is
+
+Firestore is a flexible, scalable NoSQL cloud database. It supports real-time listeners, offline persistence, and automatic multi-region replication.
+
+## How We Use It
+
+Firestore backs the `nomos_persistence` packages:
+
+- **Event collections**: Storing Nomos event streams as documents
+- **Index storage**: Query indexes for fast lookups
+- **Real-time sync**: Live updates for connected clients
+- **Offline mode**: Local persistence when disconnected
+
+## Cloudflare Equivalent
+
+In the Cloudflare stack, this role is filled by:
+- **Durable Objects** for per-entity state and coordination
+- **D1** for structured queries
+- **R2** for larger document storage
+
+## Why It Matters
+
+Firestore provides a proven, scalable document database with excellent developer experience. Teams already using Firebase can deploy Nomos without adopting new infrastructure.

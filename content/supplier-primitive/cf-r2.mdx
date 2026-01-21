@@ -1,0 +1,20 @@
+# Cloudflare R2
+
+S3-compatible object storage with zero egress fees.
+
+## What It Is
+
+R2 is object storage that's API-compatible with S3 but without egress charges. It integrates directly with Workers for fast access from serverless functions.
+
+## How We Use It
+
+R2 stores all persistent data in our platform:
+
+- **Sandbox filesystems**: Files created and modified in SmartBoxes
+- **Immutable ledgers**: Nomos event storage for audit trails
+- **Artifacts**: Build outputs, deployments, and assets
+- **Backups**: Snapshot storage for sandbox state
+
+## Why It Matters
+
+Zero egress fees mean we can serve content globally without cost anxiety. Direct Worker integration means fast access without network hops.

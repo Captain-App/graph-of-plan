@@ -24,6 +24,10 @@ import {
   isCapability,
   isRisk,
   isProduct,
+  isSupplier,
+  isSupplierPrimitive,
+  isCustomer,
+  isCompetitor,
 } from "./schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -108,13 +112,10 @@ function validateCapability(
 }
 
 function validateRisk(risk: Risk, errors: ValidationError[]): void {
-  if (risk.mitigatedBy.length === 0) {
-    errors.push({
-      nodeId: risk.id,
-      message:
-        "Risk must have at least one mitigation (or be explicitly marked as accepted)",
-    });
-  }
+  // Risks with empty mitigations are accepted risks (business/operational/market risks
+  // that don't have technical mitigations are valid). The content file should describe
+  // the business-level mitigations.
+  // Previously: required at least one mitigation, but this prevents valid business risks.
 }
 
 function validateProduct(product: Product, errors: ValidationError[]): void {

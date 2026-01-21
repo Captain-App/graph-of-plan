@@ -1,0 +1,51 @@
+# SmartBox CLI
+
+Command-line tool for managing SmartBox deployments and interactions.
+
+## What It Is
+
+The SmartBox CLI provides operators with direct control over SmartBox instances. It handles deployment, configuration, capability management, and direct interaction with SmartBox agents.
+
+## How We Use It
+
+The CLI serves both development and operations workflows:
+
+- **Deployment**: Deploy and configure SmartBox instances
+- **Capability management**: Grant, revoke, and audit SmartBox capabilities
+- **Interaction**: Direct command-line chat with SmartBox agents
+- **Monitoring**: View logs, metrics, and resource usage
+
+## CLI Commands
+
+```bash
+# Deploy a new SmartBox
+smartbox deploy --name my-agent --capabilities web,shell
+
+# Chat with a SmartBox
+smartbox chat my-agent
+> Deploy the latest build to staging
+
+# View capabilities
+smartbox capabilities list my-agent
+
+# Tail logs
+smartbox logs my-agent --follow
+```
+
+## Architecture Role
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Operator  │────▶│ SmartBox CLI│────▶│  SmartBox   │
+│  (Human)    │     │   (Tool)    │     │  (Agent)    │
+└─────────────┘     └──────┬──────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  Claude API │
+                    └─────────────┘
+```
+
+## Why It Matters
+
+The CLI provides a power-user interface for SmartBox operations. While WhatsApp and web interfaces serve casual users, the CLI enables scripted automation and integration with existing DevOps workflows.

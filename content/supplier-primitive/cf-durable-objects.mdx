@@ -1,0 +1,20 @@
+# Cloudflare Durable Objects
+
+Stateful serverless compute with strong consistency.
+
+## What It Is
+
+Durable Objects provide single-threaded, strongly consistent compute with persistent storage. Each object has a unique ID and runs in a single location, enabling coordination and state management without distributed systems complexity.
+
+## How We Use It
+
+Durable Objects are central to our architecture:
+
+- **Per-sandbox state**: Each SmartBox is backed by a Durable Object
+- **Per-timeline sequencing**: Nomos uses Durable Objects for ordered event streams
+- **Session management**: User sessions and workspace coordination
+- **Real-time features**: WebSocket connections and live updates
+
+## Why It Matters
+
+Durable Objects solve the hardest problems in distributed systems—coordination and consistency—without requiring us to build or operate distributed databases.

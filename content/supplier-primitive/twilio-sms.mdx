@@ -1,0 +1,29 @@
+# Twilio Programmable SMS
+
+Global SMS messaging for alerts and simple interactions.
+
+## What It Is
+
+Twilio Programmable SMS enables sending and receiving text messages globally. It provides reliable delivery, delivery receipts, and support for long messages across carriers worldwide.
+
+## How We Use It
+
+SMS provides a fallback and notification channel:
+
+- **Critical alerts**: High-priority notifications that can't be missed
+- **Simple commands**: Quick interactions when WhatsApp isn't available
+- **Verification**: Phone number verification for account security
+- **Escalation**: Urgent notifications when other channels fail
+
+## User Experience
+
+```
+SmartBox: ⚠️ ALERT: Production build failed
+         Error: Type mismatch in auth.ts:42
+
+         Reply RETRY to rebuild or VIEW for details
+```
+
+## Why It Matters
+
+SMS reaches every phone, regardless of internet connectivity or installed apps. For critical alerts and users in areas with limited data access, SMS ensures your SmartBox can always reach you.

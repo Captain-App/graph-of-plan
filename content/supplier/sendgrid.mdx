@@ -1,0 +1,26 @@
+# SendGrid (Twilio)
+
+SendGrid is our transactional email provider, handling all system emails, notifications, and customer communications.
+
+## Why SendGrid
+
+- **Deliverability**: Industry-leading inbox placement rates
+- **Scale**: Handles billions of emails; no capacity concerns
+- **Twilio ecosystem**: Integrates with our existing Twilio relationship
+- **Pricing**: Competitive per-email pricing with generous free tier
+
+## How We Use It
+
+| Product | Use Case |
+|---------|----------|
+| All products | Account verification, password reset |
+| Murphy | Delivery alerts, weekly reports |
+| P4gent | Supplier communication drafts, renewal reminders |
+| Nomos Cloud | Usage alerts, compliance notifications |
+| SmartBoxes | Deployment notifications, capability updates |
+
+## Risk Considerations
+
+- **Dependency**: Non-critical (degraded experience, not outage)
+- **Mitigation**: Can fall back to direct SMTP or alternative providers
+- **Cost**: ~$0.001 per email at scale

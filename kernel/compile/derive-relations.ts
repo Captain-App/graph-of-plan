@@ -7,22 +7,50 @@ import type {
   Thesis,
   Capability,
   Primitive,
+  SupplierPrimitive,
+  Tooling,
   Risk,
   Product,
+  Project,
+  Supplier,
+  Customer,
+  Competitor,
 } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling } from "../schema.js";
 
 export interface DerivedRelations {
   /** Which nodes justify this node (reverse of justifiedBy) */
   justifies: Map<PlanNode, Thesis[]>;
   /** Which nodes depend on this node (reverse of dependsOn) */
   dependedOnBy: Map<PlanNode, Capability[]>;
+  /** Which capabilities use this supplier primitive (reverse of supplierPrimitives) */
+  usedByCapabilities: Map<PlanNode, Capability[]>;
+  /** Which tooling uses this supplier primitive (reverse of tooling.supplierPrimitives) */
+  usedByTooling: Map<PlanNode, Tooling[]>;
+  /** Which capabilities use this tooling (reverse of capability.tooling) */
+  toolingUsedByCapabilities: Map<PlanNode, Capability[]>;
+  /** Which products use this tooling (reverse of product.tooling) */
+  toolingUsedByProducts: Map<PlanNode, Product[]>;
+  /** Which projects use this tooling (reverse of project.tooling) */
+  toolingUsedByProjects: Map<PlanNode, Project[]>;
+  /** Which primitives this tooling depends on (for reverse) */
+  toolingDependedOnBy: Map<PlanNode, Tooling[]>;
+  /** Which projects this capability enables (reverse of project.enabledBy) */
+  enablesProjects: Map<PlanNode, Project[]>;
   /** Which nodes are at risk from this node */
   risksFor: Map<PlanNode, Capability[]>;
   /** Which nodes mitigate this risk (reverse of mitigatedBy) */
   mitigates: Map<PlanNode, Risk[]>;
   /** Which products this capability enables (reverse of enabledBy) */
   enables: Map<PlanNode, Product[]>;
+  /** Which capabilities this supplier supplies (reverse of suppliers) */
+  supplies: Map<PlanNode, Capability[]>;
+  /** Which supplier primitives this supplier provides */
+  providesSupplierPrimitives: Map<PlanNode, SupplierPrimitive[]>;
+  /** Which products target this customer (reverse of customers) */
+  targetedBy: Map<PlanNode, Product[]>;
+  /** Which products compete with this competitor (reverse of competitors) */
+  competedBy: Map<PlanNode, Product[]>;
 }
 
 /**
@@ -31,17 +59,39 @@ export interface DerivedRelations {
 export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const justifies = new Map<PlanNode, Thesis[]>();
   const dependedOnBy = new Map<PlanNode, Capability[]>();
+  const usedByCapabilities = new Map<PlanNode, Capability[]>();
+  const usedByTooling = new Map<PlanNode, Tooling[]>();
+  const toolingUsedByCapabilities = new Map<PlanNode, Capability[]>();
+  const toolingUsedByProducts = new Map<PlanNode, Product[]>();
+  const toolingUsedByProjects = new Map<PlanNode, Project[]>();
+  const toolingDependedOnBy = new Map<PlanNode, Tooling[]>();
+  const enablesProjects = new Map<PlanNode, Project[]>();
   const risksFor = new Map<PlanNode, Capability[]>();
   const mitigates = new Map<PlanNode, Risk[]>();
   const enables = new Map<PlanNode, Product[]>();
+  const supplies = new Map<PlanNode, Capability[]>();
+  const providesSupplierPrimitives = new Map<PlanNode, SupplierPrimitive[]>();
+  const targetedBy = new Map<PlanNode, Product[]>();
+  const competedBy = new Map<PlanNode, Product[]>();
 
   // Initialize empty arrays for all nodes
   for (const node of nodes) {
     justifies.set(node, []);
     dependedOnBy.set(node, []);
+    usedByCapabilities.set(node, []);
+    usedByTooling.set(node, []);
+    toolingUsedByCapabilities.set(node, []);
+    toolingUsedByProducts.set(node, []);
+    toolingUsedByProjects.set(node, []);
+    toolingDependedOnBy.set(node, []);
+    enablesProjects.set(node, []);
     risksFor.set(node, []);
     mitigates.set(node, []);
     enables.set(node, []);
+    supplies.set(node, []);
+    providesSupplierPrimitives.set(node, []);
+    targetedBy.set(node, []);
+    competedBy.set(node, []);
   }
 
   // Derive relations
@@ -56,9 +106,31 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
       for (const prim of node.dependsOn) {
         dependedOnBy.get(prim)?.push(node);
       }
+      for (const sp of node.supplierPrimitives) {
+        usedByCapabilities.get(sp)?.push(node);
+      }
+      for (const tool of node.tooling) {
+        toolingUsedByCapabilities.get(tool)?.push(node);
+      }
       for (const risk of node.risks) {
         risksFor.get(risk)?.push(node);
       }
+      for (const supplier of node.suppliers) {
+        supplies.get(supplier)?.push(node);
+      }
+    }
+
+    if (isTooling(node)) {
+      for (const prim of node.dependsOn) {
+        toolingDependedOnBy.get(prim)?.push(node);
+      }
+      for (const sp of node.supplierPrimitives) {
+        usedByTooling.get(sp)?.push(node);
+      }
+    }
+
+    if (isSupplierPrimitive(node)) {
+      providesSupplierPrimitives.get(node.supplier)?.push(node);
     }
 
     if (isRisk(node)) {
@@ -71,8 +143,43 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
       for (const cap of node.enabledBy) {
         enables.get(cap)?.push(node);
       }
+      for (const tool of node.tooling) {
+        toolingUsedByProducts.get(tool)?.push(node);
+      }
+      for (const customer of node.customers) {
+        targetedBy.get(customer)?.push(node);
+      }
+      for (const competitor of node.competitors) {
+        competedBy.get(competitor)?.push(node);
+      }
+    }
+
+    if (isProject(node)) {
+      for (const cap of node.enabledBy) {
+        enablesProjects.get(cap)?.push(node);
+      }
+      for (const tool of node.tooling) {
+        toolingUsedByProjects.get(tool)?.push(node);
+      }
     }
   }
 
-  return { justifies, dependedOnBy, risksFor, mitigates, enables };
+  return {
+    justifies,
+    dependedOnBy,
+    usedByCapabilities,
+    usedByTooling,
+    toolingUsedByCapabilities,
+    toolingUsedByProducts,
+    toolingUsedByProjects,
+    toolingDependedOnBy,
+    enablesProjects,
+    risksFor,
+    mitigates,
+    enables,
+    supplies,
+    providesSupplierPrimitives,
+    targetedBy,
+    competedBy,
+  };
 }

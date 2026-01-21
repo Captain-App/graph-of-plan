@@ -1,0 +1,24 @@
+# Cloud Storage for Firebase
+
+Object storage for files and blobs.
+
+## What It Is
+
+Cloud Storage for Firebase provides scalable object storage backed by Google Cloud Storage. It includes Firebase SDK integration for easy uploads and downloads from client apps.
+
+## How We Use It
+
+Cloud Storage handles large artifacts in `nomos_persistence`:
+
+- **Blob storage**: Large event payloads and attachments
+- **Immutable ledgers**: Archived event data
+- **Exports**: Backup and export files
+- **Assets**: User-uploaded content
+
+## Cloudflare Equivalent
+
+In the Cloudflare stack, this role is filled by **R2** (S3-compatible object storage).
+
+## Why It Matters
+
+Cloud Storage provides reliable, scalable blob storage with Firebase SDK integration. Direct client uploads reduce server load for file-heavy workloads.

@@ -1,0 +1,44 @@
+# Model degradation
+
+The platform depends heavily on Anthropic's Claude API. Model changes, deprecations, or performance regressions could materially impact product quality.
+
+## The Risk
+
+AI models are not static. They're versioned, fine-tuned, and occasionally deprecated. Our products wrap Claude's capabilities:
+
+- **Murphy** relies on Claude's ability to analyse dependencies and predict delivery risks
+- **SmartBoxes** uses Claude for code generation, file manipulation, and tool orchestration
+- **P4gent** depends on Claude's ability to understand supplier relationships and draft communications
+
+If Claude's capabilities regress—or Anthropic changes APIs in breaking ways—our products degrade immediately.
+
+## Specific Threats
+
+1. **Model deprecation**: Anthropic retires a model version we depend on
+2. **Capability regression**: New model versions are worse at specific tasks we rely on
+3. **API changes**: Breaking changes to tool use, context windows, or response formats
+4. **Pricing changes**: Cost increases that break our unit economics
+5. **Rate limiting**: Stricter limits that prevent our products from functioning at scale
+
+## Mitigations
+
+### Technical
+
+- **Model abstraction layer**: Products don't call Claude directly; they call our abstraction. Swapping models requires changing one config, not refactoring products.
+- **Prompt versioning**: All prompts are version-controlled and tested. We can roll back to known-good configurations.
+- **Evaluation suite**: Automated tests run against new model versions before we adopt them.
+- **Multi-model fallback**: Critical paths can fall back to alternative providers (OpenAI, Google) if Claude becomes unavailable.
+
+### Business
+
+- **Relationship with Anthropic**: Early access to model changes and deprecation notices
+- **Usage monitoring**: Alert when model performance metrics drift from baselines
+- **Cost hedging**: Unit economics assume 30% API cost buffer
+
+## Residual Risk
+
+Even with mitigations, we cannot fully control Anthropic's roadmap. If they pivot away from agent-native capabilities, we'd need to rebuild on different foundations. This is a concentration risk inherent to building on a single AI provider.
+
+**Probability**: Medium (API changes are certain; breaking changes less so)
+**Impact**: High (could affect all products simultaneously)
+**Mitigation effectiveness**: Moderate (we can adapt, but not instantly)

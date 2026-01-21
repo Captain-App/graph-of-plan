@@ -5,8 +5,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PlanNode, Thesis, Capability, Risk, Product } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isPrimitive } from "../schema.js";
+import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor } from "../schema.js";
 import { loadContent } from "./load-content.js";
 import type { DerivedRelations } from "./derive-relations.js";
 
@@ -41,9 +41,21 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
   } else if (isRisk(node)) {
     sections.push(renderRiskRelations(node, relations));
   } else if (isProduct(node)) {
-    sections.push(renderProductRelations(node));
+    sections.push(renderProductRelations(node, relations));
+  } else if (isProject(node)) {
+    sections.push(renderProjectRelations(node, relations));
   } else if (isPrimitive(node)) {
     sections.push(renderPrimitiveRelations(node, relations));
+  } else if (isSupplierPrimitive(node)) {
+    sections.push(renderSupplierPrimitiveRelations(node, relations));
+  } else if (isTooling(node)) {
+    sections.push(renderToolingRelations(node, relations));
+  } else if (isSupplier(node)) {
+    sections.push(renderSupplierRelations(node, relations));
+  } else if (isCustomer(node)) {
+    sections.push(renderCustomerRelations(node, relations));
+  } else if (isCompetitor(node)) {
+    sections.push(renderCompetitorRelations(node, relations));
   }
 
   return sections.filter(Boolean).join("\n\n");
@@ -73,6 +85,30 @@ function renderCapabilityRelations(
     sections.push(`## Depends On\n\n${links}`);
   }
 
+  // Supplier Primitives
+  if (cap.supplierPrimitives.length > 0) {
+    const links = cap.supplierPrimitives
+      .map((sp) => `- [${sp.title}](/supplier-primitive/${sp.id})`)
+      .join("\n");
+    sections.push(`## Uses Supplier Primitives\n\n${links}`);
+  }
+
+  // Tooling
+  if (cap.tooling.length > 0) {
+    const links = cap.tooling
+      .map((t) => `- [${t.title}](/tooling/${t.id})`)
+      .join("\n");
+    sections.push(`## Uses Tooling\n\n${links}`);
+  }
+
+  // Suppliers
+  if (cap.suppliers.length > 0) {
+    const links = cap.suppliers
+      .map((s) => `- [${s.title}](/supplier/${s.id})`)
+      .join("\n");
+    sections.push(`## Supplied By\n\n${links}`);
+  }
+
   // Risks
   if (cap.risks.length > 0) {
     const links = cap.risks
@@ -97,6 +133,15 @@ function renderCapabilityRelations(
       .map((p) => `- [${p.title}](/product/${p.id})`)
       .join("\n");
     sections.push(`## Enables Products\n\n${links}`);
+  }
+
+  // Enables projects (reverse relation)
+  const enablesProjects = relations.enablesProjects.get(cap) ?? [];
+  if (enablesProjects.length > 0) {
+    const links = enablesProjects
+      .map((p) => `- [${p.title}](/project/${p.id})`)
+      .join("\n");
+    sections.push(`## Enables Projects\n\n${links}`);
   }
 
   return sections.join("\n\n");
@@ -155,14 +200,206 @@ function renderPrimitiveRelations(
   return sections.join("\n\n");
 }
 
-function renderProductRelations(product: Product): string {
-  if (product.enabledBy.length === 0) return "";
+function renderProductRelations(
+  product: Product,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
 
-  const links = product.enabledBy
-    .map((cap) => `- [${cap.title}](/capability/${cap.id})`)
-    .join("\n");
+  // Enabled by (capabilities)
+  if (product.enabledBy.length > 0) {
+    const links = product.enabledBy
+      .map((cap) => `- [${cap.title}](/capability/${cap.id})`)
+      .join("\n");
+    sections.push(`## Enabled By\n\n${links}`);
+  }
 
-  return `## Enabled By\n\n${links}`;
+  // Tooling
+  if (product.tooling.length > 0) {
+    const links = product.tooling
+      .map((t) => `- [${t.title}](/tooling/${t.id})`)
+      .join("\n");
+    sections.push(`## Uses Tooling\n\n${links}`);
+  }
+
+  // Customers
+  if (product.customers.length > 0) {
+    const links = product.customers
+      .map((c) => `- [${c.title}](/customer/${c.id})`)
+      .join("\n");
+    sections.push(`## Target Customers\n\n${links}`);
+  }
+
+  // Competitors
+  if (product.competitors.length > 0) {
+    const links = product.competitors
+      .map((c) => `- [${c.title}](/competitor/${c.id})`)
+      .join("\n");
+    sections.push(`## Competes With\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderProjectRelations(
+  project: Project,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Enabled by (capabilities)
+  if (project.enabledBy.length > 0) {
+    const links = project.enabledBy
+      .map((cap) => `- [${cap.title}](/capability/${cap.id})`)
+      .join("\n");
+    sections.push(`## Enabled By\n\n${links}`);
+  }
+
+  // Tooling
+  if (project.tooling.length > 0) {
+    const links = project.tooling
+      .map((t) => `- [${t.title}](/tooling/${t.id})`)
+      .join("\n");
+    sections.push(`## Uses Tooling\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderSupplierPrimitiveRelations(
+  node: SupplierPrimitive,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Provided by supplier
+  sections.push(`## Provided By\n\n- [${node.supplier.title}](/supplier/${node.supplier.id})`);
+
+  // Used by capabilities (reverse relation)
+  const usedByCaps = relations.usedByCapabilities.get(node) ?? [];
+  if (usedByCaps.length > 0) {
+    const links = usedByCaps
+      .map((c) => `- [${c.title}](/capability/${c.id})`)
+      .join("\n");
+    sections.push(`## Used By Capabilities\n\n${links}`);
+  }
+
+  // Used by tooling (reverse relation)
+  const usedByTools = relations.usedByTooling.get(node) ?? [];
+  if (usedByTools.length > 0) {
+    const links = usedByTools
+      .map((t) => `- [${t.title}](/tooling/${t.id})`)
+      .join("\n");
+    sections.push(`## Used By Tooling\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderToolingRelations(
+  node: Tooling,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Depends on primitives
+  if (node.dependsOn.length > 0) {
+    const links = node.dependsOn
+      .map((p) => `- [${p.title}](/primitive/${p.id})`)
+      .join("\n");
+    sections.push(`## Depends On\n\n${links}`);
+  }
+
+  // Uses supplier primitives
+  if (node.supplierPrimitives.length > 0) {
+    const links = node.supplierPrimitives
+      .map((sp) => `- [${sp.title}](/supplier-primitive/${sp.id})`)
+      .join("\n");
+    sections.push(`## Uses Supplier Primitives\n\n${links}`);
+  }
+
+  // Used by capabilities (reverse relation)
+  const usedByCaps = relations.toolingUsedByCapabilities.get(node) ?? [];
+  if (usedByCaps.length > 0) {
+    const links = usedByCaps
+      .map((c) => `- [${c.title}](/capability/${c.id})`)
+      .join("\n");
+    sections.push(`## Enables Capabilities\n\n${links}`);
+  }
+
+  // Used by products (reverse relation)
+  const usedByProds = relations.toolingUsedByProducts.get(node) ?? [];
+  if (usedByProds.length > 0) {
+    const links = usedByProds
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Used By Products\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderSupplierRelations(
+  node: PlanNode,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Provides primitives
+  const providesPrimitives = relations.providesSupplierPrimitives.get(node) ?? [];
+  if (providesPrimitives.length > 0) {
+    const links = providesPrimitives
+      .map((sp) => `- [${sp.title}](/supplier-primitive/${sp.id})`)
+      .join("\n");
+    sections.push(`## Provides Primitives\n\n${links}`);
+  }
+
+  // Supplies capabilities (reverse relation)
+  const supplies = relations.supplies.get(node) ?? [];
+  if (supplies.length > 0) {
+    const links = supplies
+      .map((c) => `- [${c.title}](/capability/${c.id})`)
+      .join("\n");
+    sections.push(`## Supplies\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderCustomerRelations(
+  node: PlanNode,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Targeted by products (reverse relation)
+  const targetedBy = relations.targetedBy.get(node) ?? [];
+  if (targetedBy.length > 0) {
+    const links = targetedBy
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Targeted By\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderCompetitorRelations(
+  node: PlanNode,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Competed by products (reverse relation)
+  const competedBy = relations.competedBy.get(node) ?? [];
+  if (competedBy.length > 0) {
+    const links = competedBy
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Competes Against\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
 }
 
 /**
@@ -172,46 +409,146 @@ function renderIndexPage(nodes: PlanNode[]): string {
   const theses = nodes.filter(isThesis);
   const capabilities = nodes.filter(isCapability);
   const products = nodes.filter(isProduct);
+  const projects = nodes.filter(isProject);
   const primitives = nodes.filter(isPrimitive);
+  const supplierPrimitives = nodes.filter(isSupplierPrimitive);
+  const tooling = nodes.filter(isTooling);
   const risks = nodes.filter(isRisk);
+  const suppliers = nodes.filter(isSupplier);
+  const customers = nodes.filter(isCustomer);
+  const competitors = nodes.filter(isCompetitor);
 
   const sections: string[] = [
     "---",
     'title: "Graph of Plan"',
-    'description: "Business plan as a navigable graph"',
+    'description: "A business plan as a navigable dependency graph"',
     "---",
     "",
-    "Welcome to the Graph of Plan — a structured, navigable view of the business strategy.",
+    "Most business plans are documents. This one is a graph.",
+    "",
+    "Every product traces down to the capabilities that enable it. Every capability traces down to the primitives that make it possible. Every primitive traces to the suppliers who provide it. Click any node. Follow the links. See how it all connects.",
     "",
   ];
 
+  // The Bet
   if (theses.length > 0) {
-    sections.push("## Thesis\n");
-    sections.push(theses.map((t) => `- [${t.title}](/thesis/${t.id})`).join("\n"));
+    sections.push("## The Bet\n");
+    sections.push(theses.map((t) => `**[${t.title}](/thesis/${t.id})**`).join("\n"));
+    sections.push("");
+    sections.push("We're building infrastructure for the agent-native era. The products below demonstrate what the platform enables.");
     sections.push("");
   }
 
+  // Products - with descriptions
   if (products.length > 0) {
     sections.push("## Products\n");
-    sections.push(products.map((p) => `- [${p.title}](/product/${p.id})`).join("\n"));
-    sections.push("");
+    sections.push("What we're building.\n");
+
+    const productDescriptions: Record<string, string> = {
+      "murphy": "Delivery autopilot. Reads your Jira/Linear/GitHub, tells you what will slip and why.",
+      "p4gent": "Purchasing assistant. Tracks suppliers, monitors spend, drafts emails with relationship context.",
+      "smartboxes": "Execution infrastructure for AI agents. Isolated, auditable, controllable.",
+      "nomos-cloud": "System of record. Event-sourced domains with generated APIs.",
+    };
+
+    for (const p of products) {
+      const desc = productDescriptions[p.id] || "";
+      sections.push(`### [${p.title}](/product/${p.id})\n`);
+      sections.push(desc);
+      sections.push("");
+    }
   }
 
+  // Projects section
+  if (projects.length > 0) {
+    sections.push("## Customer Projects\n");
+    sections.push("Built on the platform.\n");
+
+    for (const p of projects) {
+      sections.push(`### [${p.title}](/project/${p.id})\n`);
+      sections.push("");
+    }
+  }
+
+  // Architecture diagram
+  sections.push("## How It Fits Together\n");
+  sections.push("```");
+  sections.push("┌────────────────────────────────┐  ┌────────────────────────────────┐");
+  sections.push("│            PRODUCTS            │  │       CUSTOMER PROJECTS        │");
+  sections.push("│  Murphy • P4gent • SmartBoxes  │  │             CO2                │");
+  sections.push("│          Nomos Cloud           │  │             ...                │");
+  sections.push("└───────────────┬────────────────┘  └───────────────┬────────────────┘");
+  sections.push("                │                                   │");
+  sections.push("                └───────────────┬───────────────────┘");
+  sections.push("                                │ enabled by");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                           CAPABILITIES                              │");
+  sections.push("│               SmartBox Execution    •    Nomos Domains              │");
+  sections.push("└───────────────────────────────┬─────────────────────────────────────┘");
+  sections.push("                                │ built on");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                            PRIMITIVES                               │");
+  sections.push("│          Snapshot Materialisation  •  Capability-Scoped Exec        │");
+  sections.push("└───────────────────────────────┬─────────────────────────────────────┘");
+  sections.push("                                │ run on");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                            SUPPLIERS                                │");
+  sections.push("│        Cloudflare   •   Anthropic   •   Firebase   •   Twilio       │");
+  sections.push("└─────────────────────────────────────────────────────────────────────┘");
+  sections.push("```");
+  sections.push("");
+  sections.push("Products and customer projects both depend on capabilities. Click through to see specific dependencies.");
+  sections.push("");
+
+  // Capabilities
   if (capabilities.length > 0) {
     sections.push("## Capabilities\n");
+    sections.push("What we can do that makes the products possible.\n");
     sections.push(capabilities.map((c) => `- [${c.title}](/capability/${c.id})`).join("\n"));
     sections.push("");
   }
 
+  // Primitives
   if (primitives.length > 0) {
     sections.push("## Primitives\n");
+    sections.push("The foundational building blocks we've built.\n");
     sections.push(primitives.map((p) => `- [${p.title}](/primitive/${p.id})`).join("\n"));
     sections.push("");
   }
 
+  // Suppliers
+  if (suppliers.length > 0) {
+    sections.push("## Suppliers\n");
+    sections.push("The platforms we build on.\n");
+    sections.push(suppliers.map((s) => `- [${s.title}](/supplier/${s.id})`).join("\n"));
+    sections.push("");
+  }
+
+  // Risks
   if (risks.length > 0) {
     sections.push("## Risks\n");
+    sections.push("What could go wrong, and how we mitigate it.\n");
     sections.push(risks.map((r) => `- [${r.title}](/risk/${r.id})`).join("\n"));
+    sections.push("");
+  }
+
+  // Footer - the rest in collapsed sections or just simpler
+  sections.push("---\n");
+  sections.push("## Full Index\n");
+  sections.push("Everything in the graph, by type.\n");
+
+  if (supplierPrimitives.length > 0) {
+    sections.push(`**Supplier Primitives** (${supplierPrimitives.length}): `);
+    sections.push(supplierPrimitives.map((sp) => `[${sp.title}](/supplier-primitive/${sp.id})`).join(" • "));
+    sections.push("");
+  }
+
+  if (tooling.length > 0) {
+    sections.push(`**Tooling** (${tooling.length}): `);
+    sections.push(tooling.map((t) => `[${t.title}](/tooling/${t.id})`).join(" • "));
     sections.push("");
   }
 
