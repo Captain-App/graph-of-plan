@@ -1,0 +1,31 @@
+Migrate Nomos backend from Firebase/Cloud Run to Cloudflare primitives.
+
+## Current Backend
+
+- **Database**: Cloud Firestore (document DB)
+- **Compute**: Cloud Functions for Firebase
+- **Storage**: Cloud Storage for Firebase
+- **Auth**: Firebase Authentication
+
+## Target Backend (Primary)
+
+Cloudflare primitives:
+- **Database**: D1 (SQLite) + Durable Objects (actor state)
+- **Compute**: Workers (edge functions)
+- **Storage**: R2 (S3-compatible)
+- **Auth**: Integrated with Workers (JWT validation)
+
+## Alternative Target
+
+Convex as potential alternative:
+- **Database**: Convex reactive database
+- **Compute**: Convex functions
+- Simpler model, less infrastructure control
+
+## Migration Strategy
+
+1. Abstract persistence layer in TypeScript port
+2. Implement Cloudflare adapter
+3. Run parallel backends during transition
+4. Migrate domain by domain
+5. Evaluate Convex for simpler domains

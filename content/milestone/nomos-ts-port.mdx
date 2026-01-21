@@ -1,0 +1,24 @@
+Port the Nomos domain system from Dart to TypeScript.
+
+## Current State
+
+Nomos is currently implemented in Dart with:
+- Domain definitions as Dart classes
+- Persistence via Firebase Firestore
+- Backend logic in Cloud Functions for Firebase
+- Code generation for Dart SDKs
+
+## Target State
+
+TypeScript implementation with:
+- Domain definitions as TypeScript types
+- Effect-TS for typed functional effects
+- Persistence-agnostic core (can target multiple backends)
+- Code generation for TypeScript SDKs, OpenAPI, MCP tools
+
+## Why Migrate
+
+1. **Team expertise**: More TypeScript than Dart experience
+2. **Ecosystem**: Better tooling and library support in TypeScript
+3. **Target platforms**: Cloudflare Workers runs JavaScript/TypeScript
+4. **Agent integration**: MCP and AI tooling is TypeScript-first

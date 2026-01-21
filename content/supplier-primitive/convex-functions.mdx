@@ -1,0 +1,16 @@
+Convex Functions: serverless compute tightly integrated with Convex Database.
+
+## Features
+
+- Queries: Read-only functions with automatic caching
+- Mutations: Transactional writes
+- Actions: Side effects (external APIs, file processing)
+- Scheduled functions: Cron-like scheduling
+- HTTP endpoints: REST API exposure
+
+## Comparison to Cloud Functions
+
+- Tighter database integration (no cold start for DB access)
+- Automatic retries and exactly-once semantics
+- TypeScript-only (no other languages)
+- No edge deployment (runs in Convex infrastructure)

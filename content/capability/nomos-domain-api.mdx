@@ -25,3 +25,24 @@ Nomos provides:
 - **Consistent documentation**: Generated from the same source
 
 For agents, this means they interact with domains through well-typed, well-documented interfaces that cannot contradict each other.
+
+## Current Implementation (Dart/Firebase)
+
+The current Nomos implementation is in Dart, running on:
+
+- **Cloud Firestore**: Document database for domain state
+- **Cloud Functions for Firebase**: Backend logic and API endpoints
+- **Cloud Storage for Firebase**: File and blob storage
+- **Firebase Authentication**: User identity
+
+This stack powers the CO2 Target Asset Management project.
+
+## Migration Path
+
+We're migrating Nomos to TypeScript with a pluggable backend:
+
+1. **[TypeScript Port](/milestone/nomos-ts-port)**: Rewrite core in TypeScript with Effect-TS
+2. **[Cloudflare Migration](/milestone/nomos-cloudflare-migration)**: Primary target using Workers, D1, Durable Objects
+3. **Convex Option**: Alternative backend for simpler domains
+
+The TypeScript version will support multiple backends through a persistence abstraction layer.

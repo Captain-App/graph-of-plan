@@ -23,6 +23,7 @@ export const PLAN = defineGraph({
   suppliers: {
     "cloudflare": "Cloudflare",
     "firebase": "Firebase (Google Cloud)",
+    "convex": "Convex",
     "anthropic": "Anthropic",
     "twilio": "Twilio",
     "stripe": "Stripe",
@@ -114,6 +115,15 @@ export const PLAN = defineGraph({
     "sendgrid-email": {
       title: "SendGrid Email API",
       supplier: "sendgrid",
+    },
+    // Convex primitives (potential migration target)
+    "convex-database": {
+      title: "Convex Database",
+      supplier: "convex",
+    },
+    "convex-functions": {
+      title: "Convex Functions",
+      supplier: "convex",
     },
   },
 
@@ -235,18 +245,19 @@ export const PLAN = defineGraph({
       title: "Nomos: domains compiled to OpenAPI, MCP, CLI and SDKs",
       dependsOn: ["snapshot-materialisation"],
       supplierPrimitives: [
-        // Cloudflare backend (nomos-router)
-        "cf-workers",
-        "cf-durable-objects",
-        "cf-r2",
-        "cf-d1",
-        "cf-queues",
-        "cf-workflows",
-        // Firebase backend (nomos_persistence)
+        // Current: Firebase + Cloud Functions (Dart implementation)
         "firebase-firestore",
         "firebase-storage",
         "firebase-functions",
         "firebase-auth",
+        // Target: Cloudflare (TypeScript implementation)
+        "cf-workers",
+        "cf-durable-objects",
+        "cf-r2",
+        "cf-d1",
+        // Alternative target: Convex
+        "convex-database",
+        "convex-functions",
       ],
       tooling: ["wrangler-cli", "nomos-codegen"],
     },
@@ -394,18 +405,45 @@ export const PLAN = defineGraph({
         speedOfLight: { startMonth: 0, durationMonths: 0, included: false }, // Skipped
       },
     },
+    // Nomos migration milestones
+    "nomos-ts-port": {
+      title: "Nomos TypeScript Port",
+      expectedRevenue: 0,
+      expectedCosts: 3000,
+      dependsOnMilestones: [],
+      dependsOnCapabilities: ["nomos-domain-api"],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 2, durationMonths: 4, included: true },
+        aggressive: { startMonth: 1, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 0, durationMonths: 2, included: true },
+      },
+    },
+    "nomos-cloudflare-migration": {
+      title: "Nomos Cloudflare Migration",
+      expectedRevenue: 0,
+      expectedCosts: 2000,
+      dependsOnMilestones: ["nomos-ts-port"],
+      dependsOnCapabilities: [],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 6, durationMonths: 3, included: true },
+        aggressive: { startMonth: 3, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 2, durationMonths: 1, included: true },
+      },
+    },
     // Nomos Cloud milestones
     "nomos-internal": {
       title: "Nomos Internal Use",
       expectedRevenue: 0,
       expectedCosts: 2000,
-      dependsOnMilestones: ["smartbox-mvp"],
+      dependsOnMilestones: ["nomos-cloudflare-migration"],
       dependsOnCapabilities: ["nomos-domain-api"],
       products: ["nomos-cloud"],
       timelines: {
-        expected: { startMonth: 4, durationMonths: 4, included: true },
-        aggressive: { startMonth: 2, durationMonths: 2, included: true },
-        speedOfLight: { startMonth: 1, durationMonths: 2, included: true },
+        expected: { startMonth: 9, durationMonths: 3, included: true },
+        aggressive: { startMonth: 5, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 3, durationMonths: 1, included: true },
       },
     },
     "nomos-beta": {
@@ -416,9 +454,9 @@ export const PLAN = defineGraph({
       dependsOnCapabilities: [],
       products: ["nomos-cloud"],
       timelines: {
-        expected: { startMonth: 8, durationMonths: 5, included: true },
-        aggressive: { startMonth: 4, durationMonths: 3, included: true },
-        speedOfLight: { startMonth: 3, durationMonths: 2, included: true },
+        expected: { startMonth: 12, durationMonths: 4, included: true },
+        aggressive: { startMonth: 7, durationMonths: 3, included: true },
+        speedOfLight: { startMonth: 4, durationMonths: 2, included: true },
       },
     },
     "nomos-revenue": {
@@ -429,9 +467,9 @@ export const PLAN = defineGraph({
       dependsOnCapabilities: [],
       products: ["nomos-cloud"],
       timelines: {
-        expected: { startMonth: 13, durationMonths: 6, included: true },
-        aggressive: { startMonth: 7, durationMonths: 4, included: true },
-        speedOfLight: { startMonth: 5, durationMonths: 3, included: true },
+        expected: { startMonth: 16, durationMonths: 6, included: true },
+        aggressive: { startMonth: 10, durationMonths: 4, included: true },
+        speedOfLight: { startMonth: 6, durationMonths: 3, included: true },
       },
     },
     "nomos-enterprise": {
@@ -442,8 +480,8 @@ export const PLAN = defineGraph({
       dependsOnCapabilities: [],
       products: ["nomos-cloud"],
       timelines: {
-        expected: { startMonth: 19, durationMonths: 10, included: true },
-        aggressive: { startMonth: 11, durationMonths: 6, included: true },
+        expected: { startMonth: 22, durationMonths: 10, included: true },
+        aggressive: { startMonth: 14, durationMonths: 6, included: true },
         speedOfLight: { startMonth: 0, durationMonths: 0, included: false }, // Skipped
       },
     },
