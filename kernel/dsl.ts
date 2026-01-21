@@ -22,6 +22,9 @@ import {
   ThreatLevel,
   Milestone,
   TimelineConfig,
+  Repository,
+  StackLevel,
+  RepoType,
 } from "./schema.js";
 
 // ============================================================================
@@ -134,6 +137,21 @@ interface MilestoneDef {
 }
 
 /**
+ * Repository definition for technology stack tracking
+ */
+interface RepositoryDef {
+  title: string;
+  url: string;
+  stackLevel: StackLevel;
+  repoType: RepoType;
+  language?: string;
+  dependsOn?: string[];
+  upstream?: string;
+  products?: string[];
+  capabilities?: string[];
+}
+
+/**
  * The complete graph definition
  */
 export interface GraphDef {
@@ -148,6 +166,7 @@ export interface GraphDef {
   products?: Record<string, ProductDef>;
   projects?: Record<string, ProjectDef>;
   milestones?: Record<string, MilestoneDef>;
+  repositories?: Record<string, RepositoryDef>;
   thesis?: Record<string, ThesisDef>;
 }
 
@@ -487,6 +506,98 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     theses.set(id, new Thesis(id, thesisDef.title, justifiedBy));
   }
 
+  // Phase 10: Create repositories (depend on products, capabilities, and other repositories)
+  // Two-pass approach: first create with empty deps, then resolve
+  const repositories = new Map<string, Repository>();
+  const repoDeps = new Map<string, { dependsOn: string[]; upstream?: string }>();
+
+  // Pass 1: Create repositories with empty dependsOn and null upstream
+  for (const [id, repoDef] of Object.entries(def.repositories ?? {})) {
+    const repoProducts = (repoDef.products ?? []).map((prodId) => {
+      const prod = products.get(prodId);
+      if (!prod) {
+        throw new Error(
+          `Repository "${id}" references unknown product "${prodId}"`
+        );
+      }
+      return prod;
+    });
+
+    const repoCapabilities = (repoDef.capabilities ?? []).map((capId) => {
+      const cap = capabilities.get(capId);
+      if (!cap) {
+        throw new Error(
+          `Repository "${id}" references unknown capability "${capId}"`
+        );
+      }
+      return cap;
+    });
+
+    // Store deps for second pass
+    repoDeps.set(id, {
+      dependsOn: repoDef.dependsOn ?? [],
+      upstream: repoDef.upstream,
+    });
+
+    repositories.set(
+      id,
+      new Repository(
+        id,
+        repoDef.title,
+        repoDef.url,
+        repoDef.stackLevel,
+        repoDef.repoType,
+        repoDef.language ?? "TypeScript",
+        [], // Placeholder - resolved in pass 2
+        null, // Placeholder - resolved in pass 2
+        repoProducts,
+        repoCapabilities
+      )
+    );
+  }
+
+  // Pass 2: Resolve repository-to-repository dependencies
+  for (const [id, deps] of repoDeps.entries()) {
+    if (deps.dependsOn.length === 0 && !deps.upstream) continue;
+
+    const dependsOnRepos = deps.dependsOn.map((repoId) => {
+      const repo = repositories.get(repoId);
+      if (!repo) {
+        throw new Error(
+          `Repository "${id}" references unknown repository "${repoId}"`
+        );
+      }
+      return repo;
+    });
+
+    const upstreamRepo = deps.upstream
+      ? repositories.get(deps.upstream) ?? null
+      : null;
+    if (deps.upstream && !upstreamRepo) {
+      throw new Error(
+        `Repository "${id}" references unknown upstream repository "${deps.upstream}"`
+      );
+    }
+
+    // Get the existing repository and recreate with resolved deps
+    const existing = repositories.get(id)!;
+    repositories.set(
+      id,
+      new Repository(
+        existing.id,
+        existing.title,
+        existing.url,
+        existing.stackLevel,
+        existing.repoType,
+        existing.language,
+        dependsOnRepos,
+        upstreamRepo,
+        existing.products,
+        existing.capabilities
+      )
+    );
+  }
+
   // Combine all nodes in dependency order
   return [
     ...primitives.values(),
@@ -500,6 +611,7 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     ...products.values(),
     ...projects.values(),
     ...milestones.values(),
+    ...repositories.values(),
     ...theses.values(),
   ];
 }

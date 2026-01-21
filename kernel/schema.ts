@@ -19,7 +19,8 @@ export type NodeKind =
   | "supplier"
   | "customer"
   | "competitor"
-  | "milestone";
+  | "milestone"
+  | "repository";
 
 export abstract class PlanNode {
   readonly id: string;
@@ -197,6 +198,41 @@ export class Milestone extends PlanNode {
 }
 
 /**
+ * Stack level for technology stack visualization
+ * L0: Cloud (covered by Suppliers)
+ * L1: Runtime (Node.js, Workerd)
+ * L2: Frameworks (Astro, Hono)
+ * L3: Libraries (zod, drizzle-orm)
+ * L4: Our Code
+ */
+export type StackLevel = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * Repository type classification
+ */
+export type RepoType = "owned" | "fork" | "dependency";
+
+/**
+ * A code repository in the technology stack
+ */
+export class Repository extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly url: string,
+    public readonly stackLevel: StackLevel,
+    public readonly repoType: RepoType,
+    public readonly language: string,
+    public readonly dependsOn: Repository[],
+    public readonly upstream: Repository | null,
+    public readonly products: Product[],
+    public readonly capabilities: Capability[]
+  ) {
+    super("repository", id, title);
+  }
+}
+
+/**
  * Type guard utilities
  */
 export function isThesis(node: PlanNode): node is Thesis {
@@ -245,4 +281,8 @@ export function isCompetitor(node: PlanNode): node is Competitor {
 
 export function isMilestone(node: PlanNode): node is Milestone {
   return node.kind === "milestone";
+}
+
+export function isRepository(node: PlanNode): node is Repository {
+  return node.kind === "repository";
 }

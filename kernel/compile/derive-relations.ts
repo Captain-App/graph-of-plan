@@ -16,8 +16,9 @@ import type {
   Customer,
   Competitor,
   Milestone,
+  Repository,
 } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone, isRepository } from "../schema.js";
 
 export interface DerivedRelations {
   /** Which nodes justify this node (reverse of justifiedBy) */
@@ -58,6 +59,14 @@ export interface DerivedRelations {
   milestoneForCapability: Map<PlanNode, Milestone[]>;
   /** Which milestones advance this product (reverse of products) */
   milestoneForProduct: Map<PlanNode, Milestone[]>;
+  /** Which repositories depend on this repository (reverse of dependsOn) */
+  repositoryDependedOnBy: Map<PlanNode, Repository[]>;
+  /** Which repositories are forks of this repository (reverse of upstream) */
+  repositoryForkedBy: Map<PlanNode, Repository[]>;
+  /** Which repositories enable this product (reverse of products) */
+  repositoryForProduct: Map<PlanNode, Repository[]>;
+  /** Which repositories implement this capability (reverse of capabilities) */
+  repositoryForCapability: Map<PlanNode, Repository[]>;
 }
 
 /**
@@ -83,6 +92,10 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const milestoneDependsOn = new Map<PlanNode, Milestone[]>();
   const milestoneForCapability = new Map<PlanNode, Milestone[]>();
   const milestoneForProduct = new Map<PlanNode, Milestone[]>();
+  const repositoryDependedOnBy = new Map<PlanNode, Repository[]>();
+  const repositoryForkedBy = new Map<PlanNode, Repository[]>();
+  const repositoryForProduct = new Map<PlanNode, Repository[]>();
+  const repositoryForCapability = new Map<PlanNode, Repository[]>();
 
   // Initialize empty arrays for all nodes
   for (const node of nodes) {
@@ -105,6 +118,10 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     milestoneDependsOn.set(node, []);
     milestoneForCapability.set(node, []);
     milestoneForProduct.set(node, []);
+    repositoryDependedOnBy.set(node, []);
+    repositoryForkedBy.set(node, []);
+    repositoryForProduct.set(node, []);
+    repositoryForCapability.set(node, []);
   }
 
   // Derive relations
@@ -187,6 +204,21 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
         milestoneForProduct.get(prod)?.push(node);
       }
     }
+
+    if (isRepository(node)) {
+      for (const repo of node.dependsOn) {
+        repositoryDependedOnBy.get(repo)?.push(node);
+      }
+      if (node.upstream) {
+        repositoryForkedBy.get(node.upstream)?.push(node);
+      }
+      for (const prod of node.products) {
+        repositoryForProduct.get(prod)?.push(node);
+      }
+      for (const cap of node.capabilities) {
+        repositoryForCapability.get(cap)?.push(node);
+      }
+    }
   }
 
   return {
@@ -209,5 +241,9 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     milestoneDependsOn,
     milestoneForCapability,
     milestoneForProduct,
+    repositoryDependedOnBy,
+    repositoryForkedBy,
+    repositoryForProduct,
+    repositoryForCapability,
   };
 }

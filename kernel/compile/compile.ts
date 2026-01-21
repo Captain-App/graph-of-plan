@@ -18,8 +18,9 @@ import { deriveRelations } from "./derive-relations.js";
 import { writePages } from "./render-pages.js";
 import { writeSidebar } from "./render-nav.js";
 import { writeTimelinePages } from "./render-timelines.js";
+import { writeStackPages } from "./render-stack.js";
 import type { PlanNode } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone, isRepository } from "../schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
@@ -162,6 +163,21 @@ function generateGraphJson(nodes: PlanNode[]): GraphJson {
         edges.push({ from: node.id, to: prod.id, relation: "advancesProduct" });
       }
     }
+
+    if (isRepository(node)) {
+      for (const repo of node.dependsOn) {
+        edges.push({ from: node.id, to: repo.id, relation: "dependsOnRepo" });
+      }
+      if (node.upstream) {
+        edges.push({ from: node.id, to: node.upstream.id, relation: "forkedFrom" });
+      }
+      for (const prod of node.products) {
+        edges.push({ from: node.id, to: prod.id, relation: "enablesProduct" });
+      }
+      for (const cap of node.capabilities) {
+        edges.push({ from: node.id, to: cap.id, relation: "implementsCapability" });
+      }
+    }
   }
 
   return { nodes: graphNodes, edges };
@@ -204,6 +220,10 @@ async function main() {
   // Step 5.5: Write timeline pages
   const milestones = PLAN.filter(isMilestone);
   writeTimelinePages(milestones);
+
+  // Step 5.6: Write stack pages
+  const repositories = PLAN.filter(isRepository);
+  writeStackPages(repositories);
 
   // Step 6: Write navigation (sidebar)
   writeSidebar(PLAN);

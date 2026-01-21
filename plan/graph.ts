@@ -490,6 +490,134 @@ export const PLAN = defineGraph({
   },
 
   // ==========================================================================
+  // REPOSITORIES - code we maintain, depend on, or fork
+  // ==========================================================================
+  repositories: {
+    // L4: Our Code (owned)
+    "smartbox-core": {
+      title: "SmartBox Core",
+      url: "https://github.com/Captain-App/smartbox-core",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      products: ["smartboxes"],
+      capabilities: ["smartbox"],
+    },
+    "nomos-router": {
+      title: "Nomos Router",
+      url: "https://github.com/Captain-App/nomos-router",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      products: ["nomos-cloud"],
+      capabilities: ["nomos-domain-api"],
+    },
+    "nomos-codegen-repo": {
+      title: "Nomos Codegen",
+      url: "https://github.com/Captain-App/nomos-codegen",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      products: ["nomos-cloud"],
+      capabilities: ["nomos-domain-api"],
+    },
+    "murphy-engine": {
+      title: "Murphy Engine",
+      url: "https://github.com/Captain-App/murphy",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      products: ["murphy"],
+    },
+    "p4gent-app": {
+      title: "P4gent App",
+      url: "https://github.com/Captain-App/p4gent",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      products: ["p4gent"],
+    },
+    "graph-of-plan": {
+      title: "Graph of Plan",
+      url: "https://github.com/Captain-App/graph-of-plan",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "TypeScript",
+      dependsOn: ["astro", "starlight"],
+    },
+
+    // L3: Libraries (dependency)
+    "zod": {
+      title: "Zod",
+      url: "https://github.com/colinhacks/zod",
+      stackLevel: 3,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+    "drizzle-orm": {
+      title: "Drizzle ORM",
+      url: "https://github.com/drizzle-team/drizzle-orm",
+      stackLevel: 3,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+    "date-fns": {
+      title: "date-fns",
+      url: "https://github.com/date-fns/date-fns",
+      stackLevel: 3,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+
+    // L2: Frameworks (dependency)
+    "hono": {
+      title: "Hono",
+      url: "https://github.com/honojs/hono",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+    "astro": {
+      title: "Astro",
+      url: "https://github.com/withastro/astro",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+    "starlight": {
+      title: "Starlight",
+      url: "https://github.com/withastro/starlight",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "TypeScript",
+      dependsOn: ["astro"],
+    },
+    "react": {
+      title: "React",
+      url: "https://github.com/facebook/react",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "JavaScript",
+    },
+
+    // L1: Runtime (dependency)
+    "workerd": {
+      title: "workerd",
+      url: "https://github.com/cloudflare/workerd",
+      stackLevel: 1,
+      repoType: "dependency",
+      language: "C++",
+    },
+    "node": {
+      title: "Node.js",
+      url: "https://github.com/nodejs/node",
+      stackLevel: 1,
+      repoType: "dependency",
+      language: "C++",
+    },
+  },
+
+  // ==========================================================================
   // THESIS - why we exist, justified by capabilities
   // ==========================================================================
   thesis: {

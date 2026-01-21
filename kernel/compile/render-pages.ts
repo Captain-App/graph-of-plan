@@ -5,8 +5,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone } from "../schema.js";
+import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant, Repository, StackLevel, RepoType } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone, isRepository } from "../schema.js";
 import { loadContent } from "./load-content.js";
 import type { DerivedRelations } from "./derive-relations.js";
 
@@ -35,6 +35,26 @@ function formatThreatLevel(level: ThreatLevel): string {
     high: "🔴 High",
   };
   return labels[level];
+}
+
+function formatStackLevel(level: StackLevel): string {
+  const labels: Record<StackLevel, string> = {
+    0: "L0: Cloud",
+    1: "L1: Runtime",
+    2: "L2: Frameworks",
+    3: "L3: Libraries",
+    4: "L4: Our Code",
+  };
+  return labels[level];
+}
+
+function formatRepoType(type: RepoType): string {
+  const labels: Record<RepoType, string> = {
+    owned: "Owned",
+    fork: "Fork",
+    dependency: "Dependency",
+  };
+  return labels[type];
 }
 
 // TL;DR summaries for products
@@ -73,7 +93,12 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     ? `:::note[Threat Level: ${formatThreatLevel(node.threatLevel)}]\n:::\n\n`
     : "";
 
-  const sections: string[] = [frontmatter, tldrSection + riskBadge + competitorBadge + cleanContent];
+  // Add stack info badge for repositories
+  const repoBadge = isRepository(node)
+    ? `:::note[${formatRepoType(node.repoType)} · ${formatStackLevel(node.stackLevel)}]\n${node.url ? `[View on GitHub](${node.url})` : ""}\n:::\n\n`
+    : "";
+
+  const sections: string[] = [frontmatter, tldrSection + riskBadge + competitorBadge + repoBadge + cleanContent];
 
   // Add relation sections based on node type
   if (isThesis(node)) {
@@ -100,6 +125,8 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     sections.push(renderCompetitorRelations(node, relations));
   } else if (isMilestone(node)) {
     sections.push(renderMilestoneRelations(node, relations));
+  } else if (isRepository(node)) {
+    sections.push(renderRepositoryRelations(node, relations));
   }
 
   return sections.filter(Boolean).join("\n\n");
@@ -519,6 +546,67 @@ function renderMilestoneRelations(
   return sections.join("\n");
 }
 
+function renderRepositoryRelations(
+  repo: Repository,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Stack position
+  sections.push(`## Stack Position\n`);
+  sections.push(`**${formatStackLevel(repo.stackLevel)}**\n`);
+  sections.push(`Language: ${repo.language}\n`);
+
+  // Dependencies (other repos)
+  if (repo.dependsOn.length > 0) {
+    const links = repo.dependsOn
+      .map((r) => `- [${r.title}](/repository/${r.id}) (${formatStackLevel(r.stackLevel)})`)
+      .join("\n");
+    sections.push(`## Depends On\n\n${links}`);
+  }
+
+  // Upstream (for forks)
+  if (repo.upstream) {
+    sections.push(`## Upstream\n\n- [${repo.upstream.title}](/repository/${repo.upstream.id})`);
+  }
+
+  // Reverse: what repos depend on this one
+  const dependents = relations.repositoryDependedOnBy.get(repo) ?? [];
+  if (dependents.length > 0) {
+    const links = dependents
+      .map((r) => `- [${r.title}](/repository/${r.id})`)
+      .join("\n");
+    sections.push(`## Used By\n\n${links}`);
+  }
+
+  // Reverse: what forks exist of this
+  const forks = relations.repositoryForkedBy.get(repo) ?? [];
+  if (forks.length > 0) {
+    const links = forks
+      .map((r) => `- [${r.title}](/repository/${r.id})`)
+      .join("\n");
+    sections.push(`## Forks\n\n${links}`);
+  }
+
+  // Products this repo enables
+  if (repo.products.length > 0) {
+    const links = repo.products
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Enables Products\n\n${links}`);
+  }
+
+  // Capabilities this repo implements
+  if (repo.capabilities.length > 0) {
+    const links = repo.capabilities
+      .map((c) => `- [${c.title}](/capability/${c.id})`)
+      .join("\n");
+    sections.push(`## Implements Capabilities\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
 /**
  * Render the index/landing page
  */
@@ -535,6 +623,7 @@ function renderIndexPage(nodes: PlanNode[]): string {
   const customers = nodes.filter(isCustomer);
   const competitors = nodes.filter(isCompetitor);
   const milestones = nodes.filter(isMilestone);
+  const repositories = nodes.filter(isRepository);
 
   const sections: string[] = [
     "---",
@@ -675,6 +764,18 @@ function renderIndexPage(nodes: PlanNode[]): string {
       : 0;
 
     sections.push(`Expected: ${expectedDuration} months · Speed of Light: ${solDuration} months`);
+    sections.push("");
+  }
+
+  // Technology Stack
+  if (repositories.length > 0) {
+    const owned = repositories.filter(r => r.repoType === "owned").length;
+    const forks = repositories.filter(r => r.repoType === "fork").length;
+    const deps = repositories.filter(r => r.repoType === "dependency").length;
+
+    sections.push("## Technology Stack\n");
+    sections.push(`**${repositories.length} repositories** across 5 stack levels.\n`);
+    sections.push(`[View the full stack](/stack) · ${owned} owned · ${forks} forks · ${deps} tracked dependencies`);
     sections.push("");
   }
 

@@ -21,6 +21,7 @@ import {
   Risk,
   Product,
   Milestone,
+  Repository,
   TimelineVariant,
   isThesis,
   isCapability,
@@ -31,6 +32,7 @@ import {
   isCustomer,
   isCompetitor,
   isMilestone,
+  isRepository,
 } from "./schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +88,8 @@ export function validatePlan(nodes: PlanNode[]): ValidationResult {
       validateProduct(node, errors);
     } else if (isMilestone(node)) {
       validateMilestone(node, errors);
+    } else if (isRepository(node)) {
+      validateRepository(node, errors);
     }
   }
 
@@ -170,6 +174,40 @@ function validateMilestone(milestone: Milestone, errors: ValidationError[]): voi
         message: `Milestone timeline "${variant}" has invalid durationMonths (must be >= 0)`,
       });
     }
+  }
+}
+
+function validateRepository(repo: Repository, errors: ValidationError[]): void {
+  // Stack level must be 0-4
+  if (repo.stackLevel < 0 || repo.stackLevel > 4) {
+    errors.push({
+      nodeId: repo.id,
+      message: `Repository stackLevel must be 0-4, got ${repo.stackLevel}`,
+    });
+  }
+
+  // Fork requires upstream
+  if (repo.repoType === "fork" && !repo.upstream) {
+    errors.push({
+      nodeId: repo.id,
+      message: "Fork repository must specify an upstream repository",
+    });
+  }
+
+  // Upstream should only be set for forks
+  if (repo.repoType !== "fork" && repo.upstream) {
+    errors.push({
+      nodeId: repo.id,
+      message: "Only fork repositories should have an upstream (use dependsOn for dependencies)",
+    });
+  }
+
+  // URL validation (basic - must be non-empty for non-owned repos, or start with https://)
+  if (repo.url && !repo.url.startsWith("https://")) {
+    errors.push({
+      nodeId: repo.id,
+      message: "Repository URL must start with https://",
+    });
   }
 }
 

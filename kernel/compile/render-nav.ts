@@ -25,6 +25,7 @@ const KIND_LABELS: Record<NodeKind, string> = {
   product: "Products",
   project: "Customer Projects",
   milestone: "Milestones",
+  repository: "Repositories",
   capability: "Capabilities",
   primitive: "Primitives",
   "supplier-primitive": "Supplier Primitives",
@@ -40,6 +41,7 @@ const KIND_ORDER: NodeKind[] = [
   "product",
   "project",
   "milestone",
+  "repository",
   "capability",
   "primitive",
   "supplier-primitive",
@@ -61,6 +63,12 @@ const STATIC_PAGES: StarlightNavGroup[] = [
       { label: "Expected (36mo)", slug: "timeline/expected" },
       { label: "Aggressive (18mo)", slug: "timeline/aggressive" },
       { label: "Speed of Light (12mo)", slug: "timeline/speed-of-light" },
+    ],
+  },
+  {
+    label: "Technology Stack",
+    items: [
+      { label: "Stack Overview", slug: "stack" },
     ],
   },
   {
