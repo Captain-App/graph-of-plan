@@ -7,72 +7,47 @@ LangSmith is an LLM observability and testing platform from LangChain, providing
 **Company**: LangChain (San Francisco)
 **Founded**: 2022
 **Funding**: $35M+ (Series A, Sequoia)
-**Pricing**: Free tier (limited), Developer at $39/mo, Team at $500/mo, Enterprise custom
+**Pricing**: Free tier, Developer at $39/mo, Team at $500/mo
 
-## What They Do
+## Why They're Not a Direct Competitor
 
-LangSmith is the observability platform for LangChain applications:
-- **Tracing**: Capture every LLM call, chain, and agent step
-- **Debugging**: Replay and inspect failed runs
-- **Evaluation**: Test prompts with datasets and scoring
-- **Monitoring**: Latency, cost, and error rate dashboards
-- **Datasets**: Manage test cases and golden examples
+**LangSmith is for debugging. Nomos is for compliance.**
 
-## Where We Overlap
+| | LangSmith | Nomos Cloud |
+|---|-----------|-------------|
+| **User** | ML engineer | Compliance officer, legal, exec |
+| **Question** | "Why did this fail?" | "Why was this allowed?" |
+| **Data model** | Spans and traces | Decisions and authorizations |
+| **Output** | Technical debugging UI | Human-readable audit trails |
 
-### Nomos Cloud vs. LangSmith
+### The Core Difference
 
-Both provide observability for AI systems. Both capture traces. Both help debug agent behavior.
+LangSmith helps engineers fix broken AI systems. Nomos helps enterprises prove their AI systems followed the rules.
 
-**Shared capabilities**:
-- Trace capture and visualization
-- Run replay and debugging
-- Cost and latency monitoring
+A LangSmith user:
+- Is debugging a failed LLM chain
+- Needs to see which prompt caused the error
+- Wants latency and cost breakdowns
+- Is optimizing model performance
 
-## Our Differentiation
+A Nomos user:
+- Is preparing for a compliance audit
+- Needs to show why an AI made a specific decision
+- Wants tamper-evident records
+- Is proving governance to regulators or executives
 
-### Different Value Prop
+### Complementary, Not Competitive
 
-| Dimension | LangSmith | Nomos Cloud |
-|-----------|-----------|-------------|
-| **Scope** | LLM calls | Decision context |
-| **Data model** | Spans and traces | Intents, directives, events |
-| **Primary use** | Debugging | Compliance audit |
-| **Output** | Technical dashboards | Human-readable stories |
-| **Target** | ML engineers | Compliance + operations |
+Many teams will use both:
+- LangSmith in development and staging (debugging, evaluation)
+- Nomos in production (audit trails, compliance)
 
-### Key Differences
+The pitch: "LangSmith for debugging. Nomos for compliance. You need both."
 
-1. **Debugging vs. Audit**: LangSmith optimizes for "why did this fail?" Nomos optimizes for "why was this allowed?"
+### Framework Lock-In
 
-2. **Technical vs. Compliance**: LangSmith serves ML engineers. Nomos serves compliance officers, legal, and executives.
+LangSmith is tightly coupled to LangChain. Nomos is framework-agnostic—works with LangChain, AutoGPT, CrewAI, or custom agents.
 
-3. **Spans vs. Decision Graph**: LangSmith captures function calls. Nomos captures business decisions with authorization context.
+## Threat Level: Low
 
-4. **Stories**: Nomos renders human-readable narratives. LangSmith shows technical traces.
-
-5. **Framework agnostic**: Nomos works with any agent framework. LangSmith is optimized for LangChain.
-
-## Their Advantages
-
-- **LangChain ecosystem**: Tight integration with the most popular LLM framework
-- **Developer adoption**: Large existing user base
-- **Feature maturity**: More evaluation and testing features
-- **Community**: Active community and documentation
-- **Price**: Free tier is generous for development
-
-## Positioning
-
-LangSmith is the best debugging tool for LangChain applications. Nomos Cloud is for when you need audit trails that satisfy compliance and legal.
-
-**Our pitch to LangSmith users**: "LangSmith for debugging. Nomos for compliance. You may need both."
-
-**Our pitch to enterprises**: "LangSmith tells engineers what happened. Nomos tells compliance why it was allowed."
-
-## Coexistence Strategy
-
-These products can coexist:
-- LangSmith for development and debugging
-- Nomos Cloud for production audit and compliance
-
-Position as complementary, not competitive, where possible.
+LangSmith could add compliance features, but it's not their focus. They're optimizing for developers building with LangChain, not enterprises proving compliance.

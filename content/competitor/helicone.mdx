@@ -7,72 +7,49 @@ Helicone is an open-source LLM observability platform providing request logging,
 **Company**: Helicone (San Francisco)
 **Founded**: 2023
 **Funding**: $6.5M (Seed, Y Combinator)
-**Pricing**: Free tier (generous), Pro at $20/mo, Team at $150/mo, Enterprise custom
+**Pricing**: Free tier (generous), Pro at $20/mo, Team at $150/mo
 
-## What They Do
+## Why They're Not a Direct Competitor
 
-Helicone provides LLM observability through a proxy:
-- **Request logging**: Capture all LLM API calls
-- **Cost tracking**: Monitor spend by model, user, feature
-- **Caching**: Reduce costs with intelligent response caching
-- **Rate limiting**: Control usage at the application level
-- **Prompt management**: Version and test prompts
+**Helicone tracks API calls. Nomos tracks business decisions.**
 
-## Where We Overlap
+| | Helicone | Nomos Cloud |
+|---|----------|-------------|
+| **Focus** | Cost optimization | Compliance audit |
+| **Data captured** | LLM API requests | Business decisions with context |
+| **Integration** | Proxy between app and LLM | SDK instrumentation |
+| **Buyer** | Cost-conscious developer | Compliance-conscious enterprise |
 
-### Nomos Cloud vs. Helicone
+### The Core Difference
 
-Both capture AI system behavior. Both provide dashboards and analytics. Both care about cost visibility.
+Helicone helps developers reduce LLM API costs. Nomos helps enterprises prove AI decisions were authorized.
 
-**Shared concerns**:
-- What is the AI doing?
-- How much is it costing?
-- How do we debug issues?
+A Helicone user:
+- Wants to cache repeated LLM calls
+- Needs to see spend by model/feature
+- Is optimizing API costs
+- Cares about latency monitoring
 
-## Our Differentiation
+A Nomos user:
+- Needs audit trails for regulators
+- Wants to explain AI decisions to legal
+- Requires tamper-evident records
+- Is preparing for SOC 2 or HIPAA audit
 
-### Different Value Prop
+### Different Problems, Different Buyers
 
-| Dimension | Helicone | Nomos Cloud |
-|-----------|----------|-------------|
-| **Architecture** | Proxy layer | Event-sourced ledger |
-| **Data captured** | LLM requests | Decision context |
-| **Primary value** | Cost control | Compliance audit |
-| **Output** | Dashboards | Chains of truth |
-| **Open source** | Yes (core) | SDK only |
+Helicone is sold to developers worried about their OpenAI bill. Nomos is sold to compliance teams worried about their audit.
 
-### Key Differences
+The overlap is "observability for AI"—but that's like saying a car and a bicycle overlap because they're both "transportation."
 
-1. **Proxy vs. Instrumentation**: Helicone is a proxy between your app and LLM. Nomos is instrumentation you add to capture decisions.
+### Use Both
 
-2. **Requests vs. Decisions**: Helicone logs API calls. Nomos logs business decisions with authorization context.
+A mature AI team might use:
+- Helicone for cost control (caching, rate limiting, spend alerts)
+- Nomos for compliance (decision trails, authorization context, audit exports)
 
-3. **Cost focus**: Helicone heavily emphasizes cost optimization (caching, rate limiting). Nomos emphasizes auditability.
+No conflict. Different problems.
 
-4. **Open source model**: Helicone's core is open source. Nomos SDK is open source, but the compliance features are cloud-only.
+## Threat Level: Low
 
-5. **Enterprise compliance**: Nomos has SOC 2, HIPAA, tamper-evident chains. Helicone is developer-focused.
-
-## Their Advantages
-
-- **Open source**: Self-host option for cost-conscious teams
-- **Simple integration**: Just change your API endpoint
-- **Cost savings**: Caching can meaningfully reduce LLM costs
-- **Price**: Free tier is very generous
-- **Developer experience**: Streamlined setup and dashboards
-
-## Positioning
-
-Helicone is the best way to monitor and reduce LLM API costs. Nomos Cloud is for when you need decision audit trails that satisfy compliance.
-
-**Our pitch to Helicone users**: "Helicone for cost control. Nomos for compliance. Use both."
-
-**Our pitch to enterprises**: "Helicone tracks API calls. Nomos tracks decisions—who requested, what approved, why allowed."
-
-## Market Differentiation
-
-Different buyer profiles:
-- Helicone: Cost-conscious developers, early-stage startups
-- Nomos Cloud: Compliance-conscious enterprises, regulated industries
-
-Little direct competition—serve different needs.
+Helicone is focused on cost optimization and developer experience. They're not building enterprise compliance features. Different product direction.
