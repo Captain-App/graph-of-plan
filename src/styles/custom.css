@@ -1,0 +1,81 @@
+/* Custom styles for Graph of Plan */
+
+/* Accent color - purple/indigo to match favicon */
+:root {
+  --sl-color-accent-low: #4338ca;
+  --sl-color-accent: #6366f1;
+  --sl-color-accent-high: #a5b4fc;
+}
+
+/* Dark mode accent adjustments */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #312e81;
+  --sl-color-accent: #818cf8;
+  --sl-color-accent-high: #c7d2fe;
+}
+
+/* Better link styling in content */
+.sl-markdown-content a:not([class]) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.sl-markdown-content a:not([class]):hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Nicer tables */
+.sl-markdown-content table {
+  font-size: 0.9em;
+}
+
+.sl-markdown-content th {
+  background: var(--sl-color-gray-6);
+}
+
+:root[data-theme='dark'] .sl-markdown-content th {
+  background: var(--sl-color-gray-5);
+}
+
+/* Code block improvements */
+.sl-markdown-content pre {
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+/* Callout/admonition styling */
+.starlight-aside {
+  border-radius: 8px;
+}
+
+/* Homepage specific - make the stats stand out */
+.sl-markdown-content > .starlight-aside:first-of-type {
+  background: linear-gradient(135deg, var(--sl-color-accent-low) 0%, var(--sl-color-purple-low) 100%);
+  border-color: var(--sl-color-accent);
+}
+
+/* Better spacing for h3 product headings */
+.sl-markdown-content h3 a {
+  font-weight: 600;
+}
+
+/* ASCII diagram styling */
+.sl-markdown-content pre code {
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+
+/* Print styles for investor decks */
+@media print {
+  .sidebar, .right-sidebar, header {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .sl-markdown-content {
+    font-size: 11pt;
+  }
+}

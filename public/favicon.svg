@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Graph nodes -->
+  <circle cx="16" cy="8" r="4" fill="url(#grad)"/>
+  <circle cx="8" cy="20" r="4" fill="url(#grad)"/>
+  <circle cx="24" cy="20" r="4" fill="url(#grad)"/>
+  <circle cx="16" cy="28" r="3" fill="url(#grad)" opacity="0.7"/>
+  <!-- Edges -->
+  <line x1="16" y1="12" x2="10" y2="17" stroke="url(#grad)" stroke-width="2" opacity="0.6"/>
+  <line x1="16" y1="12" x2="22" y2="17" stroke="url(#grad)" stroke-width="2" opacity="0.6"/>
+  <line x1="10" y1="23" x2="14" y2="26" stroke="url(#grad)" stroke-width="1.5" opacity="0.5"/>
+  <line x1="22" y1="23" x2="18" y2="26" stroke="url(#grad)" stroke-width="1.5" opacity="0.5"/>
+</svg>

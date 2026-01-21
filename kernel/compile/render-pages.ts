@@ -17,9 +17,17 @@ const SITE_DOCS = resolve(ROOT, "src/content/docs");
 /**
  * Render a single node to an MDX page
  */
+// TL;DR summaries for products
+const PRODUCT_TLDRS: Record<string, string> = {
+  "murphy": "**What**: Delivery prediction for project teams · **Who**: Agencies, R&D teams · **Price**: £299-2,500/mo · **Year 1**: £19K MRR",
+  "smartboxes": "**What**: Persistent AI agent sandboxes · **Who**: Non-devs, SMBs, creators · **Price**: PAYG ~£37/mo avg · **Year 1**: £17K MRR",
+  "nomos-cloud": "**What**: Audit trails for AI agents · **Who**: Enterprise AI teams · **Price**: Usage-based + £25K enterprise · **Year 1**: £62K MRR",
+  "p4gent": "**What**: AI purchasing assistant · **Who**: Solopreneurs, freelancers · **Price**: £9-79/mo · **Year 1**: £3K MRR",
+};
+
 export function renderPage(node: PlanNode, relations: DerivedRelations): string {
   const content = loadContent(node);
-  
+
   // Strip the first H1 if it exists, as Starlight uses frontmatter title
   const cleanContent = content.replace(/^# .*\n?/, "").trim();
 
@@ -31,7 +39,11 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     "",
   ].join("\n");
 
-  const sections: string[] = [frontmatter, cleanContent];
+  // Add TL;DR for products
+  const tldr = isProduct(node) ? PRODUCT_TLDRS[node.id] : null;
+  const tldrSection = tldr ? `:::note[TL;DR]\n${tldr}\n:::\n\n` : "";
+
+  const sections: string[] = [frontmatter, tldrSection + cleanContent];
 
   // Add relation sections based on node type
   if (isThesis(node)) {
@@ -427,6 +439,14 @@ function renderIndexPage(nodes: PlanNode[]): string {
     "Most business plans are documents. This one is a graph.",
     "",
     "Every product traces down to the capabilities that enable it. Every capability traces down to the primitives that make it possible. Every primitive traces to the suppliers who provide it. Click any node. Follow the links. See how it all connects.",
+    "",
+    ":::note[At a Glance]",
+    "**4 products** · **£14M niche** · **£100K MRR Year 1 target** · **6 suppliers** · **8 competitors mapped**",
+    ":::",
+    "",
+    ":::tip[For Investors]",
+    "Start here: [Team](/team) · [Market Sizing](/thesis/agent-native-platform#market-opportunity) · [GTM Strategy](/strategy/gtm-sequence) · [Competitors](/competitor/cursor)",
+    ":::",
     "",
   ];
 
