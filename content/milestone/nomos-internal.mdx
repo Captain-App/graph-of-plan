@@ -1,0 +1,25 @@
+# Nomos Internal Use
+
+Using Nomos Cloud internally to power Murphy and SmartBoxes audit trails.
+
+## Scope
+
+- Domain definitions for internal services
+- Event sourcing infrastructure
+- API generation (OpenAPI, MCP)
+- Basic audit trail queries
+
+## Success Criteria
+
+- Murphy uses Nomos for decision logging
+- SmartBoxes uses Nomos for action tracking
+- Query latency < 100ms for recent events
+- Storage costs within budget
+
+## Why Internal First
+
+Eating our own dogfood:
+- Real production traffic
+- Find edge cases before customers do
+- Prove the value proposition
+- Build compelling demos

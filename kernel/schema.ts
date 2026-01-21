@@ -18,7 +18,8 @@ export type NodeKind =
   | "project"
   | "supplier"
   | "customer"
-  | "competitor";
+  | "competitor"
+  | "milestone";
 
 export abstract class PlanNode {
   readonly id: string;
@@ -89,11 +90,14 @@ export class Tooling extends PlanNode {
   }
 }
 
+export type RiskStatus = "active" | "mitigated" | "accepted";
+
 export class Risk extends PlanNode {
   constructor(
     id: string,
     title: string,
-    public readonly mitigatedBy: Primitive[]
+    public readonly mitigatedBy: Primitive[],
+    public readonly status: RiskStatus = "active"
   ) {
     super("risk", id, title);
   }
@@ -144,12 +148,51 @@ export class Customer extends PlanNode {
   }
 }
 
+export type ThreatLevel = "none" | "low" | "medium" | "high";
+
 /**
  * Competing product or company
  */
 export class Competitor extends PlanNode {
-  constructor(id: string, title: string) {
+  constructor(
+    id: string,
+    title: string,
+    public readonly threatLevel: ThreatLevel = "low"
+  ) {
     super("competitor", id, title);
+  }
+}
+
+/**
+ * Timeline variant types for milestones
+ */
+export type TimelineVariant = "expected" | "aggressive" | "speedOfLight";
+
+export interface TimelineConfig {
+  startMonth: number;
+  durationMonths: number;
+  included: boolean;
+}
+
+/**
+ * A milestone in the execution timeline
+ */
+export class Milestone extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly expectedRevenue: number,
+    public readonly expectedCosts: number,
+    public readonly dependsOnMilestones: Milestone[],
+    public readonly dependsOnCapabilities: Capability[],
+    public readonly products: Product[],
+    public readonly timelines: {
+      expected: TimelineConfig;
+      aggressive: TimelineConfig;
+      speedOfLight: TimelineConfig;
+    }
+  ) {
+    super("milestone", id, title);
   }
 }
 
@@ -198,4 +241,8 @@ export function isCustomer(node: PlanNode): node is Customer {
 
 export function isCompetitor(node: PlanNode): node is Competitor {
   return node.kind === "competitor";
+}
+
+export function isMilestone(node: PlanNode): node is Milestone {
+  return node.kind === "milestone";
 }

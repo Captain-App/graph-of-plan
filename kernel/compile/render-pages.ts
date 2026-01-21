@@ -5,8 +5,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor } from "../schema.js";
+import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone } from "../schema.js";
 import { loadContent } from "./load-content.js";
 import type { DerivedRelations } from "./derive-relations.js";
 
@@ -17,6 +17,26 @@ const SITE_DOCS = resolve(ROOT, "src/content/docs");
 /**
  * Render a single node to an MDX page
  */
+// Status formatting helpers
+function formatRiskStatus(status: RiskStatus): string {
+  const labels: Record<RiskStatus, string> = {
+    active: "🔴 Active",
+    mitigated: "🟢 Mitigated",
+    accepted: "🟡 Accepted",
+  };
+  return labels[status];
+}
+
+function formatThreatLevel(level: ThreatLevel): string {
+  const labels: Record<ThreatLevel, string> = {
+    none: "⚪ None",
+    low: "🟢 Low",
+    medium: "🟡 Medium",
+    high: "🔴 High",
+  };
+  return labels[level];
+}
+
 // TL;DR summaries for products
 const PRODUCT_TLDRS: Record<string, string> = {
   "murphy": "**What**: Delivery prediction for project teams · **Who**: Agencies, R&D teams · **Price**: £299-2,500/mo · **Year 1**: £19K MRR",
@@ -43,7 +63,17 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
   const tldr = isProduct(node) ? PRODUCT_TLDRS[node.id] : null;
   const tldrSection = tldr ? `:::note[TL;DR]\n${tldr}\n:::\n\n` : "";
 
-  const sections: string[] = [frontmatter, tldrSection + cleanContent];
+  // Add status badge for risks
+  const riskBadge = isRisk(node)
+    ? `:::note[Status: ${formatRiskStatus(node.status)}]\n:::\n\n`
+    : "";
+
+  // Add threat level badge for competitors
+  const competitorBadge = isCompetitor(node)
+    ? `:::note[Threat Level: ${formatThreatLevel(node.threatLevel)}]\n:::\n\n`
+    : "";
+
+  const sections: string[] = [frontmatter, tldrSection + riskBadge + competitorBadge + cleanContent];
 
   // Add relation sections based on node type
   if (isThesis(node)) {
@@ -68,6 +98,8 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     sections.push(renderCustomerRelations(node, relations));
   } else if (isCompetitor(node)) {
     sections.push(renderCompetitorRelations(node, relations));
+  } else if (isMilestone(node)) {
+    sections.push(renderMilestoneRelations(node, relations));
   }
 
   return sections.filter(Boolean).join("\n\n");
@@ -414,6 +446,79 @@ function renderCompetitorRelations(
   return sections.join("\n\n");
 }
 
+function formatTimelineVariant(variant: TimelineVariant): string {
+  const names: Record<TimelineVariant, string> = {
+    expected: "Expected",
+    aggressive: "Aggressive",
+    speedOfLight: "Speed of Light",
+  };
+  return names[variant];
+}
+
+function renderMilestoneRelations(
+  milestone: Milestone,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Financial summary
+  const netContribution = milestone.expectedRevenue - milestone.expectedCosts;
+  sections.push(`## Financials\n`);
+  sections.push(`| Metric | Value |`);
+  sections.push(`|--------|-------|`);
+  sections.push(`| Expected Revenue | £${milestone.expectedRevenue.toLocaleString()}/mo |`);
+  sections.push(`| Expected Costs | £${milestone.expectedCosts.toLocaleString()}/mo |`);
+  sections.push(`| Net Contribution | £${netContribution.toLocaleString()}/mo |`);
+
+  // Timeline comparison
+  sections.push(`\n## Timeline Variants\n`);
+  sections.push(`| Variant | Start | Duration | End | Status |`);
+  sections.push(`|---------|-------|----------|-----|--------|`);
+
+  const variants: TimelineVariant[] = ["expected", "aggressive", "speedOfLight"];
+  for (const variant of variants) {
+    const config = milestone.timelines[variant];
+    const endMonth = config.startMonth + config.durationMonths;
+    const status = config.included ? "✅ Included" : "⏭️ Skipped";
+    sections.push(`| ${formatTimelineVariant(variant)} | M${config.startMonth} | ${config.durationMonths}mo | M${endMonth} | ${status} |`);
+  }
+
+  // Products this milestone advances
+  if (milestone.products.length > 0) {
+    const links = milestone.products
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`\n## Advances Products\n\n${links}`);
+  }
+
+  // Dependencies (milestones)
+  if (milestone.dependsOnMilestones.length > 0) {
+    const links = milestone.dependsOnMilestones
+      .map((m) => `- [${m.title}](/milestone/${m.id})`)
+      .join("\n");
+    sections.push(`## Depends On (Milestones)\n\n${links}`);
+  }
+
+  // Dependencies (capabilities)
+  if (milestone.dependsOnCapabilities.length > 0) {
+    const links = milestone.dependsOnCapabilities
+      .map((c) => `- [${c.title}](/capability/${c.id})`)
+      .join("\n");
+    sections.push(`## Requires Capabilities\n\n${links}`);
+  }
+
+  // Reverse: what milestones depend on this one
+  const dependents = relations.milestoneDependsOn.get(milestone) ?? [];
+  if (dependents.length > 0) {
+    const links = dependents
+      .map((m) => `- [${m.title}](/milestone/${m.id})`)
+      .join("\n");
+    sections.push(`## Enables (Milestones)\n\n${links}`);
+  }
+
+  return sections.join("\n");
+}
+
 /**
  * Render the index/landing page
  */
@@ -429,6 +534,7 @@ function renderIndexPage(nodes: PlanNode[]): string {
   const suppliers = nodes.filter(isSupplier);
   const customers = nodes.filter(isCustomer);
   const competitors = nodes.filter(isCompetitor);
+  const milestones = nodes.filter(isMilestone);
 
   const sections: string[] = [
     "---",
@@ -551,7 +657,28 @@ function renderIndexPage(nodes: PlanNode[]): string {
   if (risks.length > 0) {
     sections.push("## Risks\n");
     sections.push("What could go wrong, and how we mitigate it.\n");
-    sections.push(risks.map((r) => `- [${r.title}](/risk/${r.id})`).join("\n"));
+    sections.push(risks.map((r) => `- [${r.title}](/risk/${r.id}) — ${formatRiskStatus(r.status)}`).join("\n"));
+    sections.push("");
+  }
+
+  // Timelines
+  if (milestones.length > 0) {
+    sections.push("## Timelines\n");
+    sections.push("Three execution timelines: [Expected](/timeline/expected), [Aggressive](/timeline/aggressive), [Speed of Light](/timeline/speed-of-light).\n");
+    sections.push(`**${milestones.length} milestones** tracked across all variants.\n`);
+
+    // Calculate durations
+    const expectedMilestones = milestones.filter(m => m.timelines.expected.included);
+    const solMilestones = milestones.filter(m => m.timelines.speedOfLight.included);
+
+    const expectedDuration = expectedMilestones.length > 0
+      ? Math.max(...expectedMilestones.map(m => m.timelines.expected.startMonth + m.timelines.expected.durationMonths))
+      : 0;
+    const solDuration = solMilestones.length > 0
+      ? Math.max(...solMilestones.map(m => m.timelines.speedOfLight.startMonth + m.timelines.speedOfLight.durationMonths))
+      : 0;
+
+    sections.push(`Expected: ${expectedDuration} months · Speed of Light: ${solDuration} months`);
     sections.push("");
   }
 

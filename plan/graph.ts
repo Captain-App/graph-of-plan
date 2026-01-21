@@ -148,21 +148,21 @@ export const PLAN = defineGraph({
   },
 
   // ==========================================================================
-  // COMPETITORS - competing products
+  // COMPETITORS - competing products with threat levels
   // ==========================================================================
   competitors: {
     // SmartBoxes competitors
-    "cursor": "Cursor",
-    "replit": "Replit Agent",
+    "cursor": { title: "Cursor", threatLevel: "low" },
+    "replit": { title: "Replit Agent", threatLevel: "medium" },
     // Murphy competitors
-    "linear": "Linear",
-    "forecast-app": "Forecast.app",
+    "linear": { title: "Linear", threatLevel: "low" },
+    "forecast-app": { title: "Forecast.app", threatLevel: "medium" },
     // P4gent competitors
-    "ramp": "Ramp",
-    "brex": "Brex",
+    "ramp": { title: "Ramp", threatLevel: "none" },
+    "brex": { title: "Brex", threatLevel: "none" },
     // Nomos Cloud competitors
-    "langsmith": "LangSmith",
-    "helicone": "Helicone",
+    "langsmith": { title: "LangSmith", threatLevel: "low" },
+    "helicone": { title: "Helicone", threatLevel: "low" },
   },
 
   // ==========================================================================
@@ -172,30 +172,37 @@ export const PLAN = defineGraph({
     "autonomy-blast-radius": {
       title: "Autonomy increases blast radius",
       mitigatedBy: ["capability-scoped-exec"],
+      status: "mitigated",
     },
     "model-degradation": {
       title: "Model degradation",
       mitigatedBy: ["snapshot-materialisation"], // Abstraction layer helps swap models
+      status: "mitigated", // Switching AI providers is cheap
     },
     "regulatory-ai-autonomy": {
       title: "Regulatory: AI autonomy rules tightening",
       mitigatedBy: ["capability-scoped-exec"], // Configurable autonomy levels
+      status: "mitigated",
     },
     "competitive-big-tech": {
       title: "Competitive: Big tech enters agent infrastructure",
       mitigatedBy: [], // Business strategy risk - no technical mitigation
+      status: "accepted",
     },
     "execution-team-capacity": {
       title: "Execution: One team, many products",
       mitigatedBy: [], // Operational risk - no technical mitigation
+      status: "active",
     },
     "supplier-concentration": {
       title: "Supplier concentration: Cloudflare/Anthropic dependency",
       mitigatedBy: [], // Supplier risk - no technical mitigation
+      status: "accepted",
     },
     "market-timing": {
       title: "Market timing: Is the market ready for agent-native?",
       mitigatedBy: [], // Market risk - no technical mitigation
+      status: "active",
     },
   },
 
@@ -287,6 +294,198 @@ export const PLAN = defineGraph({
       title: "CO2 Target Asset Tracking",
       enabledBy: ["nomos-domain-api"],
       tooling: ["nomos-codegen"],
+    },
+  },
+
+  // ==========================================================================
+  // MILESTONES - execution timeline with financial projections
+  // ==========================================================================
+  milestones: {
+    // SmartBoxes milestones
+    "smartbox-mvp": {
+      title: "SmartBox MVP",
+      expectedRevenue: 0,
+      expectedCosts: 2000,
+      dependsOnMilestones: [],
+      dependsOnCapabilities: ["smartbox"],
+      products: ["smartboxes"],
+      timelines: {
+        expected: { startMonth: 0, durationMonths: 4, included: true },
+        aggressive: { startMonth: 0, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 0, durationMonths: 1, included: true },
+      },
+    },
+    "smartbox-beta": {
+      title: "SmartBox Public Beta",
+      expectedRevenue: 5000,
+      expectedCosts: 3000,
+      dependsOnMilestones: ["smartbox-mvp"],
+      dependsOnCapabilities: [],
+      products: ["smartboxes"],
+      timelines: {
+        expected: { startMonth: 4, durationMonths: 4, included: true },
+        aggressive: { startMonth: 2, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 1, durationMonths: 2, included: true },
+      },
+    },
+    "smartbox-revenue": {
+      title: "SmartBox First Revenue",
+      expectedRevenue: 17000,
+      expectedCosts: 4000,
+      dependsOnMilestones: ["smartbox-beta"],
+      dependsOnCapabilities: [],
+      products: ["smartboxes"],
+      timelines: {
+        expected: { startMonth: 8, durationMonths: 4, included: true },
+        aggressive: { startMonth: 4, durationMonths: 3, included: true },
+        speedOfLight: { startMonth: 3, durationMonths: 2, included: true },
+      },
+    },
+    // Murphy milestones
+    "murphy-alpha": {
+      title: "Murphy Design Partners",
+      expectedRevenue: 0,
+      expectedCosts: 1000,
+      dependsOnMilestones: ["smartbox-mvp"],
+      dependsOnCapabilities: ["smartbox", "nomos-domain-api"],
+      products: ["murphy"],
+      timelines: {
+        expected: { startMonth: 4, durationMonths: 3, included: true },
+        aggressive: { startMonth: 2, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 1, durationMonths: 1, included: true },
+      },
+    },
+    "murphy-beta": {
+      title: "Murphy Public Beta",
+      expectedRevenue: 5000,
+      expectedCosts: 2000,
+      dependsOnMilestones: ["murphy-alpha"],
+      dependsOnCapabilities: [],
+      products: ["murphy"],
+      timelines: {
+        expected: { startMonth: 7, durationMonths: 4, included: true },
+        aggressive: { startMonth: 4, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 2, durationMonths: 2, included: true },
+      },
+    },
+    "murphy-revenue": {
+      title: "Murphy First Revenue",
+      expectedRevenue: 19000,
+      expectedCosts: 3000,
+      dependsOnMilestones: ["murphy-beta"],
+      dependsOnCapabilities: [],
+      products: ["murphy"],
+      timelines: {
+        expected: { startMonth: 11, durationMonths: 5, included: true },
+        aggressive: { startMonth: 6, durationMonths: 3, included: true },
+        speedOfLight: { startMonth: 4, durationMonths: 2, included: true },
+      },
+    },
+    "murphy-enterprise": {
+      title: "Murphy Enterprise",
+      expectedRevenue: 35000,
+      expectedCosts: 5000,
+      dependsOnMilestones: ["murphy-revenue"],
+      dependsOnCapabilities: [],
+      products: ["murphy"],
+      timelines: {
+        expected: { startMonth: 16, durationMonths: 8, included: true },
+        aggressive: { startMonth: 9, durationMonths: 5, included: true },
+        speedOfLight: { startMonth: 0, durationMonths: 0, included: false }, // Skipped
+      },
+    },
+    // Nomos Cloud milestones
+    "nomos-internal": {
+      title: "Nomos Internal Use",
+      expectedRevenue: 0,
+      expectedCosts: 2000,
+      dependsOnMilestones: ["smartbox-mvp"],
+      dependsOnCapabilities: ["nomos-domain-api"],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 4, durationMonths: 4, included: true },
+        aggressive: { startMonth: 2, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 1, durationMonths: 2, included: true },
+      },
+    },
+    "nomos-beta": {
+      title: "Nomos Public Beta",
+      expectedRevenue: 15000,
+      expectedCosts: 4000,
+      dependsOnMilestones: ["nomos-internal"],
+      dependsOnCapabilities: [],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 8, durationMonths: 5, included: true },
+        aggressive: { startMonth: 4, durationMonths: 3, included: true },
+        speedOfLight: { startMonth: 3, durationMonths: 2, included: true },
+      },
+    },
+    "nomos-revenue": {
+      title: "Nomos First Revenue",
+      expectedRevenue: 62000,
+      expectedCosts: 6000,
+      dependsOnMilestones: ["nomos-beta"],
+      dependsOnCapabilities: [],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 13, durationMonths: 6, included: true },
+        aggressive: { startMonth: 7, durationMonths: 4, included: true },
+        speedOfLight: { startMonth: 5, durationMonths: 3, included: true },
+      },
+    },
+    "nomos-enterprise": {
+      title: "Nomos Enterprise Contract",
+      expectedRevenue: 100000,
+      expectedCosts: 10000,
+      dependsOnMilestones: ["nomos-revenue"],
+      dependsOnCapabilities: [],
+      products: ["nomos-cloud"],
+      timelines: {
+        expected: { startMonth: 19, durationMonths: 10, included: true },
+        aggressive: { startMonth: 11, durationMonths: 6, included: true },
+        speedOfLight: { startMonth: 0, durationMonths: 0, included: false }, // Skipped
+      },
+    },
+    // P4gent milestones
+    "p4gent-mvp": {
+      title: "P4gent MVP",
+      expectedRevenue: 0,
+      expectedCosts: 1000,
+      dependsOnMilestones: ["smartbox-mvp"],
+      dependsOnCapabilities: ["smartbox"],
+      products: ["p4gent"],
+      timelines: {
+        expected: { startMonth: 6, durationMonths: 4, included: true },
+        aggressive: { startMonth: 3, durationMonths: 2, included: true },
+        speedOfLight: { startMonth: 2, durationMonths: 2, included: true },
+      },
+    },
+    "p4gent-launch": {
+      title: "P4gent Public Launch",
+      expectedRevenue: 1000,
+      expectedCosts: 1000,
+      dependsOnMilestones: ["p4gent-mvp"],
+      dependsOnCapabilities: [],
+      products: ["p4gent"],
+      timelines: {
+        expected: { startMonth: 10, durationMonths: 4, included: true },
+        aggressive: { startMonth: 5, durationMonths: 3, included: true },
+        speedOfLight: { startMonth: 4, durationMonths: 2, included: true },
+      },
+    },
+    "p4gent-revenue": {
+      title: "P4gent Revenue Milestone",
+      expectedRevenue: 3000,
+      expectedCosts: 1000,
+      dependsOnMilestones: ["p4gent-launch"],
+      dependsOnCapabilities: [],
+      products: ["p4gent"],
+      timelines: {
+        expected: { startMonth: 14, durationMonths: 6, included: true },
+        aggressive: { startMonth: 8, durationMonths: 4, included: true },
+        speedOfLight: { startMonth: 0, durationMonths: 0, included: false }, // Skipped
+      },
     },
   },
 

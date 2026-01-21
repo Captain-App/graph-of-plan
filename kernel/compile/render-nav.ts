@@ -24,6 +24,7 @@ const KIND_LABELS: Record<NodeKind, string> = {
   thesis: "Thesis",
   product: "Products",
   project: "Customer Projects",
+  milestone: "Milestones",
   capability: "Capabilities",
   primitive: "Primitives",
   "supplier-primitive": "Supplier Primitives",
@@ -38,6 +39,7 @@ const KIND_ORDER: NodeKind[] = [
   "thesis",
   "product",
   "project",
+  "milestone",
   "capability",
   "primitive",
   "supplier-primitive",
@@ -52,6 +54,15 @@ const KIND_ORDER: NodeKind[] = [
  * Static pages that aren't part of the graph but should appear in navigation
  */
 const STATIC_PAGES: StarlightNavGroup[] = [
+  {
+    label: "Timelines",
+    items: [
+      { label: "Overview", slug: "timeline" },
+      { label: "Expected (36mo)", slug: "timeline/expected" },
+      { label: "Aggressive (18mo)", slug: "timeline/aggressive" },
+      { label: "Speed of Light (12mo)", slug: "timeline/speed-of-light" },
+    ],
+  },
   {
     label: "Team & Strategy",
     items: [

@@ -15,8 +15,9 @@ import type {
   Supplier,
   Customer,
   Competitor,
+  Milestone,
 } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone } from "../schema.js";
 
 export interface DerivedRelations {
   /** Which nodes justify this node (reverse of justifiedBy) */
@@ -51,6 +52,12 @@ export interface DerivedRelations {
   targetedBy: Map<PlanNode, Product[]>;
   /** Which products compete with this competitor (reverse of competitors) */
   competedBy: Map<PlanNode, Product[]>;
+  /** Which milestones depend on this milestone (reverse of dependsOnMilestones) */
+  milestoneDependsOn: Map<PlanNode, Milestone[]>;
+  /** Which milestones depend on this capability (reverse of dependsOnCapabilities) */
+  milestoneForCapability: Map<PlanNode, Milestone[]>;
+  /** Which milestones advance this product (reverse of products) */
+  milestoneForProduct: Map<PlanNode, Milestone[]>;
 }
 
 /**
@@ -73,6 +80,9 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const providesSupplierPrimitives = new Map<PlanNode, SupplierPrimitive[]>();
   const targetedBy = new Map<PlanNode, Product[]>();
   const competedBy = new Map<PlanNode, Product[]>();
+  const milestoneDependsOn = new Map<PlanNode, Milestone[]>();
+  const milestoneForCapability = new Map<PlanNode, Milestone[]>();
+  const milestoneForProduct = new Map<PlanNode, Milestone[]>();
 
   // Initialize empty arrays for all nodes
   for (const node of nodes) {
@@ -92,6 +102,9 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     providesSupplierPrimitives.set(node, []);
     targetedBy.set(node, []);
     competedBy.set(node, []);
+    milestoneDependsOn.set(node, []);
+    milestoneForCapability.set(node, []);
+    milestoneForProduct.set(node, []);
   }
 
   // Derive relations
@@ -162,6 +175,18 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
         toolingUsedByProjects.get(tool)?.push(node);
       }
     }
+
+    if (isMilestone(node)) {
+      for (const ms of node.dependsOnMilestones) {
+        milestoneDependsOn.get(ms)?.push(node);
+      }
+      for (const cap of node.dependsOnCapabilities) {
+        milestoneForCapability.get(cap)?.push(node);
+      }
+      for (const prod of node.products) {
+        milestoneForProduct.get(prod)?.push(node);
+      }
+    }
   }
 
   return {
@@ -181,5 +206,8 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     providesSupplierPrimitives,
     targetedBy,
     competedBy,
+    milestoneDependsOn,
+    milestoneForCapability,
+    milestoneForProduct,
   };
 }

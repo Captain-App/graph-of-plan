@@ -20,6 +20,8 @@ import {
   Capability,
   Risk,
   Product,
+  Milestone,
+  TimelineVariant,
   isThesis,
   isCapability,
   isRisk,
@@ -28,6 +30,7 @@ import {
   isSupplierPrimitive,
   isCustomer,
   isCompetitor,
+  isMilestone,
 } from "./schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -81,7 +84,15 @@ export function validatePlan(nodes: PlanNode[]): ValidationResult {
       validateRisk(node, errors);
     } else if (isProduct(node)) {
       validateProduct(node, errors);
+    } else if (isMilestone(node)) {
+      validateMilestone(node, errors);
     }
+  }
+
+  // Cross-milestone timeline validation
+  const milestones = nodes.filter(isMilestone);
+  if (milestones.length > 0) {
+    validateTimelines(milestones, errors);
   }
 
   return {
@@ -124,5 +135,99 @@ function validateProduct(product: Product, errors: ValidationError[]): void {
       nodeId: product.id,
       message: "Product must be enabled by at least one capability",
     });
+  }
+}
+
+function validateMilestone(milestone: Milestone, errors: ValidationError[]): void {
+  // Revenue and costs must be non-negative
+  if (milestone.expectedRevenue < 0) {
+    errors.push({
+      nodeId: milestone.id,
+      message: "Milestone expectedRevenue must be non-negative",
+    });
+  }
+
+  if (milestone.expectedCosts < 0) {
+    errors.push({
+      nodeId: milestone.id,
+      message: "Milestone expectedCosts must be non-negative",
+    });
+  }
+
+  // Timeline config validation
+  const variants: TimelineVariant[] = ["expected", "aggressive", "speedOfLight"];
+  for (const variant of variants) {
+    const config = milestone.timelines[variant];
+    if (config.startMonth < 0) {
+      errors.push({
+        nodeId: milestone.id,
+        message: `Milestone timeline "${variant}" has invalid startMonth (must be >= 0)`,
+      });
+    }
+    if (config.durationMonths < 0) {
+      errors.push({
+        nodeId: milestone.id,
+        message: `Milestone timeline "${variant}" has invalid durationMonths (must be >= 0)`,
+      });
+    }
+  }
+}
+
+function validateTimelines(milestones: Milestone[], errors: ValidationError[]): void {
+  const variants: TimelineVariant[] = ["expected", "aggressive", "speedOfLight"];
+
+  for (const variant of variants) {
+    // 1. Speed of Light must complete within 12 months
+    if (variant === "speedOfLight") {
+      const includedMilestones = milestones.filter(m => m.timelines.speedOfLight.included);
+      if (includedMilestones.length > 0) {
+        const maxEnd = Math.max(
+          ...includedMilestones.map(m =>
+            m.timelines.speedOfLight.startMonth + m.timelines.speedOfLight.durationMonths
+          )
+        );
+        if (maxEnd > 12) {
+          errors.push({
+            nodeId: "timeline-speedOfLight",
+            message: `Speed of Light timeline exceeds 12 months (ends at month ${maxEnd})`,
+          });
+        }
+      }
+    }
+
+    // 2. Dependency feasibility: if A depends on B and B is skipped, A must be skipped
+    for (const milestone of milestones) {
+      const config = milestone.timelines[variant];
+      if (!config.included) continue;
+
+      for (const dep of milestone.dependsOnMilestones) {
+        const depConfig = dep.timelines[variant];
+        if (!depConfig.included) {
+          errors.push({
+            nodeId: milestone.id,
+            message: `Milestone "${milestone.id}" is included in ${variant} timeline but depends on skipped milestone "${dep.id}"`,
+          });
+        }
+      }
+    }
+
+    // 3. Timing consistency: dependency must complete before dependent starts
+    for (const milestone of milestones) {
+      const config = milestone.timelines[variant];
+      if (!config.included) continue;
+
+      for (const dep of milestone.dependsOnMilestones) {
+        const depConfig = dep.timelines[variant];
+        if (!depConfig.included) continue;
+
+        const depEnd = depConfig.startMonth + depConfig.durationMonths;
+        if (depEnd > config.startMonth) {
+          errors.push({
+            nodeId: milestone.id,
+            message: `Milestone "${milestone.id}" starts at month ${config.startMonth} but dependency "${dep.id}" ends at month ${depEnd} in ${variant} timeline`,
+          });
+        }
+      }
+    }
   }
 }

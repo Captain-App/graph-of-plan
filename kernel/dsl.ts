@@ -13,11 +13,15 @@ import {
   SupplierPrimitive,
   Tooling,
   Risk,
+  RiskStatus,
   Product,
   Project,
   Supplier,
   Customer,
   Competitor,
+  ThreatLevel,
+  Milestone,
+  TimelineConfig,
 } from "./schema.js";
 
 // ============================================================================
@@ -47,11 +51,20 @@ interface ToolingDef {
 }
 
 /**
- * Risk definition with mitigations
+ * Risk definition with mitigations and status
  */
 interface RiskDef {
   title: string;
   mitigatedBy: string[];
+  status?: RiskStatus;
+}
+
+/**
+ * Competitor definition with threat level
+ */
+interface CompetitorDef {
+  title: string;
+  threatLevel?: ThreatLevel;
 }
 
 /**
@@ -95,6 +108,32 @@ interface ThesisDef {
 }
 
 /**
+ * Timeline configuration for a milestone in each variant
+ */
+interface TimelineConfigDef {
+  startMonth: number;
+  durationMonths: number;
+  included: boolean;
+}
+
+/**
+ * Milestone definition with timeline configurations
+ */
+interface MilestoneDef {
+  title: string;
+  expectedRevenue: number;
+  expectedCosts: number;
+  dependsOnMilestones?: string[];
+  dependsOnCapabilities?: string[];
+  products?: string[];
+  timelines: {
+    expected: TimelineConfigDef;
+    aggressive: TimelineConfigDef;
+    speedOfLight: TimelineConfigDef;
+  };
+}
+
+/**
  * The complete graph definition
  */
 export interface GraphDef {
@@ -103,11 +142,12 @@ export interface GraphDef {
   tooling?: Record<string, ToolingDef>;
   suppliers?: Record<string, LeafNodeDef>;
   customers?: Record<string, LeafNodeDef>;
-  competitors?: Record<string, LeafNodeDef>;
+  competitors?: Record<string, LeafNodeDef | CompetitorDef>;
   risks?: Record<string, RiskDef>;
   capabilities?: Record<string, CapabilityDef>;
   products?: Record<string, ProductDef>;
   projects?: Record<string, ProjectDef>;
+  milestones?: Record<string, MilestoneDef>;
   thesis?: Record<string, ThesisDef>;
 }
 
@@ -141,8 +181,12 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     customers.set(id, new Customer(id, title));
   }
 
-  for (const [id, title] of Object.entries(def.competitors ?? {})) {
-    competitors.set(id, new Competitor(id, title));
+  for (const [id, compDef] of Object.entries(def.competitors ?? {})) {
+    if (typeof compDef === "string") {
+      competitors.set(id, new Competitor(id, compDef));
+    } else {
+      competitors.set(id, new Competitor(id, compDef.title, compDef.threatLevel));
+    }
   }
 
   // Phase 2: Create supplier primitives (depend on suppliers)
@@ -201,7 +245,7 @@ export function defineGraph(def: GraphDef): PlanNode[] {
       }
       return prim;
     });
-    risks.set(id, new Risk(id, riskDef.title, mitigatedBy));
+    risks.set(id, new Risk(id, riskDef.title, mitigatedBy, riskDef.status));
   }
 
   // Phase 5: Create capabilities (depend on primitives, supplier primitives, tooling, risks, suppliers)
@@ -350,7 +394,84 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     );
   }
 
-  // Phase 8: Create thesis (depend on capabilities)
+  // Phase 8: Create milestones (depend on capabilities, products, and other milestones)
+  // Two-pass approach: first create with empty milestone deps, then resolve
+  const milestones = new Map<string, Milestone>();
+  const milestoneDeps = new Map<string, string[]>(); // Store deps for second pass
+
+  // Pass 1: Create milestones with empty dependsOnMilestones
+  for (const [id, msDef] of Object.entries(def.milestones ?? {})) {
+    const dependsOnCapabilities = (msDef.dependsOnCapabilities ?? []).map((capId) => {
+      const cap = capabilities.get(capId);
+      if (!cap) {
+        throw new Error(
+          `Milestone "${id}" references unknown capability "${capId}"`
+        );
+      }
+      return cap;
+    });
+
+    const msProducts = (msDef.products ?? []).map((prodId) => {
+      const prod = products.get(prodId);
+      if (!prod) {
+        throw new Error(
+          `Milestone "${id}" references unknown product "${prodId}"`
+        );
+      }
+      return prod;
+    });
+
+    // Store milestone deps for second pass
+    milestoneDeps.set(id, msDef.dependsOnMilestones ?? []);
+
+    milestones.set(
+      id,
+      new Milestone(
+        id,
+        msDef.title,
+        msDef.expectedRevenue,
+        msDef.expectedCosts,
+        [], // Placeholder - resolved in pass 2
+        dependsOnCapabilities,
+        msProducts,
+        msDef.timelines
+      )
+    );
+  }
+
+  // Pass 2: Resolve milestone-to-milestone dependencies
+  // We need to recreate milestones with the resolved dependencies
+  for (const [id, depIds] of milestoneDeps.entries()) {
+    if (depIds.length === 0) continue;
+
+    const dependsOnMilestones = depIds.map((msId) => {
+      const ms = milestones.get(msId);
+      if (!ms) {
+        throw new Error(
+          `Milestone "${id}" references unknown milestone "${msId}"`
+        );
+      }
+      return ms;
+    });
+
+    // Get the existing milestone and recreate with resolved deps
+    const existing = milestones.get(id)!;
+    milestones.set(
+      id,
+      new Milestone(
+        existing.id,
+        existing.title,
+        existing.expectedRevenue,
+        existing.expectedCosts,
+        dependsOnMilestones,
+        existing.dependsOnCapabilities,
+        existing.products,
+        existing.timelines
+      )
+    );
+  }
+
+  // Phase 9: Create thesis (depend on capabilities)
   const theses = new Map<string, Thesis>();
 
   for (const [id, thesisDef] of Object.entries(def.thesis ?? {})) {
@@ -378,6 +499,7 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     ...capabilities.values(),
     ...products.values(),
     ...projects.values(),
+    ...milestones.values(),
     ...theses.values(),
   ];
 }

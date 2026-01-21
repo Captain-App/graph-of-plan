@@ -17,8 +17,9 @@ import { validatePlan } from "../validate.js";
 import { deriveRelations } from "./derive-relations.js";
 import { writePages } from "./render-pages.js";
 import { writeSidebar } from "./render-nav.js";
+import { writeTimelinePages } from "./render-timelines.js";
 import type { PlanNode } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone } from "../schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
@@ -119,6 +120,18 @@ function generateGraphJson(nodes: PlanNode[]): GraphJson {
         edges.push({ from: node.id, to: tool.id, relation: "usesTooling" });
       }
     }
+
+    if (isMilestone(node)) {
+      for (const ms of node.dependsOnMilestones) {
+        edges.push({ from: node.id, to: ms.id, relation: "dependsOnMilestone" });
+      }
+      for (const cap of node.dependsOnCapabilities) {
+        edges.push({ from: node.id, to: cap.id, relation: "requiresCapability" });
+      }
+      for (const prod of node.products) {
+        edges.push({ from: node.id, to: prod.id, relation: "advancesProduct" });
+      }
+    }
   }
 
   return { nodes: graphNodes, edges };
@@ -153,6 +166,10 @@ async function main() {
   // Step 5: Write pages
   writePages(PLAN, relations);
   console.log("✓ Pages written to src/content/docs/");
+
+  // Step 5.5: Write timeline pages
+  const milestones = PLAN.filter(isMilestone);
+  writeTimelinePages(milestones);
 
   // Step 6: Write navigation (sidebar)
   writeSidebar(PLAN);
