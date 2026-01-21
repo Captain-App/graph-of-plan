@@ -494,48 +494,43 @@ export const PLAN = defineGraph({
   // ==========================================================================
   repositories: {
     // L4: Our Code (owned)
-    "smartbox-core": {
-      title: "SmartBox Core",
-      url: "https://github.com/Captain-App/smartbox-core",
+    "shipbox": {
+      title: "Shipbox",
+      url: "https://github.com/Captain-App/shipbox-dev",
       stackLevel: 4,
       repoType: "owned",
       language: "TypeScript",
       products: ["smartboxes"],
       capabilities: ["smartbox"],
+      dependsOn: ["effect", "hono", "react", "cloudflare-sandbox", "mcp-sdk", "supabase-js"],
     },
-    "nomos-router": {
-      title: "Nomos Router",
-      url: "https://github.com/Captain-App/nomos-router",
+    "sandbox-mcp": {
+      title: "Sandbox MCP",
+      url: "https://github.com/Captain-App/sandbox-mcp",
       stackLevel: 4,
       repoType: "owned",
       language: "TypeScript",
+      products: ["smartboxes"],
+      capabilities: ["smartbox"],
+      dependsOn: ["effect", "hono", "cloudflare-sandbox", "mcp-sdk"],
+    },
+    "nomos-dart": {
+      title: "Nomos Dart",
+      url: "https://github.com/Captain-App/nomos",
+      stackLevel: 4,
+      repoType: "owned",
+      language: "Dart",
       products: ["nomos-cloud"],
       capabilities: ["nomos-domain-api"],
+      dependsOn: ["flutter", "riverpod"],
     },
-    "nomos-codegen-repo": {
-      title: "Nomos Codegen",
-      url: "https://github.com/Captain-App/nomos-codegen",
+    "co2-app": {
+      title: "CO2 Target Asset Management",
+      url: "https://github.com/Captain-App/co2-target-asset-management",
       stackLevel: 4,
       repoType: "owned",
-      language: "TypeScript",
-      products: ["nomos-cloud"],
-      capabilities: ["nomos-domain-api"],
-    },
-    "murphy-engine": {
-      title: "Murphy Engine",
-      url: "https://github.com/Captain-App/murphy",
-      stackLevel: 4,
-      repoType: "owned",
-      language: "TypeScript",
-      products: ["murphy"],
-    },
-    "p4gent-app": {
-      title: "P4gent App",
-      url: "https://github.com/Captain-App/p4gent",
-      stackLevel: 4,
-      repoType: "owned",
-      language: "TypeScript",
-      products: ["p4gent"],
+      language: "Dart",
+      dependsOn: ["flutter", "riverpod", "flutter-map-fork", "nomos-dart"],
     },
     "graph-of-plan": {
       title: "Graph of Plan",
@@ -546,27 +541,51 @@ export const PLAN = defineGraph({
       dependsOn: ["astro", "starlight"],
     },
 
-    // L3: Libraries (dependency)
-    "zod": {
-      title: "Zod",
-      url: "https://github.com/colinhacks/zod",
+    // L4: Forks (fork)
+    "flutter-map-fork": {
+      title: "flutter_map (fork)",
+      url: "https://github.com/Captain-App/flutter_map",
+      stackLevel: 4,
+      repoType: "fork",
+      language: "Dart",
+      upstream: "flutter-map",
+    },
+
+    // L3: Libraries (dependency) - significant architectural choices
+    "effect": {
+      title: "Effect-TS",
+      url: "https://github.com/Effect-TS/effect",
       stackLevel: 3,
       repoType: "dependency",
       language: "TypeScript",
     },
-    "drizzle-orm": {
-      title: "Drizzle ORM",
-      url: "https://github.com/drizzle-team/drizzle-orm",
+    "cloudflare-sandbox": {
+      title: "@cloudflare/sandbox",
+      url: "https://github.com/cloudflare/sandbox",
       stackLevel: 3,
       repoType: "dependency",
       language: "TypeScript",
     },
-    "date-fns": {
-      title: "date-fns",
-      url: "https://github.com/date-fns/date-fns",
+    "mcp-sdk": {
+      title: "MCP SDK",
+      url: "https://github.com/modelcontextprotocol/typescript-sdk",
       stackLevel: 3,
       repoType: "dependency",
       language: "TypeScript",
+    },
+    "supabase-js": {
+      title: "Supabase JS",
+      url: "https://github.com/supabase/supabase-js",
+      stackLevel: 3,
+      repoType: "dependency",
+      language: "TypeScript",
+    },
+    "riverpod": {
+      title: "Riverpod",
+      url: "https://github.com/rrousselGit/riverpod",
+      stackLevel: 3,
+      repoType: "dependency",
+      language: "Dart",
     },
 
     // L2: Frameworks (dependency)
@@ -576,6 +595,27 @@ export const PLAN = defineGraph({
       stackLevel: 2,
       repoType: "dependency",
       language: "TypeScript",
+    },
+    "react": {
+      title: "React",
+      url: "https://github.com/facebook/react",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "JavaScript",
+    },
+    "flutter": {
+      title: "Flutter",
+      url: "https://github.com/flutter/flutter",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "Dart",
+    },
+    "flutter-map": {
+      title: "flutter_map",
+      url: "https://github.com/fleaflet/flutter_map",
+      stackLevel: 2,
+      repoType: "dependency",
+      language: "Dart",
     },
     "astro": {
       title: "Astro",
@@ -592,12 +632,12 @@ export const PLAN = defineGraph({
       language: "TypeScript",
       dependsOn: ["astro"],
     },
-    "react": {
-      title: "React",
-      url: "https://github.com/facebook/react",
+    "vite": {
+      title: "Vite",
+      url: "https://github.com/vitejs/vite",
       stackLevel: 2,
       repoType: "dependency",
-      language: "JavaScript",
+      language: "TypeScript",
     },
 
     // L1: Runtime (dependency)
@@ -611,6 +651,13 @@ export const PLAN = defineGraph({
     "node": {
       title: "Node.js",
       url: "https://github.com/nodejs/node",
+      stackLevel: 1,
+      repoType: "dependency",
+      language: "C++",
+    },
+    "dart-vm": {
+      title: "Dart VM",
+      url: "https://github.com/dart-lang/sdk",
       stackLevel: 1,
       repoType: "dependency",
       language: "C++",
