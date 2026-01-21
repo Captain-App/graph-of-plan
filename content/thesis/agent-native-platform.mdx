@@ -1,30 +1,34 @@
-# Agent-native execution is the platform shift
+# Thesis: AI agents need proper infrastructure
 
-We are at the beginning of a fundamental shift in how software gets built and operated.
+AI agents are getting deployed into production. Most of them run in environments designed for humans—with human-sized permissions, human-oriented interfaces, and audit trails that assume a person is at the keyboard.
 
-## The claim
+This seems like a problem worth solving.
 
-Agent-native platforms will become the dominant execution environment for software development, just as cloud-native platforms displaced on-premise infrastructure.
+## The bet
 
-## Why now
+We think purpose-built infrastructure for AI agents will be more useful than retrofitting human tools. Specifically:
 
-1. **Language models can write code**: Not perfectly, but well enough to be useful
-2. **Context windows are large enough**: Complex codebases fit in working memory
-3. **Tool use is reliable**: Agents can invoke APIs, run commands, edit files
-4. **Cost is dropping**: What was expensive is becoming cheap
+1. **Sandboxed execution**: Agents need environments they can't accidentally escape from
+2. **Audit trails**: When an agent does something, you need to know what and why
+3. **Typed interfaces**: Agents work better with structured APIs than raw HTTP
+4. **Capability-based permissions**: Fine-grained, revocable, auditable
 
-## What agent-native means
+This might be wrong. The existing tools might be good enough. But we're building as if they're not.
 
-An agent-native platform is designed from the ground up for autonomous software agents:
+## Why now (and why it might be too early)
 
-- **Workspaces are first-class**: Not an afterthought bolted onto VMs
-- **Permissions are capability-based**: Fine-grained, auditable, revocable
-- **State is snapshotted**: Every change is reversible
-- **Interfaces are typed**: Agents interact with domains, not raw APIs
+**Arguments for:**
+- Language models can write useful code (not perfect, but useful)
+- Context windows fit entire codebases
+- Tool use works reliably enough for production
+- Costs are dropping fast
 
-## The opportunity
+**Arguments against:**
+- Most teams aren't deploying autonomous agents yet
+- The compliance/audit market is nascent
+- "Agent-native" might be a distinction without a difference
 
-The companies that build agent-native infrastructure will capture the value of the coming wave of AI-driven software development. This is our thesis.
+We're betting the "for" column wins, but we've hedged by building products that work even if the platform thesis is wrong.
 
 ## Market Opportunity
 
@@ -101,9 +105,23 @@ This isn't a massive market. That's the point. It's a niche we can actually win 
 - SmartBoxes: £17K (17%) — platform foundation
 - P4gent: £3K (3%) — consumer experiment
 
+### Caveats on These Numbers
+
+These estimates involve guesswork. The conversion percentages are made up. The ARPU assumptions might be wrong. The total addressable customers are rough approximations.
+
+What we're reasonably confident about:
+- The niche is small (definitely not a billion-dollar TAM)
+- Customers in these segments do pay for tooling (competitors exist)
+- The problems are real (we've experienced them)
+
+What we're uncertain about:
+- Whether our products solve the problems better than alternatives
+- Whether the market timing is right
+- Whether we can execute well enough to capture meaningful share
+
 ### Why This Niche, Not Something Bigger?
 
-1. **We can actually win it**: A £14M niche with 4 focused products is achievable
-2. **Expansion is natural**: Winning the niche proves the platform for larger markets
+1. **We can actually win it**: A £14M niche with 4 focused products is achievable for a small team
+2. **If we're wrong, we find out quickly**: Small markets give fast feedback
 3. **Competitors are weak here**: Big players don't care about £14M markets
-4. **It's growing**: Agent deployment is accelerating; the niche expands with adoption
+4. **It might grow**: If agent deployment accelerates, the niche grows with it (but this is uncertain)

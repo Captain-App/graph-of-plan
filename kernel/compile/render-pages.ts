@@ -546,22 +546,18 @@ function renderIndexPage(nodes: PlanNode[]): string {
     "",
     "Every product traces down to the capabilities that enable it. Every capability traces down to the primitives that make it possible. Every primitive traces to the suppliers who provide it. Click any node. Follow the links. See how it all connects.",
     "",
-    ":::note[At a Glance]",
-    "**4 products** · **£14M niche** · **£100K MRR Year 1 target** · **6 suppliers** · **8 competitors mapped**",
-    ":::",
-    "",
-    ":::tip[For Investors]",
-    "Start here: [Team](/team) · [Market Sizing](/thesis/agent-native-platform#market-opportunity) · [GTM Strategy](/strategy/gtm-sequence) · [Competitors](/competitor/cursor)",
+    ":::note[Summary]",
+    "4 products · Small niche (~£14M) · Trying to reach £100K MRR in Year 1",
     ":::",
     "",
   ];
 
-  // The Bet
+  // Thesis
   if (theses.length > 0) {
-    sections.push("## The Bet\n");
+    sections.push("## Thesis\n");
     sections.push(theses.map((t) => `**[${t.title}](/thesis/${t.id})**`).join("\n"));
     sections.push("");
-    sections.push("We're building infrastructure for the agent-native era. The products below demonstrate what the platform enables.");
+    sections.push("We think AI agents need purpose-built infrastructure. We might be wrong. The products below are our attempt to test this.");
     sections.push("");
   }
 
