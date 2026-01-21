@@ -1,0 +1,235 @@
+---
+title: Go-to-Market Sequencing
+description: Product launch order and why
+---
+
+# Go-to-Market Sequencing
+
+We're building four products on shared infrastructure. The order we launch them matters.
+
+## Why the Order Matters
+
+1. **Dependencies**: Some products need others to exist first
+2. **Learning**: Each product teaches us something useful for the next
+3. **Cash flow**: Revenue from early products funds later ones
+4. **Hedging**: If product A fails, products B/C/D might still work
+
+## Launch Sequence
+
+### Phase 1 (M0-M3): SmartBoxes First
+
+**Why SmartBoxes leads:**
+
+SmartBoxes is both a product and our internal development tool. By shipping SmartBoxes first:
+- We dogfood our own infrastructure
+- We prove the Cloudflare-native execution model
+- We create a distribution channel for capability packs
+- We generate revenue to fund other products
+
+**Phase 1 milestones:**
+
+| Month | SmartBoxes | Infrastructure |
+|-------|------------|----------------|
+| M0 | Dashboard MVP, auth, billing | Core sandbox runtime |
+| M1 | Capability system, 3-5 packs | Nomos integration |
+| M2 | Deploy service (CF Pages/Workers) | Usage metering |
+| M3 | Capability marketplace | Multi-tenant isolation |
+
+**Phase 1 targets:**
+- 200+ active SmartBox users
+- £5K MRR
+- 10+ capability packs
+- Proven Cloudflare cost model
+
+### Phase 2 (M3-M6): Murphy + P4gent (Prove Applications)
+
+**Why Murphy and P4gent together:**
+
+Both products are applications built on SmartBoxes + Nomos. Launching them in parallel:
+- Proves the platform can support diverse use cases
+- Tests two different GTM motions (B2B vs. B2C)
+- Creates cross-sell opportunities in both directions
+
+**Murphy focus (B2B):**
+- Agency wedge with delivery pain
+- Higher ACV, longer sales cycle
+- Reference customers for enterprise push
+
+**P4gent focus (B2C):**
+- Consumer distribution via social
+- Lower ACV, self-serve motion
+- Volume to validate unit economics
+
+**Phase 2 milestones:**
+
+| Month | Murphy | P4gent |
+|-------|--------|--------|
+| M3 | Design partners (5-10) | Core loop MVP |
+| M4 | First paying teams | Integrations (Xero, email) |
+| M5 | Case studies | Intelligence features |
+| M6 | Enterprise pilot | Communication drafts |
+
+**Phase 2 targets:**
+- Murphy: 15+ paying teams, £9K MRR
+- P4gent: 100+ subscribers, £2K MRR
+- 3 public case studies
+- Proven platform reuse
+
+### Phase 3 (M6-M12): Nomos Cloud Public
+
+**Why Nomos Cloud launches last:**
+
+Nomos Cloud is infrastructure for other AI builders. It needs:
+- Proven reliability (months of internal use)
+- Reference implementations (SmartBoxes, Murphy, P4gent)
+- Enterprise credibility (SOC 2 in progress)
+
+**Phase 3 sequence:**
+
+| Month | Nomos Cloud | Enterprise |
+|-------|-------------|------------|
+| M6 | Public beta, free tier | Security documentation |
+| M7 | Usage-based billing | First enterprise pilot |
+| M8 | Dashboard MVP | SOC 2 audit begins |
+| M9 | Query API, story rendering | Enterprise contracts |
+| M10 | Framework integrations | Partner channel |
+| M12 | SOC 2 certified | 5+ enterprise logos |
+
+**Phase 3 targets:**
+- 300+ Nomos Cloud customers
+- £50K MRR from usage
+- 5+ enterprise contracts
+- SOC 2 Type II certified
+
+## Cross-Sell (Hopefully)
+
+The products share infrastructure, so customers of one might want others. This is optimistic but plausible:
+
+### SmartBoxes → Nomos Cloud
+
+SmartBoxes users who build AI tools might need audit trails for production:
+1. User builds AI tool in SmartBox
+2. Tool needs production governance
+3. User adds Nomos Cloud for audit trails
+
+**Hope**: 10% of SmartBoxes users add Nomos Cloud
+
+### Murphy/P4gent → SmartBoxes
+
+Users who see Murphy or P4gent working might want similar tools:
+1. Agency uses Murphy for delivery
+2. Agency wants custom AI tools for clients
+3. Agency adopts SmartBoxes for client work
+
+**Hope**: 20% of Murphy/P4gent users try SmartBoxes
+
+### Nomos Cloud → SmartBoxes
+
+Enterprise customers buying Nomos might want sandboxed execution too:
+1. Enterprise buys Nomos Cloud for compliance
+2. Enterprise wants sandboxed execution
+3. Enterprise adds SmartBoxes
+
+**Hope**: 50% of Nomos Cloud enterprise add SmartBoxes
+
+These conversion rates are guesses. They might be wildly optimistic.
+
+## Revenue Mix Evolution
+
+### Year 1 Mix
+
+```
+M3:   SmartBoxes 100%
+M6:   SmartBoxes 60%, Murphy 30%, P4gent 10%
+M9:   SmartBoxes 40%, Murphy 25%, P4gent 10%, Nomos 25%
+M12:  SmartBoxes 30%, Murphy 20%, P4gent 5%, Nomos 45%
+```
+
+### Year 2 Target Mix
+
+```
+SmartBoxes: 25% (volume, lower ARPU)
+Murphy: 15% (mid-market teams)
+P4gent: 5% (consumer, high churn)
+Nomos Cloud: 55% (enterprise, high ACV)
+```
+
+**Why Nomos dominates long-term:**
+- Highest ARPU (£150 usage + £25K enterprise ACV)
+- Best gross margins (90%)
+- Strongest moat (compliance certifications)
+- Network effects (more agents = more entries = more value)
+
+## Risk Mitigation
+
+### What if SmartBoxes doesn't work?
+
+If SmartBoxes fails to find product-market fit:
+- Murphy and P4gent can still launch (just more expensive to build)
+- Nomos Cloud can target external agent builders
+- We lose the cross-sell flywheel but retain viable products
+
+### What if Nomos Cloud doesn't work?
+
+If Nomos Cloud fails to gain enterprise traction:
+- SmartBoxes and Murphy continue with internal audit
+- P4gent is unaffected
+- We lose the highest-margin product but retain consumer/SMB business
+
+### What if everything works?
+
+If all four products hit targets:
+- £100K MRR by end of Year 1 (base case)
+- £200K+ MRR by end of Year 1 (optimistic case)
+- Cross-sell between products working
+- Sustainable business with room to grow
+
+This is the happy path. Things rarely go this smoothly.
+
+## Capital Allocation
+
+### M0-M3 (Seed/Bootstrap)
+
+| Category | Allocation | Focus |
+|----------|------------|-------|
+| Engineering | 70% | SmartBoxes core |
+| Marketing | 15% | Content, developer advocacy |
+| Operations | 15% | Infrastructure, support |
+
+### M3-M6 (Post-Revenue)
+
+| Category | Allocation | Focus |
+|----------|------------|-------|
+| Engineering | 60% | Murphy + P4gent |
+| Marketing | 25% | Agency GTM, consumer ads |
+| Operations | 15% | Customer success |
+
+### M6-M12 (Growth)
+
+| Category | Allocation | Focus |
+|----------|------------|-------|
+| Engineering | 50% | Nomos Cloud, platform |
+| Marketing | 30% | Enterprise sales, brand |
+| Operations | 20% | Compliance, support |
+
+## Key Decisions
+
+### Why not launch Nomos Cloud first?
+
+- No internal proof points
+- No reference customers
+- Enterprise sales cycle is 6+ months
+- Would burn cash before revenue
+
+### Why not focus on one product?
+
+- Shared infrastructure means marginal cost of additional products is low
+- Multiple products de-risk total failure
+- Cross-sell creates compounding growth
+- Different products serve different market signals
+
+### Why this specific sequence?
+
+- Infrastructure → Applications → Platform is the natural dependency order
+- B2B + B2C in parallel tests different GTM motions
+- Platform last means we have proof points when we sell to other builders

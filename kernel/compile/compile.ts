@@ -10,7 +10,7 @@
  * 6. Emit graph.json to public/
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, copyFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validatePlan } from "../validate.js";
@@ -23,6 +23,36 @@ import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimiti
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
+const CONTENT_DIR = resolve(ROOT, "content");
+const DOCS_DIR = resolve(ROOT, "src/content/docs");
+
+/**
+ * Static pages that should be copied from content/ to src/content/docs/
+ * These are manually written pages, not generated from the graph.
+ */
+const STATIC_PAGES = [
+  "team.mdx",
+  "strategy/gtm-sequence.mdx",
+];
+
+/**
+ * Copy static pages from content/ to src/content/docs/
+ */
+function copyStaticPages(): void {
+  for (const page of STATIC_PAGES) {
+    const src = resolve(CONTENT_DIR, page);
+    const dest = resolve(DOCS_DIR, page);
+
+    if (!existsSync(src)) {
+      console.warn(`  Warning: Static page not found: ${page}`);
+      continue;
+    }
+
+    // Ensure destination directory exists
+    mkdirSync(dirname(dest), { recursive: true });
+    copyFileSync(src, dest);
+  }
+}
 
 interface GraphNode {
   id: string;
@@ -166,6 +196,10 @@ async function main() {
   // Step 5: Write pages
   writePages(PLAN, relations);
   console.log("✓ Pages written to src/content/docs/");
+
+  // Step 5.1: Copy static pages
+  copyStaticPages();
+  console.log("✓ Static pages copied");
 
   // Step 5.5: Write timeline pages
   const milestones = PLAN.filter(isMilestone);
