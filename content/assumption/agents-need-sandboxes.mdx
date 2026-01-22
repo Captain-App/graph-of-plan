@@ -1,0 +1,79 @@
+# Agents Need Sandboxes
+
+> AI agents executing code need isolated, capability-scoped environments rather than running directly on user machines or in shared infrastructure.
+
+## The Assumption
+
+As AI agents become more autonomous—writing code, making API calls, managing files—they need sandboxed execution environments. Running agent code directly on user machines or in shared infrastructure creates unacceptable security and reliability risk.
+
+This is not obvious. Many agent systems today (Claude Code, Cursor, Devin) execute code directly on user machines. We're betting that isolation becomes non-negotiable as agents:
+- Handle more sensitive data (credentials, customer information)
+- Execute longer-running autonomous workflows
+- Operate in regulated enterprise environments
+- Make decisions with real financial consequences
+
+The analogy is browser sandboxing: early browsers ran code with full system access. Security incidents made sandboxing mandatory. We expect the same pattern for agent execution.
+
+## Evidence
+
+**Supporting signals:**
+- Security researchers documenting prompt injection → code execution chains
+- Enterprise security teams asking about isolation before agent deployment
+- Anthropic's Claude Code runs in sandboxed containers by default
+- AWS, GCP, Azure launching "agent sandbox" products (2024-2025)
+- E2B raised funding specifically for "sandboxes for AI agents"
+
+**Market indicators:**
+- Modal, Fly.io, Cloudflare positioning around agent workloads
+- "Agent security" emerging as a conference track topic
+- Investor decks increasingly mention agent isolation as a category
+
+## Counter-Evidence
+
+**What would prove this wrong:**
+- Major agent frameworks (LangChain, CrewAI) ship production systems without isolation and see no incidents
+- Enterprises deploy agents to production without sandbox requirements
+- Security incidents don't materialise despite widespread agent adoption
+- Users consistently choose convenience over isolation
+
+**Current counter-signals:**
+- Many developers run Claude Code without sandboxing today
+- Consumer users don't seem concerned about agent permissions
+- No high-profile agent security incidents yet (attack surface may be theoretical)
+
+## Impact If Wrong
+
+**Products affected:** SmartBoxes (entirely), Nomos Cloud (partially through enterprise requirements)
+
+**Revenue at risk:** £17K MRR Year 1 (SmartBoxes) plus downstream enterprise deals
+
+**Strategic impact:** If agents don't need sandboxes, our core infrastructure bet fails. We'd need to pivot to a different capability—perhaps pure observability/audit trails rather than isolation. The execution platform becomes a commodity rather than a defensible moat.
+
+**Runway impact:** 6+ months of focused development potentially wasted if we discover this late.
+
+## Testing Plan
+
+**Minimum viable test:**
+1. Customer discovery: 10 interviews with AI developers specifically about isolation concerns
+2. Competitive watch: Track sandbox-focused startups, launches, and funding
+3. Incident monitoring: Set up alerts for security incidents in agent systems
+
+**Signals to watch:**
+- Do enterprise security questionnaires ask about agent isolation?
+- Do developers cite sandboxing as a blocker for production deployment?
+- Do competitors win deals by offering better isolation?
+
+**Timeline:** 3 months to initial validation signal
+
+**Kill criteria:** If 0/10 developers cite isolation as a concern AND no competitors emerge in the space AND no incidents occur, revisit this assumption at month 6.
+
+## Related
+
+**Depends on:**
+- [Market Timing Is Right](/assumption/market-timing-right) — agents must be deployed enough for isolation to matter
+
+**Supports:**
+- [Developers Will Pay For Sandboxes](/assumption/developers-will-pay-for-sandboxes) — if isolation is needed, the question becomes who provides it
+
+**Conflicts with:**
+- None identified yet

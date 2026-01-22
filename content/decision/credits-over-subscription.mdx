@@ -1,0 +1,84 @@
+# Credits Over Subscription
+
+> SmartBoxes uses a prepaid credits model (PAYG) rather than a traditional SaaS subscription.
+
+## Context
+
+SmartBoxes needs a pricing model. The choice affects revenue predictability, user behaviour, churn dynamics, and competitive positioning. Three main options:
+- **Monthly subscription**: Predictable revenue, traditional SaaS model
+- **Pure usage-based**: Pay exactly for what you use, risk of bill shock
+- **Prepaid credits**: Top up credits, consume as you go, no surprises
+
+## Alternatives Considered
+
+| Option | Why Not Chosen |
+|--------|----------------|
+| **Monthly subscription** | Misaligned with variable value delivery—some months users run 100 sandboxes, some months 2. Subscription feels unfair for power tool with spiky usage |
+| **Pure usage-based** | Risk of bill shock scares users, harder to predict revenue, may attract only heavy users |
+| **Freemium + subscription** | Complex to implement, unclear where free ends, may attract non-converting users |
+
+## The Decision
+
+Prepaid credits model where users top up credits that are consumed by usage.
+
+**How it works:**
+- Users purchase credit packs ($10, $50, $200, etc.)
+- Each sandbox session consumes credits based on time + resources
+- Credits don't expire (or expire after 12 months)
+- Low balance triggers reminder to top up
+
+**Why credits:**
+1. **Aligns payment with value delivered** — you pay for what you use
+2. **Avoids bill shock** — users can't overspend since credits are prepaid
+3. **Provides revenue predictability** — prepayments give visibility
+4. **Creates natural pause points** — users reassess value when topping up rather than churning silently
+5. **Feels fairer** — PAYG model matches expectations for infrastructure
+
+## Tradeoffs Accepted
+
+**What we're giving up:**
+- Less predictable MRR than subscription (harder to forecast)
+- Need to manage credit balances and top-up UX (additional complexity)
+- May attract lower-commitment users (no monthly commitment)
+- Harder to compare to subscription competitors (different mental model)
+
+**What we're accepting:**
+- Revenue will be lumpier (big top-ups, then quiet periods)
+- Need clear communication on credit consumption rates
+- May need to add subscription tier later for enterprise
+
+## Reversal Triggers
+
+Revisit this decision if:
+- Credit fatigue: users complain about top-up friction, want "just charge me monthly"
+- Revenue unpredictability makes planning impossible
+- Competitors win on subscription simplicity
+- Unit economics require minimum commitment (credit amounts too small)
+- Enterprise customers demand subscription for procurement reasons
+
+**Early warning signs:**
+- Low credit amounts dominating ($10 packs only)
+- Users churning at top-up moment rather than continuing
+- Feature requests for subscription option
+- Sales conversations stalling on pricing model
+
+## Review Schedule
+
+**Next review:** 2025-04-01 (or after 100 paying users)
+
+**Review questions:**
+1. What's the average credit purchase amount?
+2. What's the top-up cadence?
+3. Are users complaining about the model?
+4. How does churn compare to subscription competitors?
+
+## Related
+
+**Depends on assumption:**
+- [Developers Will Pay For Sandboxes](/assumption/developers-will-pay-for-sandboxes)
+
+**Affects product:**
+- [SmartBoxes](/product/smartboxes)
+
+**Affects milestones:**
+- [SmartBox First Revenue](/milestone/smartbox-revenue)

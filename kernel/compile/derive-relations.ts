@@ -17,8 +17,32 @@ import type {
   Competitor,
   Milestone,
   Repository,
+  Constraint,
+  Competency,
+  Diagnosis,
+  GuidingPolicy,
+  ActionGate,
+  ProxyMetric,
+  Assumption,
+  Decision,
 } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isSupplierPrimitive, isTooling, isMilestone, isRepository } from "../schema.js";
+import {
+  isThesis,
+  isCapability,
+  isRisk,
+  isProduct,
+  isProject,
+  isSupplierPrimitive,
+  isTooling,
+  isMilestone,
+  isRepository,
+  isCompetency,
+  isDiagnosis,
+  isGuidingPolicy,
+  isActionGate,
+  isAssumption,
+  isDecision,
+} from "../schema.js";
 
 export interface DerivedRelations {
   /** Which nodes justify this node (reverse of justifiedBy) */
@@ -67,6 +91,43 @@ export interface DerivedRelations {
   repositoryForProduct: Map<PlanNode, Repository[]>;
   /** Which repositories implement this capability (reverse of capabilities) */
   repositoryForCapability: Map<PlanNode, Repository[]>;
+  // Rumelt's Good Strategy framework reverse relations
+  /** Which competencies are evidenced by this repository (reverse of evidencedBy) */
+  evidencesCompetency: Map<PlanNode, Competency[]>;
+  /** Which diagnoses are evidenced by this risk (reverse of evidencedBy) */
+  evidencesDiagnosis: Map<PlanNode, Diagnosis[]>;
+  /** Which diagnoses are constrained by this constraint (reverse of constrainedBy) */
+  constrainsDiagnosis: Map<PlanNode, Diagnosis[]>;
+  /** Which guiding policies address this diagnosis (reverse of addressesDiagnosis) */
+  addressedByPolicy: Map<PlanNode, GuidingPolicy[]>;
+  /** Which guiding policies leverage this competency (reverse of leveragesCompetencies) */
+  leveragedByPolicy: Map<PlanNode, GuidingPolicy[]>;
+  /** Which guiding policies work around this constraint (reverse of worksAroundConstraints) */
+  workedAroundByPolicy: Map<PlanNode, GuidingPolicy[]>;
+  /** Which action gates use this proxy metric (reverse of proxyMetrics) */
+  usedByActionGate: Map<PlanNode, ActionGate[]>;
+  /** Which action gates are blocked by this gate (reverse of blockedBy) */
+  blocksGate: Map<PlanNode, ActionGate[]>;
+  /** Which action gates unlock this gate (reverse of unlocks) */
+  unlockedByGate: Map<PlanNode, ActionGate[]>;
+  /** Which milestones are gated by this action gate (reverse of gatedBy) */
+  gatesMilestone: Map<PlanNode, Milestone[]>;
+  // Assumption tracking reverse relations
+  /** Which assumptions depend on this product (reverse of dependentProducts) */
+  assumptionsForProduct: Map<PlanNode, Assumption[]>;
+  /** Which assumptions depend on this milestone (reverse of dependentMilestones) */
+  assumptionsForMilestone: Map<PlanNode, Assumption[]>;
+  /** Which assumptions relate to this risk (reverse of relatedRisks) */
+  assumptionsForRisk: Map<PlanNode, Assumption[]>;
+  // Decision tracking reverse relations
+  /** Which decisions depend on this assumption (reverse of dependsOnAssumptions) */
+  decisionsForAssumption: Map<PlanNode, Decision[]>;
+  /** Which decisions affect this product (reverse of affectedProducts) */
+  decisionsForProduct: Map<PlanNode, Decision[]>;
+  /** Which decisions affect this milestone (reverse of affectedMilestones) */
+  decisionsForMilestone: Map<PlanNode, Decision[]>;
+  /** Which decisions this decision supersedes (reverse of supersededBy) */
+  supersedes: Map<PlanNode, Decision[]>;
 }
 
 /**
@@ -96,6 +157,26 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const repositoryForkedBy = new Map<PlanNode, Repository[]>();
   const repositoryForProduct = new Map<PlanNode, Repository[]>();
   const repositoryForCapability = new Map<PlanNode, Repository[]>();
+  // Rumelt's Good Strategy framework
+  const evidencesCompetency = new Map<PlanNode, Competency[]>();
+  const evidencesDiagnosis = new Map<PlanNode, Diagnosis[]>();
+  const constrainsDiagnosis = new Map<PlanNode, Diagnosis[]>();
+  const addressedByPolicy = new Map<PlanNode, GuidingPolicy[]>();
+  const leveragedByPolicy = new Map<PlanNode, GuidingPolicy[]>();
+  const workedAroundByPolicy = new Map<PlanNode, GuidingPolicy[]>();
+  const usedByActionGate = new Map<PlanNode, ActionGate[]>();
+  const blocksGate = new Map<PlanNode, ActionGate[]>();
+  const unlockedByGate = new Map<PlanNode, ActionGate[]>();
+  const gatesMilestone = new Map<PlanNode, Milestone[]>();
+  // Assumption tracking
+  const assumptionsForProduct = new Map<PlanNode, Assumption[]>();
+  const assumptionsForMilestone = new Map<PlanNode, Assumption[]>();
+  const assumptionsForRisk = new Map<PlanNode, Assumption[]>();
+  // Decision tracking
+  const decisionsForAssumption = new Map<PlanNode, Decision[]>();
+  const decisionsForProduct = new Map<PlanNode, Decision[]>();
+  const decisionsForMilestone = new Map<PlanNode, Decision[]>();
+  const supersedes = new Map<PlanNode, Decision[]>();
 
   // Initialize empty arrays for all nodes
   for (const node of nodes) {
@@ -122,6 +203,26 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     repositoryForkedBy.set(node, []);
     repositoryForProduct.set(node, []);
     repositoryForCapability.set(node, []);
+    // Rumelt's Good Strategy framework
+    evidencesCompetency.set(node, []);
+    evidencesDiagnosis.set(node, []);
+    constrainsDiagnosis.set(node, []);
+    addressedByPolicy.set(node, []);
+    leveragedByPolicy.set(node, []);
+    workedAroundByPolicy.set(node, []);
+    usedByActionGate.set(node, []);
+    blocksGate.set(node, []);
+    unlockedByGate.set(node, []);
+    gatesMilestone.set(node, []);
+    // Assumption tracking
+    assumptionsForProduct.set(node, []);
+    assumptionsForMilestone.set(node, []);
+    assumptionsForRisk.set(node, []);
+    // Decision tracking
+    decisionsForAssumption.set(node, []);
+    decisionsForProduct.set(node, []);
+    decisionsForMilestone.set(node, []);
+    supersedes.set(node, []);
   }
 
   // Derive relations
@@ -219,6 +320,79 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
         repositoryForCapability.get(cap)?.push(node);
       }
     }
+
+    // Rumelt's Good Strategy framework reverse relations
+    if (isCompetency(node)) {
+      for (const repo of node.evidencedBy) {
+        evidencesCompetency.get(repo)?.push(node);
+      }
+    }
+
+    if (isDiagnosis(node)) {
+      for (const risk of node.evidencedBy) {
+        evidencesDiagnosis.get(risk)?.push(node);
+      }
+      for (const constraint of node.constrainedBy) {
+        constrainsDiagnosis.get(constraint)?.push(node);
+      }
+    }
+
+    if (isGuidingPolicy(node)) {
+      addressedByPolicy.get(node.addressesDiagnosis)?.push(node);
+      for (const comp of node.leveragesCompetencies) {
+        leveragedByPolicy.get(comp)?.push(node);
+      }
+      for (const constraint of node.worksAroundConstraints) {
+        workedAroundByPolicy.get(constraint)?.push(node);
+      }
+    }
+
+    if (isActionGate(node)) {
+      for (const metric of node.proxyMetrics) {
+        usedByActionGate.get(metric)?.push(node);
+      }
+      for (const gate of node.blockedBy) {
+        blocksGate.get(gate)?.push(node);
+      }
+      for (const gate of node.unlocks) {
+        unlockedByGate.get(gate)?.push(node);
+      }
+    }
+
+    if (isMilestone(node)) {
+      for (const gate of node.gatedBy) {
+        gatesMilestone.get(gate)?.push(node);
+      }
+    }
+
+    // Assumption tracking reverse relations
+    if (isAssumption(node)) {
+      for (const prod of node.dependentProducts) {
+        assumptionsForProduct.get(prod)?.push(node);
+      }
+      for (const ms of node.dependentMilestones) {
+        assumptionsForMilestone.get(ms)?.push(node);
+      }
+      for (const risk of node.relatedRisks) {
+        assumptionsForRisk.get(risk)?.push(node);
+      }
+    }
+
+    // Decision tracking reverse relations
+    if (isDecision(node)) {
+      for (const assumption of node.dependsOnAssumptions) {
+        decisionsForAssumption.get(assumption)?.push(node);
+      }
+      for (const prod of node.affectedProducts) {
+        decisionsForProduct.get(prod)?.push(node);
+      }
+      for (const ms of node.affectedMilestones) {
+        decisionsForMilestone.get(ms)?.push(node);
+      }
+      if (node.supersededBy) {
+        supersedes.get(node.supersededBy)?.push(node);
+      }
+    }
   }
 
   return {
@@ -245,5 +419,25 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     repositoryForkedBy,
     repositoryForProduct,
     repositoryForCapability,
+    // Rumelt's Good Strategy framework
+    evidencesCompetency,
+    evidencesDiagnosis,
+    constrainsDiagnosis,
+    addressedByPolicy,
+    leveragedByPolicy,
+    workedAroundByPolicy,
+    usedByActionGate,
+    blocksGate,
+    unlockedByGate,
+    gatesMilestone,
+    // Assumption tracking
+    assumptionsForProduct,
+    assumptionsForMilestone,
+    assumptionsForRisk,
+    // Decision tracking
+    decisionsForAssumption,
+    decisionsForProduct,
+    decisionsForMilestone,
+    supersedes,
   };
 }

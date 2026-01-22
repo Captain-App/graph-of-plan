@@ -20,7 +20,15 @@ export type NodeKind =
   | "customer"
   | "competitor"
   | "milestone"
-  | "repository";
+  | "repository"
+  | "constraint"
+  | "competency"
+  | "diagnosis"
+  | "guiding-policy"
+  | "action-gate"
+  | "proxy-metric"
+  | "assumption"
+  | "decision";
 
 export abstract class PlanNode {
   readonly id: string;
@@ -191,7 +199,8 @@ export class Milestone extends PlanNode {
       expected: TimelineConfig;
       aggressive: TimelineConfig;
       speedOfLight: TimelineConfig;
-    }
+    },
+    public readonly gatedBy: ActionGate[] = []
   ) {
     super("milestone", id, title);
   }
@@ -229,6 +238,212 @@ export class Repository extends PlanNode {
     public readonly capabilities: Capability[]
   ) {
     super("repository", id, title);
+  }
+}
+
+/**
+ * Constraint severity levels
+ */
+export type ConstraintSeverity = "hard" | "soft";
+
+/**
+ * Constraint categories
+ */
+export type ConstraintCategory = "distribution" | "capital" | "team" | "technical" | "market";
+
+/**
+ * A constraint that limits action (Rumelt's framework)
+ */
+export class Constraint extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly severity: ConstraintSeverity,
+    public readonly category: ConstraintCategory
+  ) {
+    super("constraint", id, title);
+  }
+}
+
+/**
+ * A competency we can demonstrably do, with evidence (Rumelt's framework)
+ */
+export class Competency extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly evidencedBy: Repository[]
+  ) {
+    super("competency", id, title);
+  }
+}
+
+/**
+ * The critical challenge we face (Rumelt's framework)
+ */
+export class Diagnosis extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly evidencedBy: Risk[],
+    public readonly constrainedBy: Constraint[]
+  ) {
+    super("diagnosis", id, title);
+  }
+}
+
+/**
+ * Our chosen approach to address the diagnosis (Rumelt's framework)
+ */
+export class GuidingPolicy extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly addressesDiagnosis: Diagnosis,
+    public readonly leveragesCompetencies: Competency[],
+    public readonly worksAroundConstraints: Constraint[]
+  ) {
+    super("guiding-policy", id, title);
+  }
+}
+
+/**
+ * Measurement frequency for proxy metrics
+ */
+export type MeasurementFrequency = "daily" | "weekly" | "monthly";
+
+/**
+ * A leading indicator that predicts gate success (Rumelt's framework)
+ */
+export class ProxyMetric extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly currentValue: number,
+    public readonly targetValue: number,
+    public readonly frequency: MeasurementFrequency,
+    public readonly unit: string
+  ) {
+    super("proxy-metric", id, title);
+  }
+}
+
+/**
+ * A proximate objective with pass/fail criteria (Rumelt's framework)
+ */
+export class ActionGate extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly action: string,
+    public readonly passCriteria: string[],
+    public readonly proxyMetrics: ProxyMetric[],
+    public readonly blockedBy: ActionGate[],
+    public readonly unlocks: ActionGate[]
+  ) {
+    super("action-gate", id, title);
+  }
+}
+
+/**
+ * Assumption validation status
+ */
+export type AssumptionStatus =
+  | "untested"
+  | "testing"
+  | "validated"
+  | "invalidated"
+  | "partially-validated";
+
+/**
+ * Categories of assumptions
+ */
+export type AssumptionCategory =
+  | "market"      // Market size, timing, demand
+  | "customer"    // Customer behaviour, willingness to pay
+  | "technical"   // Technical feasibility, performance
+  | "financial"   // Unit economics, pricing
+  | "competitive" // Competitor behaviour, moats
+  | "operational"; // Team capacity, execution speed
+
+/**
+ * How often to review an assumption
+ */
+export type ReviewFrequency = "weekly" | "monthly" | "quarterly";
+
+/**
+ * A documented assumption that underpins the plan
+ */
+export class Assumption extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly statement: string,
+    public readonly category: AssumptionCategory,
+    public readonly status: AssumptionStatus,
+    public readonly testMethod: string,
+    public readonly validationCriteria: string[],
+    public readonly invalidationCriteria: string[],
+    public readonly currentEvidence: string[],
+    public readonly confidence: number, // 0-100
+    public readonly reviewFrequency: ReviewFrequency,
+    public readonly dependentProducts: Product[],
+    public readonly dependentMilestones: Milestone[],
+    public readonly relatedRisks: Risk[]
+  ) {
+    super("assumption", id, title);
+  }
+}
+
+/**
+ * Decision status - tracks lifecycle of strategic choices
+ */
+export type DecisionStatus =
+  | "active"        // Currently in effect
+  | "under-review"  // Being reconsidered due to new information
+  | "reversed"      // Changed course
+  | "superseded";   // Replaced by a newer decision
+
+/**
+ * Decision category - what kind of choice this is
+ */
+export type DecisionCategory =
+  | "strategic"     // High-level direction
+  | "technical"     // Architecture/stack choices
+  | "commercial"    // Pricing, GTM, business model
+  | "operational"   // How we work
+  | "sequencing";   // What order to do things
+
+/**
+ * An alternative that was considered but rejected
+ */
+export interface RejectedAlternative {
+  option: string;
+  rationale: string;
+}
+
+/**
+ * A strategic decision - a choice made under scarcity
+ */
+export class Decision extends PlanNode {
+  constructor(
+    id: string,
+    title: string,
+    public readonly context: string,
+    public readonly category: DecisionCategory,
+    public readonly status: DecisionStatus,
+    public readonly alternatives: RejectedAlternative[],
+    public readonly choice: string,
+    public readonly rationale: string,
+    public readonly tradeoffs: string[],
+    public readonly reversalTriggers: string[],
+    public readonly reviewDate: string,
+    public readonly dependsOnAssumptions: Assumption[],
+    public readonly affectedProducts: Product[],
+    public readonly affectedMilestones: Milestone[],
+    public readonly supersededBy: Decision | null
+  ) {
+    super("decision", id, title);
   }
 }
 
@@ -285,4 +500,36 @@ export function isMilestone(node: PlanNode): node is Milestone {
 
 export function isRepository(node: PlanNode): node is Repository {
   return node.kind === "repository";
+}
+
+export function isConstraint(node: PlanNode): node is Constraint {
+  return node.kind === "constraint";
+}
+
+export function isCompetency(node: PlanNode): node is Competency {
+  return node.kind === "competency";
+}
+
+export function isDiagnosis(node: PlanNode): node is Diagnosis {
+  return node.kind === "diagnosis";
+}
+
+export function isGuidingPolicy(node: PlanNode): node is GuidingPolicy {
+  return node.kind === "guiding-policy";
+}
+
+export function isActionGate(node: PlanNode): node is ActionGate {
+  return node.kind === "action-gate";
+}
+
+export function isProxyMetric(node: PlanNode): node is ProxyMetric {
+  return node.kind === "proxy-metric";
+}
+
+export function isAssumption(node: PlanNode): node is Assumption {
+  return node.kind === "assumption";
+}
+
+export function isDecision(node: PlanNode): node is Decision {
+  return node.kind === "decision";
 }

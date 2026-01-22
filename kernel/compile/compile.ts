@@ -33,6 +33,7 @@ const DOCS_DIR = resolve(ROOT, "src/content/docs");
  */
 const STATIC_PAGES = [
   "team.mdx",
+  "strategy/gtm-spectrum.mdx",
   "strategy/gtm-sequence.mdx",
 ];
 

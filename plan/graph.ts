@@ -320,6 +320,7 @@ export const PLAN = defineGraph({
       dependsOnMilestones: [],
       dependsOnCapabilities: ["smartbox"],
       products: ["smartboxes"],
+      gatedBy: ["internal-daily-use"],
       timelines: {
         expected: { startMonth: 0, durationMonths: 4, included: true },
         aggressive: { startMonth: 0, durationMonths: 2, included: true },
@@ -333,6 +334,7 @@ export const PLAN = defineGraph({
       dependsOnMilestones: ["smartbox-mvp"],
       dependsOnCapabilities: [],
       products: ["smartboxes"],
+      gatedBy: ["first-external-user", "first-100-followers"],
       timelines: {
         expected: { startMonth: 4, durationMonths: 4, included: true },
         aggressive: { startMonth: 2, durationMonths: 2, included: true },
@@ -709,6 +711,476 @@ export const PLAN = defineGraph({
     "agent-native-platform": {
       title: "Agent-native execution is the platform shift",
       justifiedBy: ["smartbox", "nomos-domain-api"],
+    },
+  },
+
+  // ==========================================================================
+  // RUMELT'S GOOD STRATEGY FRAMEWORK
+  // ==========================================================================
+
+  // CONSTRAINTS - hard facts that limit action
+  constraints: {
+    "no-audience": {
+      title: "No Audience",
+      severity: "hard",
+      category: "distribution",
+    },
+    "single-founder": {
+      title: "Single Founder",
+      severity: "hard",
+      category: "team",
+    },
+    "limited-capital": {
+      title: "Limited Capital",
+      severity: "soft",
+      category: "capital",
+    },
+  },
+
+  // PROXY METRICS - leading indicators that predict gate success
+  proxyMetrics: {
+    "posts-per-week": {
+      title: "Posts Per Week",
+      currentValue: 0,
+      targetValue: 1,
+      frequency: "weekly",
+      unit: "posts",
+    },
+    "engagement-per-post": {
+      title: "Engagement Per Post",
+      currentValue: 0,
+      targetValue: 25,
+      frequency: "weekly",
+      unit: "engagements",
+    },
+    "internal-usage-hours": {
+      title: "Internal Usage Hours",
+      currentValue: 0,
+      targetValue: 10,
+      frequency: "weekly",
+      unit: "hours",
+    },
+    "commands-per-session": {
+      title: "Commands Per Session",
+      currentValue: 0,
+      targetValue: 15,
+      frequency: "daily",
+      unit: "commands",
+    },
+  },
+
+  // COMPETENCIES - what we can demonstrably do, with evidence
+  competencies: {
+    "cloudflare-native-dev": {
+      title: "Cloudflare Native Development",
+      evidencedBy: ["shipbox", "sandbox-mcp"],
+    },
+    "event-sourcing-patterns": {
+      title: "Event Sourcing Patterns",
+      evidencedBy: ["nomos-dart"],
+    },
+  },
+
+  // DIAGNOSES - the critical challenge we face
+  diagnoses: {
+    "distribution-cold-start": {
+      title: "Distribution Cold Start",
+      evidencedBy: ["execution-team-capacity", "market-timing"],
+      constrainedBy: ["no-audience", "single-founder", "limited-capital"],
+    },
+  },
+
+  // ACTION GATES - proximate objectives with pass/fail criteria
+  actionGates: {
+    "internal-daily-use": {
+      title: "Internal Daily Use",
+      action: "Use SmartBox ourselves for 10+ hours/week of productive work",
+      passCriteria: [
+        "10+ hours per week tracked",
+        "Using for actual development, not testing",
+        "Replacing other tools, not supplementing",
+      ],
+      proxyMetrics: ["internal-usage-hours", "commands-per-session"],
+    },
+    "first-external-user": {
+      title: "First External User",
+      action: "Get one person outside the team to complete a real task in SmartBox",
+      passCriteria: [
+        "User completes task independently",
+        "Task was a real need, not a favour",
+        "User provides honest feedback",
+      ],
+      proxyMetrics: ["commands-per-session"],
+      blockedBy: ["internal-daily-use"],
+    },
+    "first-100-followers": {
+      title: "First 100 Followers",
+      action: "Publish 10 technical posts about Cloudflare Workers and grow to 100 followers",
+      passCriteria: [
+        "100+ engaged followers",
+        "10+ substantive technical posts published",
+        "3+ posts with 50+ meaningful engagements",
+      ],
+      proxyMetrics: ["posts-per-week", "engagement-per-post"],
+    },
+  },
+
+  // GUIDING POLICIES - our chosen approach to address the diagnosis
+  guidingPolicies: {
+    "dogfood-first": {
+      title: "Dogfood First",
+      addressesDiagnosis: "distribution-cold-start",
+      leveragesCompetencies: ["cloudflare-native-dev", "event-sourcing-patterns"],
+      worksAroundConstraints: ["no-audience", "single-founder"],
+    },
+    "build-in-public": {
+      title: "Build In Public",
+      addressesDiagnosis: "distribution-cold-start",
+      leveragesCompetencies: ["cloudflare-native-dev", "event-sourcing-patterns"],
+      worksAroundConstraints: ["no-audience", "limited-capital"],
+    },
+  },
+
+  // ==========================================================================
+  // ASSUMPTIONS - documented hypotheses underpinning the plan
+  // ==========================================================================
+  assumptions: {
+    // Market assumptions
+    "agents-need-sandboxes": {
+      title: "Agents Need Sandboxes",
+      statement: "AI agents executing code need isolated, capability-scoped environments rather than running directly on user machines or in shared infrastructure.",
+      category: "market",
+      status: "untested",
+      testMethod: "Customer discovery interviews with AI developers; analysis of agent failure modes in production systems.",
+      validationCriteria: [
+        "5+ enterprise teams cite isolation as a blocker",
+        "Security incidents in agent systems make news",
+        "Competitors emerge in sandbox space",
+      ],
+      invalidationCriteria: [
+        "Major agent frameworks ship without isolation",
+        "No security incidents despite widespread agent deployment",
+        "Enterprises comfortable with direct execution",
+      ],
+      confidence: 70,
+      reviewFrequency: "monthly",
+      dependentProducts: ["smartboxes"],
+      relatedRisks: ["market-timing"],
+    },
+    "developers-will-pay-for-sandboxes": {
+      title: "Developers Will Pay For Sandboxes",
+      statement: "Developers and AI-native companies will pay for managed sandbox infrastructure rather than building their own.",
+      category: "customer",
+      status: "untested",
+      testMethod: "Pricing experiments; competitor analysis; customer interviews on build vs. buy decisions.",
+      validationCriteria: [
+        "3+ paying customers at target price point",
+        "Build vs. buy analysis favours managed solution",
+        "Churn rate under 5% monthly",
+      ],
+      invalidationCriteria: [
+        "Customers consistently build in-house",
+        "Open source solutions adequate",
+        "Price sensitivity prevents viable unit economics",
+      ],
+      confidence: 50,
+      reviewFrequency: "monthly",
+      dependentProducts: ["smartboxes"],
+      dependentMilestones: ["smartbox-revenue"],
+    },
+    "cloudflare-cost-structure": {
+      title: "Cloudflare Cost Structure Works",
+      statement: "Cloudflare's pricing model (Workers, Durable Objects, R2) will remain cost-competitive for our workload patterns and unit economics.",
+      category: "financial",
+      status: "testing",
+      testMethod: "Track actual costs as usage scales; model break-even points; monitor Cloudflare pricing announcements.",
+      validationCriteria: [
+        "Gross margin over 70% at scale",
+        "No pricing changes that break model",
+        "Costs scale sub-linearly with usage",
+      ],
+      invalidationCriteria: [
+        "Cloudflare raises prices by over 50%",
+        "Workload patterns hit expensive tiers",
+        "Gross margin under 50% at projected scale",
+      ],
+      currentEvidence: [
+        "Current dev costs within projections",
+        "Workers pricing stable for 2+ years",
+      ],
+      confidence: 75,
+      reviewFrequency: "quarterly",
+      dependentProducts: ["smartboxes", "nomos-cloud"],
+      relatedRisks: ["supplier-concentration"],
+    },
+    "content-marketing-works": {
+      title: "Content Marketing Works For Us",
+      statement: "Technical content about edge computing and agent infrastructure will generate qualified leads for our products.",
+      category: "market",
+      status: "untested",
+      testMethod: "Publish content; track engagement, followers, and conversion to signups.",
+      validationCriteria: [
+        "100+ engaged followers from content",
+        "10%+ of signups cite content as discovery source",
+        "Content generates inbound inquiries",
+      ],
+      invalidationCriteria: [
+        "6 months of publishing with fewer than 50 followers",
+        "Zero conversions from content",
+        "Engagement metrics consistently poor",
+      ],
+      confidence: 40,
+      reviewFrequency: "monthly",
+      relatedRisks: ["execution-team-capacity"],
+    },
+    "market-timing-right": {
+      title: "Market Timing Is Right",
+      statement: "The market for agent infrastructure is emerging now, and we're early enough to establish position but not so early that we'll exhaust runway waiting.",
+      category: "market",
+      status: "untested",
+      testMethod: "Track agent adoption curves; monitor competitor funding; assess customer urgency in sales conversations.",
+      validationCriteria: [
+        "Competitors raising significant funding",
+        "Customers have budget allocated for agent tooling",
+        "Urgent demand in discovery calls",
+      ],
+      invalidationCriteria: [
+        "Customers say 'maybe next year'",
+        "No competitor activity for 12+ months",
+        "Agent hype cycle crashes",
+      ],
+      confidence: 60,
+      reviewFrequency: "quarterly",
+      dependentProducts: ["smartboxes", "nomos-cloud", "murphy", "p4gent"],
+      relatedRisks: ["market-timing"],
+    },
+    "non-devs-want-ai-tools": {
+      title: "Non-Developers Want AI Tools",
+      statement: "Non-technical users (SMB founders, operators) will want and use AI-powered tools that currently require developer skills.",
+      category: "customer",
+      status: "untested",
+      testMethod: "User research with non-technical founders; beta testing with SMB operators; analysis of no-code AI tool adoption.",
+      validationCriteria: [
+        "Non-devs complete onboarding without support",
+        "Weekly active use by non-technical users",
+        "Word-of-mouth referrals from non-dev users",
+      ],
+      invalidationCriteria: [
+        "Non-devs consistently fail onboarding",
+        "Usage concentrated in developer segment",
+        "Support burden from non-devs unsustainable",
+      ],
+      confidence: 55,
+      reviewFrequency: "monthly",
+      dependentProducts: ["smartboxes", "p4gent"],
+    },
+    "agencies-feel-delivery-pain": {
+      title: "Agencies Feel Delivery Pain",
+      statement: "Digital agencies and consultancies experience significant pain around project delivery prediction, and would pay for a solution.",
+      category: "customer",
+      status: "untested",
+      testMethod: "Discovery calls with agency owners; analysis of agency failure modes; competitive research on project management tools.",
+      validationCriteria: [
+        "5+ agencies express strong interest",
+        "Willingness to pay at target price point",
+        "Pain point ranked in top 3 challenges",
+      ],
+      invalidationCriteria: [
+        "Agencies satisfied with existing tools",
+        "Delivery prediction not a priority",
+        "Price sensitivity prevents viable business",
+      ],
+      confidence: 45,
+      reviewFrequency: "monthly",
+      dependentProducts: ["murphy"],
+      dependentMilestones: ["murphy-alpha", "murphy-revenue"],
+    },
+    "audit-trails-required": {
+      title: "Audit Trails Will Be Required",
+      statement: "As AI agents make autonomous decisions in production, enterprises will require comprehensive audit trails for compliance, debugging, and governance.",
+      category: "market",
+      status: "untested",
+      testMethod: "Monitor regulatory developments; enterprise customer interviews; analysis of AI governance frameworks.",
+      validationCriteria: [
+        "Regulatory guidance mandates audit trails",
+        "Enterprise RFPs require audit capabilities",
+        "Compliance teams blocking agent deployment without trails",
+      ],
+      invalidationCriteria: [
+        "Regulations remain silent on agent observability",
+        "Enterprises deploy agents without governance",
+        "Audit trails seen as optional nice-to-have",
+      ],
+      confidence: 65,
+      reviewFrequency: "quarterly",
+      dependentProducts: ["nomos-cloud"],
+      dependentMilestones: ["nomos-revenue", "nomos-enterprise"],
+      relatedRisks: ["regulatory-ai-autonomy"],
+    },
+    "can-ship-fast-enough": {
+      title: "Can Ship Fast Enough",
+      statement: "A single founder with AI assistance can ship four products fast enough to test them before runway exhausts.",
+      category: "operational",
+      status: "testing",
+      testMethod: "Track actual shipping velocity against plan; measure AI productivity gains; monitor runway burn.",
+      validationCriteria: [
+        "MVP shipped within 2x planned timeline",
+        "AI tools providing measurable productivity boost",
+        "Runway extends to validation point",
+      ],
+      invalidationCriteria: [
+        "Shipping takes over 3x planned time",
+        "AI assistance doesn't improve velocity",
+        "Runway exhausts before validation",
+      ],
+      currentEvidence: [
+        "Graph-of-plan shipped with AI assistance",
+        "Shipbox prototype functional",
+      ],
+      confidence: 60,
+      reviewFrequency: "weekly",
+      relatedRisks: ["execution-team-capacity"],
+    },
+    "plg-works-for-infra": {
+      title: "PLG Works For Infrastructure",
+      statement: "Product-led growth (self-serve signup, usage-based expansion) will work for developer infrastructure products like SmartBoxes and Nomos Cloud.",
+      category: "market",
+      status: "untested",
+      testMethod: "Track self-serve conversion rates; analyse expansion revenue patterns; compare to PLG benchmarks.",
+      validationCriteria: [
+        "Self-serve signup rate over 100/month",
+        "Trial-to-paid conversion over 5%",
+        "Net revenue retention over 100%",
+      ],
+      invalidationCriteria: [
+        "All deals require sales touch",
+        "Self-serve churn over 20% monthly",
+        "CAC payback over 18 months",
+      ],
+      confidence: 50,
+      reviewFrequency: "monthly",
+      dependentProducts: ["smartboxes", "nomos-cloud"],
+      dependentMilestones: ["smartbox-beta", "nomos-beta"],
+    },
+  },
+
+  // ==========================================================================
+  // DECISIONS - strategic choices made under scarcity
+  // ==========================================================================
+  decisions: {
+    "cloudflare-first": {
+      title: "Cloudflare-First Architecture",
+      context: "We need to choose a cloud platform to build on. The options are traditional cloud (AWS/GCP/Azure), edge-native (Cloudflare), or multi-cloud.",
+      category: "technical",
+      status: "active",
+      alternatives: [
+        { option: "AWS/GCP/Azure", rationale: "Higher complexity, longer lock-in, but more mature ecosystem" },
+        { option: "Multi-cloud", rationale: "Higher complexity, longer time to market, uncertain benefit" },
+        { option: "Self-hosted", rationale: "Not viable for our scale and capital constraints" },
+      ],
+      choice: "Build on Cloudflare Workers, Durable Objects, R2, and D1 as our primary infrastructure.",
+      rationale: "Cloudflare offers (1) cost structure aligned with usage-based pricing, (2) global edge deployment by default, (3) simpler mental model than traditional cloud, (4) strong DX with Wrangler. We accept the risk of smaller ecosystem.",
+      tradeoffs: [
+        "Smaller ecosystem than AWS/GCP",
+        "Less flexibility in compute (no GPUs, limited runtime)",
+        "Single vendor dependency",
+        "Some enterprise features less mature",
+      ],
+      reversalTriggers: [
+        "Cloudflare pricing becomes uncompetitive (over 2x equivalent AWS)",
+        "Critical capability gap that blocks product development",
+        "Cloudflare reliability issues affecting customers",
+        "Enterprise customers require specific cloud compliance",
+      ],
+      reviewDate: "2025-06-01",
+      dependsOnAssumptions: ["cloudflare-cost-structure"],
+      affectedProducts: ["smartboxes", "nomos-cloud", "murphy", "p4gent"],
+    },
+    "credits-over-subscription": {
+      title: "Credits Over Subscription",
+      context: "SmartBoxes needs a pricing model. Options are traditional SaaS subscription, usage-based (pay-as-you-go), or prepaid credits.",
+      category: "commercial",
+      status: "active",
+      alternatives: [
+        { option: "Monthly subscription", rationale: "Predictable revenue but misaligned with variable value delivery" },
+        { option: "Pure usage-based", rationale: "Risk of bill shock, harder to predict revenue" },
+      ],
+      choice: "Prepaid credits model where users top up credits that are consumed by usage.",
+      rationale: "Credits (1) align payment with value delivered, (2) avoid bill shock since users can't overspend, (3) provide revenue predictability via prepayments, (4) create natural pause points rather than churn. PAYG feels fairer for a power tool with variable usage.",
+      tradeoffs: [
+        "Less predictable MRR than subscription",
+        "Need to manage credit balances and top-up UX",
+        "May attract lower-commitment users",
+        "Harder to compare to subscription competitors",
+      ],
+      reversalTriggers: [
+        "Credit fatigue: users complain about top-up friction",
+        "Revenue unpredictability makes planning impossible",
+        "Competitors win on subscription simplicity",
+        "Unit economics require minimum commitment",
+      ],
+      reviewDate: "2025-04-01",
+      dependsOnAssumptions: ["developers-will-pay-for-sandboxes"],
+      affectedProducts: ["smartboxes"],
+      affectedMilestones: ["smartbox-revenue"],
+    },
+    "smartboxes-first": {
+      title: "SmartBoxes First",
+      context: "We have four product ideas (SmartBoxes, Murphy, P4gent, Nomos Cloud). Need to choose which to launch first given single-founder constraints.",
+      category: "sequencing",
+      status: "active",
+      alternatives: [
+        { option: "Murphy first", rationale: "Clearer ICP (agencies) but requires more domain expertise" },
+        { option: "Nomos Cloud first", rationale: "Higher enterprise value but longer sales cycle" },
+        { option: "P4gent first", rationale: "Simpler product but smaller market" },
+        { option: "Parallel development", rationale: "Spreads risk but dilutes focus" },
+      ],
+      choice: "Launch SmartBoxes first, use it to build audience and revenue, then sequence other products.",
+      rationale: "SmartBoxes (1) can be used to build itself (dogfooding), (2) targets a broad market (developers + non-devs), (3) generates content naturally (AI agent stories), (4) has lowest sales complexity. It's also the most 'horizontal' product.",
+      tradeoffs: [
+        "Murphy may have faster path to revenue with clearer buyer",
+        "Enterprise Nomos deals could be larger",
+        "Opportunity cost if SmartBoxes market smaller than expected",
+        "May not build enterprise muscle needed for Nomos",
+      ],
+      reversalTriggers: [
+        "SmartBoxes market validation fails after 6 months",
+        "Inbound demand emerges for different product",
+        "Strategic partnership requires different product",
+        "Competition makes SmartBoxes untenable",
+      ],
+      reviewDate: "2025-06-01",
+      dependsOnAssumptions: ["agents-need-sandboxes", "non-devs-want-ai-tools", "plg-works-for-infra"],
+      affectedProducts: ["smartboxes", "murphy", "nomos-cloud", "p4gent"],
+      affectedMilestones: ["smartbox-mvp", "smartbox-beta"],
+    },
+    "dogfood-before-selling": {
+      title: "Dogfood Before Selling",
+      context: "We could start selling SmartBoxes immediately or use it ourselves first. Need to decide how to validate the product.",
+      category: "operational",
+      status: "active",
+      alternatives: [
+        { option: "Immediate beta release", rationale: "Faster revenue but risk of poor first impressions" },
+        { option: "Paid alpha with early adopters", rationale: "Revenue earlier but requires support capacity" },
+      ],
+      choice: "Use SmartBoxes ourselves for real work for at least 4 weeks before inviting external users.",
+      rationale: "Dogfooding (1) validates the product with a real use case, (2) generates authentic content and case studies, (3) finds bugs before customers do, (4) builds conviction in the product. We can't sell what we don't use.",
+      tradeoffs: [
+        "Delays time to first external user",
+        "May over-optimise for our own use case",
+        "Risk of building in bubble",
+        "Revenue starts later",
+      ],
+      reversalTriggers: [
+        "4 weeks passes without meaningful internal use",
+        "External demand too strong to delay",
+        "Internal use case too different from target market",
+        "Runway constraints require faster revenue",
+      ],
+      reviewDate: "2025-03-15",
+      dependsOnAssumptions: ["can-ship-fast-enough"],
+      affectedProducts: ["smartboxes"],
+      affectedMilestones: ["smartbox-mvp"],
     },
   },
 });

@@ -1,0 +1,88 @@
+# Cloudflare-First Architecture
+
+> We build on Cloudflare's primitives (Workers, Durable Objects, R2, D1) rather than traditional cloud infrastructure.
+
+## Context
+
+Every software product needs a cloud platform. The choice affects cost structure, developer experience, competitive moat, and operational complexity. We faced three options:
+- **Traditional cloud** (AWS/GCP/Azure): Mature, flexible, but complex and expensive
+- **Edge-native** (Cloudflare): Simpler model, better economics, but smaller ecosystem
+- **Multi-cloud**: Flexibility, but doubled complexity and slower time-to-market
+
+## Alternatives Considered
+
+| Option | Why Not Chosen |
+|--------|----------------|
+| **AWS/GCP/Azure** | Higher complexity, steeper learning curve, more expensive at our scale, longer lock-in through proprietary services |
+| **Multi-cloud** | Doubles implementation effort, uncertain benefit, delays time-to-market by 2-3x |
+| **Self-hosted** | Not viable for capital constraints, operational burden too high for solo founder |
+
+## The Decision
+
+Build on Cloudflare Workers, Durable Objects, R2, and D1 as our primary infrastructure.
+
+**Why Cloudflare:**
+1. **Cost structure aligns with usage-based pricing** — we pay for what we use, no idle capacity
+2. **Global edge deployment by default** — every deploy is global, no region selection
+3. **Simpler mental model** — fewer services to learn, faster velocity
+4. **Strong DX with Wrangler** — single CLI for everything
+5. **Agent-friendly primitives** — Durable Objects perfect for stateful agent sessions
+
+**What this enables:**
+- SmartBoxes can offer global, low-latency sandbox execution
+- Costs scale with revenue, not ahead of it
+- Single developer can operate production infrastructure
+- Competitive moat: few competitors will choose this architecture
+
+## Tradeoffs Accepted
+
+**What we're giving up:**
+- Smaller ecosystem than AWS/GCP (fewer tutorials, examples, libraries)
+- Less flexibility in compute (no GPUs, limited runtime customisation)
+- Single vendor dependency (Cloudflare is our critical supplier)
+- Some enterprise features less mature (compliance certifications, support tiers)
+- Potential future lock-in as architecture grows more entangled
+
+**What we're accepting:**
+- Need to pioneer some patterns ourselves
+- May hit capability gaps that require workarounds
+- Enterprise deals may require compliance answers we don't have yet
+
+## Reversal Triggers
+
+Revisit this decision if:
+- Cloudflare pricing becomes uncompetitive (>2x equivalent AWS costs)
+- Critical capability gap blocks product development (e.g., need GPUs, need specific compliance)
+- Cloudflare reliability issues affect customers (repeated outages, data loss)
+- Enterprise customers require specific cloud compliance we can't achieve
+- Cloudflare deprecates or degrades key primitives (Durable Objects, etc.)
+
+**Early warning signs:**
+- Cloudflare quarterly earnings showing pricing pressure
+- Our costs growing faster than revenue
+- Customer requests we can't fulfil on Cloudflare
+- Competitors winning on "runs on your cloud" positioning
+
+## Review Schedule
+
+**Next review:** 2025-06-01
+
+**Review questions:**
+1. Are costs within projections?
+2. Have we hit any capability gaps?
+3. Are customers asking for AWS/GCP deployment?
+4. Has competitive landscape changed?
+
+## Related
+
+**Depends on assumption:**
+- [Cloudflare Cost Structure Works](/assumption/cloudflare-cost-structure)
+
+**Creates risk:**
+- [Supplier Concentration](/risk/supplier-concentration)
+
+**Affects products:**
+- [SmartBoxes](/product/smartboxes), [Nomos Cloud](/product/nomos-cloud), [Murphy](/product/murphy), [P4gent](/product/p4gent)
+
+**Uses primitives:**
+- [Cloudflare Workers](/supplier-primitive/cf-workers), [Durable Objects](/supplier-primitive/cf-durable-objects), [R2](/supplier-primitive/cf-r2), [D1](/supplier-primitive/cf-d1)

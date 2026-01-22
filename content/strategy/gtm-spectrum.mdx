@@ -1,0 +1,292 @@
+---
+title: GTM Strategy Spectrum
+description: From open source to bespoke - understanding the tradeoffs
+---
+
+# GTM Strategy Spectrum
+
+Software businesses distribute their products across a spectrum of go-to-market models. Each position on the spectrum trades off different things: reach vs. revenue, scale vs. margins, speed vs. stickiness.
+
+## The Spectrum
+
+```
+FREE/OSS ←——————————————————————————————————————————————→ BESPOKE
+   │                        │                        │
+   │                        │                        │
+Open Source          SaaS/Self-Serve           Custom Build
+Freemium             Sales-Led SaaS            Consulting
+Developer Tools      PLG → Sales               System Integrator
+                     Usage-Based               Agency Model
+```
+
+### 1. Open Source / Freemium (Left End)
+
+**Model**: Give away the core product. Monetise through:
+- Hosted/managed versions (GitLab, Elastic)
+- Enterprise features (Redis, MongoDB)
+- Support and services (Red Hat)
+- Complementary products (Vercel/Next.js)
+
+**Tradeoffs**:
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Maximum distribution | Zero direct revenue from most users |
+| Community contributions | Support burden without payment |
+| Developer trust | Competitors can fork your work |
+| Hiring pipeline | Must find adjacent monetisation |
+
+**Tends to work when**: Strong network effects, developer-first product, complementary revenue streams exist, category creation needed.
+
+**Historical examples**:
+- **MySQL** (1995) → Acquired by Sun for $1B, then Oracle
+- **Linux** (1991) → Red Hat IPO'd at $3.6B (1999), acquired by IBM for $34B (2019)
+- **MongoDB** (2007) → IPO at $1.2B (2017), peaked at $40B (2021)
+
+**Key reading**:
+- [Open Source Business Models](https://a16z.com/open-source-software-business-models/) - a16z (2019)
+- [The Open Source Business Model is Under Siege](https://www.heavybit.com/library/article/open-source-business-model) - Heavybit
+- [Commercial Open Source Software](https://coss.media/) - OSS Capital's resource hub
+
+---
+
+### 2. Product-Led Growth / Self-Serve SaaS (Middle-Left)
+
+**Model**: Free tier or trial, self-serve upgrade, expand within accounts.
+
+**Tradeoffs**:
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Low CAC through virality | High churn on low tiers |
+| Scales without sales team | Revenue per user is low |
+| Usage data informs product | Support costs at scale |
+| Fast iteration cycles | Hard to move upmarket |
+
+**Tends to work when**: Product is simple enough to try alone, value is obvious quickly, natural expansion within teams/companies.
+
+**The PLG playbook**:
+1. **Land**: Free tier or trial, no sales touch
+2. **Expand**: Usage grows, team invites, features gate
+3. **Monetise**: Convert to paid when value proven
+4. **Enterprise**: Sales assists large deals
+
+**Historical evolution**:
+- **1999-2005**: SaaS emerges (Salesforce). Still sales-led.
+- **2006-2012**: Freemium rises (Dropbox, Slack). "Try before buy."
+- **2013-2018**: PLG formalised (Atlassian, Zoom). Sales-assisted at scale.
+- **2019-present**: PLG expected for developer tools. Enterprise adds sales layer.
+
+**Key reading**:
+- [Product-Led Growth](https://www.productled.org/foundations/what-is-product-led-growth) - ProductLed.org primer
+- [OpenView's PLG Resources](https://openviewpartners.com/product-led-growth/) - Extensive research
+- [Reforge PLG Course](https://www.reforge.com/product-led-growth) - Structured framework
+
+---
+
+### 3. Sales-Led SaaS (Middle)
+
+**Model**: Marketing generates leads, sales closes deals, success retains.
+
+**Tradeoffs**:
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Higher ACV | High CAC (sales cost) |
+| Multi-year contracts | Long sales cycles |
+| Predictable revenue | Harder to iterate quickly |
+| Deep customer relationships | Scales linearly with headcount |
+
+**Tends to work when**: Complex products needing explanation, high ACV justifies sales cost, buyers aren't users (procurement), compliance/security requirements.
+
+**The traditional SaaS metrics**:
+- **CAC Payback**: Months to recover customer acquisition cost
+- **LTV:CAC**: Lifetime value vs. acquisition cost (target: 3:1+)
+- **Magic Number**: Revenue growth efficiency
+- **Net Revenue Retention**: Expansion - Churn (target: >100%)
+
+**Historical context**:
+- **Salesforce** (1999) launched "No Software" - the original SaaS positioning
+- **Workday** (2005) proved enterprise SaaS works for mission-critical systems
+- **ServiceNow** (2003) showed IT buyers would adopt cloud
+- By 2020, SaaS became the default; on-premise is now the exception
+
+**Key reading**:
+- [The SaaS Metrics That Matter](https://sacks.substack.com/p/the-saas-metrics-that-matter) - David Sacks
+- [SaaS Metrics 2.0](https://www.forentrepreneurs.com/saas-metrics-2/) - David Skok's definitive guide
+- [Bessemer's State of the Cloud](https://www.bvp.com/cloud) - Annual industry analysis
+
+---
+
+### 4. Usage-Based Pricing (Middle-Right)
+
+**Model**: Charge based on consumption rather than seats or features.
+
+**Tradeoffs**:
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Aligns price with value | Revenue is variable/unpredictable |
+| Land easily, expand naturally | Customers optimise usage down |
+| Fair for small/large customers | Harder to forecast |
+| Transparent pricing | Billing complexity |
+
+**Tends to work when**: Usage correlates with value, customers vary widely in scale, API/infrastructure products, metering is straightforward.
+
+**The usage-based wave**:
+- **AWS** (2006) proved consumption pricing at scale
+- **Twilio** (2008) brought it to APIs
+- **Stripe** (2010) applied it to payments
+- **Snowflake** (2012) used it for data warehousing
+- **OpenAI** (2022) made it standard for AI APIs
+
+**Key reading**:
+- [The Rise of Usage-Based Pricing](https://openviewpartners.com/blog/state-of-usage-based-pricing/) - OpenView research
+- [Pricing Your Product](https://www.sequoiacap.com/article/pricing-your-product/) - Sequoia guide
+
+---
+
+### 5. Enterprise / Custom / Bespoke (Right End)
+
+**Model**: Build specifically for one customer's needs. High-touch, high-margin.
+
+**Tradeoffs**:
+| Advantage | Disadvantage |
+|-----------|--------------|
+| Very high revenue per customer | Doesn't scale |
+| Deep product insight | Risk of building wrong things |
+| Strong relationships | Customer concentration risk |
+| High margins per deal | Opportunity cost of time |
+
+**Tends to work when**: Early stage needing revenue, complex integration requirements, learning what to build, establishing reference customers.
+
+**The "do things that don't scale" argument**:
+
+Paul Graham's [famous essay](http://paulgraham.com/ds.html) argues startups should start with bespoke, manual, high-touch approaches before scaling. Applied to GTM:
+
+1. **Find one customer who desperately needs you**
+2. **Build exactly what they need, even manually**
+3. **Extract the pattern that generalises**
+4. **Then automate and scale**
+
+**Historical patterns**:
+- **Palantir** started with bespoke government contracts, later productised
+- **Stripe** did custom integrations for YC startups before self-serve
+- **Slack** was built as internal tool for one company (Tiny Speck)
+
+**Key reading**:
+- [Do Things That Don't Scale](http://paulgraham.com/ds.html) - Paul Graham
+- [The Consulting Trap](https://www.saastr.com/dear-saastr-do-you-recommend-building-consulting-or-services-into-a-saas-business/) - SaaStr on avoiding it
+- [Productising Services](https://www.lennysnewsletter.com/p/productizing-services) - Lenny's Newsletter
+
+---
+
+## A Brief History of SaaS
+
+### The Pre-SaaS Era (1960s-1999)
+
+**Mainframe timesharing** (1960s): Multiple users shared expensive mainframe resources. Arguably the first "cloud" model.
+
+**ASPs** (1990s): Application Service Providers hosted software for customers. Failed due to:
+- Single-tenant architecture (expensive)
+- Slow internet (poor UX)
+- No self-service (high touch)
+
+### SaaS 1.0: The Salesforce Era (1999-2010)
+
+**Salesforce** launched in 1999 with "No Software" positioning:
+- Multi-tenant architecture
+- Subscription billing
+- Delivered via browser
+- Still sales-led, but simpler procurement
+
+**Key innovations**:
+- Multi-tenancy reduced hosting costs
+- AppExchange created ecosystem (2005)
+- Force.com enabled platform extensibility (2007)
+
+### SaaS 2.0: Freemium & Consumerisation (2006-2015)
+
+**Dropbox** (2007) proved consumer-grade UX sells enterprise:
+- Viral growth via referrals
+- IT departments bought what employees already used
+- "Shadow IT" became a feature, not a bug
+
+**Slack** (2013) perfected bottom-up adoption:
+- Free tier for teams
+- Self-serve upgrade
+- Enterprise sales layer added later
+
+### SaaS 3.0: Product-Led Everything (2015-2022)
+
+**Atlassian** IPO'd (2015) with no sales team, proving PLG at scale.
+
+**Zoom** (2011-2020) showed PLG works for video too:
+- Free tier sufficient for most users
+- Quality differentiation drove word-of-mouth
+- Enterprise features justified premium pricing
+
+### SaaS 4.0: AI-Native (2022-Present)
+
+**OpenAI** and **Anthropic** introduced new patterns:
+- Usage-based pricing by tokens/compute
+- API-first with consumer wrappers
+- Model improvements as product updates
+- Inference costs as primary COGS
+
+**Emerging questions**:
+- How do AI wrappers differentiate?
+- Does usage-based work when costs drop exponentially?
+- What's the moat when the model isn't yours?
+
+---
+
+## Where We Sit
+
+Captain App's products span the spectrum:
+
+| Product | GTM Model | Why |
+|---------|-----------|-----|
+| **SmartBoxes** | PLG → Sales | Self-serve for individuals, sales for teams |
+| **P4gent** | Freemium/PLG | Consumer product, low ACV, viral potential |
+| **Murphy** | Sales-assisted PLG | Agency deals need relationships |
+| **Nomos Cloud** | Usage-based + Enterprise | API product with enterprise overlay |
+
+### Our Bet
+
+We're betting on **"land with PLG, expand with sales"**:
+
+1. Products must be usable without talking to anyone
+2. Free tier proves value before payment
+3. Sales engages for team/enterprise expansion
+4. Usage-based pricing aligns costs with value
+
+This is the [Atlassian model](https://www.atlassian.com/company/history), updated for AI infrastructure.
+
+### What We're Not Doing
+
+**Not pure OSS**: We don't have the runway to give everything away and hope for monetisation later.
+
+**Not bespoke consulting**: We don't have the team to do custom builds for individual customers (though we will do "design partner" work to learn).
+
+**Not pure enterprise sales**: We don't have 12-month sales cycles worth of runway.
+
+---
+
+## Further Reading
+
+### Books
+- *[Crossing the Chasm](https://www.amazon.com/Crossing-Chasm-3rd-Disruptive-Mainstream/dp/0062292986)* - Geoffrey Moore (1991). Still the best on technology adoption cycles.
+- *[The Hard Thing About Hard Things](https://www.amazon.com/Hard-Thing-About-Things-Building/dp/0062273205)* - Ben Horowitz (2014). Includes sections on sales vs. product companies.
+- *[Obviously Awesome](https://www.amazon.com/Obviously-Awesome-Product-Positioning-Customers/dp/1999023005)* - April Dunford (2019). Positioning for different GTM motions.
+
+### Essays & Articles
+- [Distribution is King](https://www.nfx.com/post/distribution-century) - NFX on why distribution beats product
+- [The SaaS Adventure](https://techcrunch.com/2015/02/01/the-saas-adventure/) - Aaron Levie on Box's journey
+- [What I Learned at Stripe](https://www.kalzumeus.com/2020/10/09/four-years-at-stripe/) - Patrick McKenzie's pricing insights
+
+### Podcasts & Talks
+- [How Superhuman Built an Engine to Find Product/Market Fit](https://review.firstround.com/how-superhuman-built-an-engine-to-find-product-market-fit) - Rahul Vohra
+- [Lenny's Podcast](https://www.lennyspodcast.com/) - Frequent GTM discussions with operators
+- [SaaStr Annual Talks](https://www.youtube.com/c/SaaStr) - Practitioner presentations
+
+### Data & Benchmarks
+- [KeyBanc SaaS Survey](https://www.key.com/kco/insights/saas) - Annual metrics benchmarks
+- [OpenView Expansion SaaS Benchmarks](https://openviewpartners.com/expansion-saas-benchmarks/) - PLG-specific metrics
+- [Bessemer Efficiency Score](https://www.bvp.com/cloud) - Growth efficiency benchmarks

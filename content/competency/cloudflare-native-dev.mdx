@@ -1,0 +1,26 @@
+# Cloudflare Native Development
+
+We can build production-grade applications on Cloudflare's edge platform, using Workers, Durable Objects, D1, R2, and Queues effectively.
+
+## Evidence
+
+This isn't a claimed capability - it's demonstrated by working code:
+
+- **Shipbox** - Full-stack application using Workers, Durable Objects for state, D1 for persistence
+- **Sandbox MCP** - MCP server implementation running entirely on Cloudflare's edge
+
+## Why This Matters
+
+Cloudflare's edge platform enables:
+- Global latency under 50ms for any user
+- Serverless scale without cold start management
+- Built-in isolation for multi-tenant workloads
+- Cost structure that favours our usage patterns
+
+## Depth of Knowledge
+
+- Workers runtime constraints and workarounds
+- Durable Object patterns for coordination
+- D1 SQLite limitations and query patterns
+- R2 streaming for large assets
+- Queue-based background processing

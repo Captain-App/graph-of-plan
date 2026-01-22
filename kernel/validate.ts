@@ -23,6 +23,14 @@ import {
   Milestone,
   Repository,
   TimelineVariant,
+  Constraint,
+  Competency,
+  Diagnosis,
+  GuidingPolicy,
+  ActionGate,
+  ProxyMetric,
+  Assumption,
+  Decision,
   isThesis,
   isCapability,
   isRisk,
@@ -33,6 +41,14 @@ import {
   isCompetitor,
   isMilestone,
   isRepository,
+  isConstraint,
+  isCompetency,
+  isDiagnosis,
+  isGuidingPolicy,
+  isActionGate,
+  isProxyMetric,
+  isAssumption,
+  isDecision,
 } from "./schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,6 +106,18 @@ export function validatePlan(nodes: PlanNode[]): ValidationResult {
       validateMilestone(node, errors);
     } else if (isRepository(node)) {
       validateRepository(node, errors);
+    } else if (isDiagnosis(node)) {
+      validateDiagnosis(node, errors);
+    } else if (isGuidingPolicy(node)) {
+      validateGuidingPolicy(node, errors);
+    } else if (isActionGate(node)) {
+      validateActionGate(node, errors);
+    } else if (isProxyMetric(node)) {
+      validateProxyMetric(node, errors);
+    } else if (isAssumption(node)) {
+      validateAssumption(node, errors);
+    } else if (isDecision(node)) {
+      validateDecision(node, errors);
     }
   }
 
@@ -267,5 +295,196 @@ function validateTimelines(milestones: Milestone[], errors: ValidationError[]): 
         }
       }
     }
+  }
+}
+
+// ============================================================================
+// RUMELT'S GOOD STRATEGY FRAMEWORK VALIDATIONS
+// ============================================================================
+
+function validateDiagnosis(diagnosis: Diagnosis, errors: ValidationError[]): void {
+  // Diagnosis must be evidenced by at least one Risk
+  if (diagnosis.evidencedBy.length === 0) {
+    errors.push({
+      nodeId: diagnosis.id,
+      message: "Diagnosis must be evidenced by at least one risk",
+    });
+  }
+}
+
+function validateGuidingPolicy(policy: GuidingPolicy, errors: ValidationError[]): void {
+  // GuidingPolicy must leverage at least one Competency
+  if (policy.leveragesCompetencies.length === 0) {
+    errors.push({
+      nodeId: policy.id,
+      message: "Guiding policy must leverage at least one competency",
+    });
+  }
+}
+
+function validateActionGate(gate: ActionGate, errors: ValidationError[]): void {
+  // ActionGate must have an action verb
+  if (!gate.action || gate.action.trim().length === 0) {
+    errors.push({
+      nodeId: gate.id,
+      message: "Action gate must have an action description",
+    });
+  }
+
+  // ActionGate must have at least one pass criteria
+  if (gate.passCriteria.length === 0) {
+    errors.push({
+      nodeId: gate.id,
+      message: "Action gate must have at least one pass criterion",
+    });
+  }
+
+  // ActionGate must have at least one proxy metric
+  if (gate.proxyMetrics.length === 0) {
+    errors.push({
+      nodeId: gate.id,
+      message: "Action gate must have at least one proxy metric",
+    });
+  }
+}
+
+function validateProxyMetric(metric: ProxyMetric, errors: ValidationError[]): void {
+  // Target value must be different from current value (otherwise it's not a target)
+  if (metric.currentValue === metric.targetValue) {
+    errors.push({
+      nodeId: metric.id,
+      message: "Proxy metric target value should differ from current value",
+    });
+  }
+
+  // Values must be non-negative
+  if (metric.currentValue < 0) {
+    errors.push({
+      nodeId: metric.id,
+      message: "Proxy metric current value must be non-negative",
+    });
+  }
+
+  if (metric.targetValue < 0) {
+    errors.push({
+      nodeId: metric.id,
+      message: "Proxy metric target value must be non-negative",
+    });
+  }
+}
+
+function validateAssumption(assumption: Assumption, errors: ValidationError[]): void {
+  // Must have a statement
+  if (!assumption.statement || assumption.statement.trim().length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Assumption must have a statement",
+    });
+  }
+
+  // Must have a test method
+  if (!assumption.testMethod || assumption.testMethod.trim().length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Assumption must have a test method",
+    });
+  }
+
+  // Must have at least one validation criterion
+  if (assumption.validationCriteria.length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Assumption must have at least one validation criterion",
+    });
+  }
+
+  // Must have at least one invalidation criterion
+  if (assumption.invalidationCriteria.length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Assumption must have at least one invalidation criterion",
+    });
+  }
+
+  // Confidence must be 0-100
+  if (assumption.confidence < 0 || assumption.confidence > 100) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Assumption confidence must be between 0 and 100",
+    });
+  }
+
+  // Validated assumptions should have evidence
+  if (assumption.status === "validated" && assumption.currentEvidence.length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Validated assumption should have supporting evidence",
+    });
+  }
+
+  // Invalidated assumptions should have evidence
+  if (assumption.status === "invalidated" && assumption.currentEvidence.length === 0) {
+    errors.push({
+      nodeId: assumption.id,
+      message: "Invalidated assumption should have evidence of invalidation",
+    });
+  }
+}
+
+function validateDecision(decision: Decision, errors: ValidationError[]): void {
+  // Must have context
+  if (!decision.context || decision.context.trim().length === 0) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Decision must have context explaining the situation",
+    });
+  }
+
+  // Must have a choice
+  if (!decision.choice || decision.choice.trim().length === 0) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Decision must state the choice made",
+    });
+  }
+
+  // Must have rationale
+  if (!decision.rationale || decision.rationale.trim().length === 0) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Decision must have rationale explaining why this choice was made",
+    });
+  }
+
+  // Active decisions should have at least one reversal trigger
+  if (decision.status === "active" && decision.reversalTriggers.length === 0) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Active decision should have at least one reversal trigger",
+    });
+  }
+
+  // Should have at least one tradeoff acknowledged
+  if (decision.tradeoffs.length === 0) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Decision should acknowledge at least one tradeoff",
+    });
+  }
+
+  // Review date should be in valid format (basic ISO check)
+  if (decision.reviewDate && !/^\d{4}-\d{2}-\d{2}$/.test(decision.reviewDate)) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Decision review date should be in YYYY-MM-DD format",
+    });
+  }
+
+  // Reversed or superseded decisions should have explanation in status
+  if (decision.status === "superseded" && !decision.supersededBy) {
+    errors.push({
+      nodeId: decision.id,
+      message: "Superseded decision should reference the decision that supersedes it",
+    });
   }
 }

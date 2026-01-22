@@ -2,17 +2,30 @@
  * Renders MDX pages for Astro Starlight output.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant, Repository, StackLevel, RepoType } from "../schema.js";
-import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone, isRepository } from "../schema.js";
+import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant, Repository, StackLevel, RepoType, Constraint, ConstraintSeverity, ConstraintCategory, Competency, Diagnosis, GuidingPolicy, ActionGate, ProxyMetric, MeasurementFrequency, Assumption, AssumptionStatus, AssumptionCategory, ReviewFrequency, Decision, DecisionStatus, DecisionCategory } from "../schema.js";
+import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone, isRepository, isConstraint, isCompetency, isDiagnosis, isGuidingPolicy, isActionGate, isProxyMetric, isAssumption, isDecision } from "../schema.js";
 import { loadContent } from "./load-content.js";
 import type { DerivedRelations } from "./derive-relations.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
 const SITE_DOCS = resolve(ROOT, "src/content/docs");
+const CONTENT_DIR = resolve(ROOT, "content");
+
+/**
+ * Read a hand-written content snippet from content/homepage/
+ */
+function readContentSnippet(path: string): string {
+  const fullPath = resolve(CONTENT_DIR, path);
+  if (!existsSync(fullPath)) {
+    console.warn(`  Warning: Content snippet not found: ${path}`);
+    return "";
+  }
+  return readFileSync(fullPath, "utf-8").trim();
+}
 
 /**
  * Render a single node to an MDX page
@@ -57,6 +70,108 @@ function formatRepoType(type: RepoType): string {
   return labels[type];
 }
 
+function formatConstraintSeverity(severity: ConstraintSeverity): string {
+  const labels: Record<ConstraintSeverity, string> = {
+    hard: "Hard",
+    soft: "Soft",
+  };
+  return labels[severity];
+}
+
+function formatConstraintCategory(category: ConstraintCategory): string {
+  const labels: Record<ConstraintCategory, string> = {
+    distribution: "Distribution",
+    capital: "Capital",
+    team: "Team",
+    technical: "Technical",
+    market: "Market",
+  };
+  return labels[category];
+}
+
+function formatMeasurementFrequency(frequency: MeasurementFrequency): string {
+  const labels: Record<MeasurementFrequency, string> = {
+    daily: "Daily",
+    weekly: "Weekly",
+    monthly: "Monthly",
+  };
+  return labels[frequency];
+}
+
+function formatAssumptionStatus(status: AssumptionStatus): string {
+  const labels: Record<AssumptionStatus, string> = {
+    untested: "Untested",
+    testing: "Testing",
+    validated: "Validated",
+    invalidated: "Invalidated",
+    "partially-validated": "Partially Validated",
+  };
+  return labels[status];
+}
+
+function formatAssumptionStatusEmoji(status: AssumptionStatus): string {
+  const emojis: Record<AssumptionStatus, string> = {
+    untested: "⚪",
+    testing: "🔄",
+    validated: "✅",
+    invalidated: "❌",
+    "partially-validated": "🟡",
+  };
+  return emojis[status];
+}
+
+function formatAssumptionCategory(category: AssumptionCategory): string {
+  const labels: Record<AssumptionCategory, string> = {
+    market: "Market",
+    customer: "Customer",
+    technical: "Technical",
+    financial: "Financial",
+    competitive: "Competitive",
+    operational: "Operational",
+  };
+  return labels[category];
+}
+
+function formatReviewFrequency(frequency: ReviewFrequency): string {
+  const labels: Record<ReviewFrequency, string> = {
+    weekly: "Weekly",
+    monthly: "Monthly",
+    quarterly: "Quarterly",
+  };
+  return labels[frequency];
+}
+
+function formatDecisionStatus(status: DecisionStatus): string {
+  const labels: Record<DecisionStatus, string> = {
+    active: "Active",
+    "under-review": "Under Review",
+    reversed: "Reversed",
+    superseded: "Superseded",
+  };
+  return labels[status];
+}
+
+function formatDecisionStatusEmoji(status: DecisionStatus): string {
+  const emojis: Record<DecisionStatus, string> = {
+    active: "✅",
+    "under-review": "🔄",
+    reversed: "↩️",
+    superseded: "➡️",
+  };
+  return emojis[status];
+}
+
+function formatDecisionCategory(category: DecisionCategory): string {
+  const labels: Record<DecisionCategory, string> = {
+    strategic: "Strategic",
+    technical: "Technical",
+    commercial: "Commercial",
+    operational: "Operational",
+    sequencing: "Sequencing",
+  };
+  return labels[category];
+}
+
 // TL;DR summaries for products
 const PRODUCT_TLDRS: Record<string, string> = {
   "murphy": "**What**: Delivery prediction for project teams · **Who**: Agencies, R&D teams · **Price**: £299-2,500/mo · **Year 1**: £19K MRR",
@@ -98,7 +213,27 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     ? `:::note[${formatRepoType(node.repoType)} · ${formatStackLevel(node.stackLevel)}]\n${node.url ? `[View on GitHub](${node.url})` : ""}\n:::\n\n`
     : "";
 
-  const sections: string[] = [frontmatter, tldrSection + riskBadge + competitorBadge + repoBadge + cleanContent];
+  // Add constraint badge
+  const constraintBadge = isConstraint(node)
+    ? `:::note[${formatConstraintSeverity(node.severity)} Constraint · ${formatConstraintCategory(node.category)}]\n:::\n\n`
+    : "";
+
+  // Add proxy metric badge
+  const proxyMetricBadge = isProxyMetric(node)
+    ? `:::note[${formatMeasurementFrequency(node.frequency)} · ${node.currentValue}/${node.targetValue} ${node.unit}]\n:::\n\n`
+    : "";
+
+  // Add assumption badge
+  const assumptionBadge = isAssumption(node)
+    ? `:::note[${formatAssumptionStatusEmoji(node.status)} ${formatAssumptionStatus(node.status)} · ${formatAssumptionCategory(node.category)} · ${node.confidence}% confidence]\nReview: ${formatReviewFrequency(node.reviewFrequency)}\n:::\n\n`
+    : "";
+
+  // Add decision badge
+  const decisionBadge = isDecision(node)
+    ? `:::note[${formatDecisionStatusEmoji(node.status)} ${formatDecisionStatus(node.status)} · ${formatDecisionCategory(node.category)}]\nReview: ${node.reviewDate}\n:::\n\n`
+    : "";
+
+  const sections: string[] = [frontmatter, tldrSection + riskBadge + competitorBadge + repoBadge + constraintBadge + proxyMetricBadge + assumptionBadge + decisionBadge + cleanContent];
 
   // Add relation sections based on node type
   if (isThesis(node)) {
@@ -127,6 +262,22 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
     sections.push(renderMilestoneRelations(node, relations));
   } else if (isRepository(node)) {
     sections.push(renderRepositoryRelations(node, relations));
+  } else if (isConstraint(node)) {
+    sections.push(renderConstraintRelations(node, relations));
+  } else if (isCompetency(node)) {
+    sections.push(renderCompetencyRelations(node, relations));
+  } else if (isDiagnosis(node)) {
+    sections.push(renderDiagnosisRelations(node, relations));
+  } else if (isGuidingPolicy(node)) {
+    sections.push(renderGuidingPolicyRelations(node, relations));
+  } else if (isActionGate(node)) {
+    sections.push(renderActionGateRelations(node, relations));
+  } else if (isProxyMetric(node)) {
+    sections.push(renderProxyMetricRelations(node, relations));
+  } else if (isAssumption(node)) {
+    sections.push(renderAssumptionRelations(node, relations));
+  } else if (isDecision(node)) {
+    sections.push(renderDecisionRelations(node, relations));
   }
 
   return sections.filter(Boolean).join("\n\n");
@@ -241,6 +392,15 @@ function renderRiskRelations(
     sections.push(`## Affects\n\n${links}`);
   }
 
+  // Related assumptions (reverse relation)
+  const assumptions = relations.assumptionsForRisk.get(risk) ?? [];
+  if (assumptions.length > 0) {
+    const links = assumptions
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`## Related Assumptions\n\n${links}`);
+  }
+
   return sections.join("\n\n");
 }
 
@@ -307,6 +467,24 @@ function renderProductRelations(
       .map((c) => `- [${c.title}](/competitor/${c.id})`)
       .join("\n");
     sections.push(`## Competes With\n\n${links}`);
+  }
+
+  // Assumptions (reverse relation)
+  const assumptions = relations.assumptionsForProduct.get(product) ?? [];
+  if (assumptions.length > 0) {
+    const links = assumptions
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`## Underpinning Assumptions\n\n${links}`);
+  }
+
+  // Decisions affecting this product (reverse relation)
+  const decisions = relations.decisionsForProduct.get(product) ?? [];
+  if (decisions.length > 0) {
+    const links = decisions
+      .map((d) => `- [${d.title}](/decision/${d.id}) — ${formatDecisionStatusEmoji(d.status)} ${formatDecisionCategory(d.category)}`)
+      .join("\n");
+    sections.push(`## Related Decisions\n\n${links}`);
   }
 
   return sections.join("\n\n");
@@ -543,6 +721,32 @@ function renderMilestoneRelations(
     sections.push(`## Enables (Milestones)\n\n${links}`);
   }
 
+  // Gated by action gates (Rumelt framework)
+  if (milestone.gatedBy.length > 0) {
+    const links = milestone.gatedBy
+      .map((g) => `- [${g.title}](/action-gate/${g.id})`)
+      .join("\n");
+    sections.push(`## Gated By\n\n${links}`);
+  }
+
+  // Assumptions (reverse relation)
+  const assumptions = relations.assumptionsForMilestone.get(milestone) ?? [];
+  if (assumptions.length > 0) {
+    const links = assumptions
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`\n## Underpinning Assumptions\n\n${links}`);
+  }
+
+  // Decisions affecting this milestone (reverse relation)
+  const decisions = relations.decisionsForMilestone.get(milestone) ?? [];
+  if (decisions.length > 0) {
+    const links = decisions
+      .map((d) => `- [${d.title}](/decision/${d.id}) — ${formatDecisionStatusEmoji(d.status)} ${formatDecisionCategory(d.category)}`)
+      .join("\n");
+    sections.push(`\n## Related Decisions\n\n${links}`);
+  }
+
   return sections.join("\n");
 }
 
@@ -607,10 +811,459 @@ function renderRepositoryRelations(
   return sections.join("\n\n");
 }
 
+// ============================================================================
+// RUMELT'S GOOD STRATEGY FRAMEWORK RENDERING
+// ============================================================================
+
+function renderConstraintRelations(
+  constraint: Constraint,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Which diagnoses are constrained by this
+  const diagnoses = relations.constrainsDiagnosis.get(constraint) ?? [];
+  if (diagnoses.length > 0) {
+    const links = diagnoses
+      .map((d) => `- [${d.title}](/diagnosis/${d.id})`)
+      .join("\n");
+    sections.push(`## Constrains Diagnoses\n\n${links}`);
+  }
+
+  // Which policies work around this
+  const policies = relations.workedAroundByPolicy.get(constraint) ?? [];
+  if (policies.length > 0) {
+    const links = policies
+      .map((p) => `- [${p.title}](/guiding-policy/${p.id})`)
+      .join("\n");
+    sections.push(`## Worked Around By\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderCompetencyRelations(
+  competency: Competency,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Evidence (repositories)
+  if (competency.evidencedBy.length > 0) {
+    const links = competency.evidencedBy
+      .map((r) => `- [${r.title}](/repository/${r.id})`)
+      .join("\n");
+    sections.push(`## Evidenced By\n\n${links}`);
+  }
+
+  // Which policies leverage this
+  const policies = relations.leveragedByPolicy.get(competency) ?? [];
+  if (policies.length > 0) {
+    const links = policies
+      .map((p) => `- [${p.title}](/guiding-policy/${p.id})`)
+      .join("\n");
+    sections.push(`## Leveraged By\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderDiagnosisRelations(
+  diagnosis: Diagnosis,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Evidence (risks)
+  if (diagnosis.evidencedBy.length > 0) {
+    const links = diagnosis.evidencedBy
+      .map((r) => `- [${r.title}](/risk/${r.id})`)
+      .join("\n");
+    sections.push(`## Evidenced By\n\n${links}`);
+  }
+
+  // Constraints
+  if (diagnosis.constrainedBy.length > 0) {
+    const links = diagnosis.constrainedBy
+      .map((c) => `- [${c.title}](/constraint/${c.id})`)
+      .join("\n");
+    sections.push(`## Constrained By\n\n${links}`);
+  }
+
+  // Which policies address this
+  const policies = relations.addressedByPolicy.get(diagnosis) ?? [];
+  if (policies.length > 0) {
+    const links = policies
+      .map((p) => `- [${p.title}](/guiding-policy/${p.id})`)
+      .join("\n");
+    sections.push(`## Addressed By\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderGuidingPolicyRelations(
+  policy: GuidingPolicy,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Addresses diagnosis
+  sections.push(`## Addresses\n\n- [${policy.addressesDiagnosis.title}](/diagnosis/${policy.addressesDiagnosis.id})`);
+
+  // Leverages competencies
+  if (policy.leveragesCompetencies.length > 0) {
+    const links = policy.leveragesCompetencies
+      .map((c) => `- [${c.title}](/competency/${c.id})`)
+      .join("\n");
+    sections.push(`## Leverages\n\n${links}`);
+  }
+
+  // Works around constraints
+  if (policy.worksAroundConstraints.length > 0) {
+    const links = policy.worksAroundConstraints
+      .map((c) => `- [${c.title}](/constraint/${c.id})`)
+      .join("\n");
+    sections.push(`## Works Around\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderActionGateRelations(
+  gate: ActionGate,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Action description
+  sections.push(`## Action\n\n${gate.action}`);
+
+  // Pass criteria
+  if (gate.passCriteria.length > 0) {
+    const criteria = gate.passCriteria
+      .map((c) => `- ${c}`)
+      .join("\n");
+    sections.push(`## Pass Criteria\n\n${criteria}`);
+  }
+
+  // Proxy metrics
+  if (gate.proxyMetrics.length > 0) {
+    const links = gate.proxyMetrics
+      .map((m) => `- [${m.title}](/proxy-metric/${m.id}) (${m.currentValue}/${m.targetValue} ${m.unit})`)
+      .join("\n");
+    sections.push(`## Proxy Metrics\n\n${links}`);
+  }
+
+  // Blocked by
+  if (gate.blockedBy.length > 0) {
+    const links = gate.blockedBy
+      .map((g) => `- [${g.title}](/action-gate/${g.id})`)
+      .join("\n");
+    sections.push(`## Blocked By\n\n${links}`);
+  }
+
+  // Unlocks
+  if (gate.unlocks.length > 0) {
+    const links = gate.unlocks
+      .map((g) => `- [${g.title}](/action-gate/${g.id})`)
+      .join("\n");
+    sections.push(`## Unlocks\n\n${links}`);
+  }
+
+  // Gates which milestones
+  const milestones = relations.gatesMilestone.get(gate) ?? [];
+  if (milestones.length > 0) {
+    const links = milestones
+      .map((m) => `- [${m.title}](/milestone/${m.id})`)
+      .join("\n");
+    sections.push(`## Gates Milestones\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderProxyMetricRelations(
+  metric: ProxyMetric,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Progress bar
+  const progress = Math.min(100, Math.round((metric.currentValue / metric.targetValue) * 100));
+  sections.push(`## Progress\n`);
+  sections.push(`**${metric.currentValue}** / ${metric.targetValue} ${metric.unit} (${progress}%)\n`);
+  sections.push(`Measured: ${formatMeasurementFrequency(metric.frequency)}`);
+
+  // Used by action gates
+  const gates = relations.usedByActionGate.get(metric) ?? [];
+  if (gates.length > 0) {
+    const links = gates
+      .map((g) => `- [${g.title}](/action-gate/${g.id})`)
+      .join("\n");
+    sections.push(`## Used By\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderAssumptionRelations(
+  assumption: Assumption,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Statement
+  sections.push(`## Assumption\n\n> ${assumption.statement}`);
+
+  // Test method
+  sections.push(`## How To Test\n\n${assumption.testMethod}`);
+
+  // Validation criteria
+  if (assumption.validationCriteria.length > 0) {
+    const criteria = assumption.validationCriteria
+      .map((c) => `- ${c}`)
+      .join("\n");
+    sections.push(`## Validation Criteria\n\nThis assumption is **validated** if:\n\n${criteria}`);
+  }
+
+  // Invalidation criteria
+  if (assumption.invalidationCriteria.length > 0) {
+    const criteria = assumption.invalidationCriteria
+      .map((c) => `- ${c}`)
+      .join("\n");
+    sections.push(`## Invalidation Criteria\n\nThis assumption is **invalidated** if:\n\n${criteria}`);
+  }
+
+  // Current evidence
+  if (assumption.currentEvidence.length > 0) {
+    const evidence = assumption.currentEvidence
+      .map((e) => `- ${e}`)
+      .join("\n");
+    sections.push(`## Current Evidence\n\n${evidence}`);
+  }
+
+  // Dependent products
+  if (assumption.dependentProducts.length > 0) {
+    const links = assumption.dependentProducts
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Dependent Products\n\nIf this assumption is wrong, these products are affected:\n\n${links}`);
+  }
+
+  // Dependent milestones
+  if (assumption.dependentMilestones.length > 0) {
+    const links = assumption.dependentMilestones
+      .map((m) => `- [${m.title}](/milestone/${m.id})`)
+      .join("\n");
+    sections.push(`## Dependent Milestones\n\nIf this assumption is wrong, these milestones are affected:\n\n${links}`);
+  }
+
+  // Related risks
+  if (assumption.relatedRisks.length > 0) {
+    const links = assumption.relatedRisks
+      .map((r) => `- [${r.title}](/risk/${r.id})`)
+      .join("\n");
+    sections.push(`## Related Risks\n\n${links}`);
+  }
+
+  // Decisions depending on this assumption (reverse relation)
+  const decisions = relations.decisionsForAssumption.get(assumption) ?? [];
+  if (decisions.length > 0) {
+    const links = decisions
+      .map((d) => `- [${d.title}](/decision/${d.id}) — ${formatDecisionStatusEmoji(d.status)} ${formatDecisionCategory(d.category)}`)
+      .join("\n");
+    sections.push(`## Decisions Depending On This\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
+function renderDecisionRelations(
+  decision: Decision,
+  relations: DerivedRelations
+): string {
+  const sections: string[] = [];
+
+  // Context
+  sections.push(`## Context\n\n${decision.context}`);
+
+  // The choice made
+  sections.push(`## Decision\n\n> ${decision.choice}`);
+
+  // Rationale
+  sections.push(`## Rationale\n\n${decision.rationale}`);
+
+  // Alternatives considered
+  if (decision.alternatives.length > 0) {
+    const altRows = decision.alternatives
+      .map((a) => `| ${a.option} | ${a.rationale} |`)
+      .join("\n");
+    sections.push(`## Alternatives Considered\n\n| Option | Why Rejected |\n|--------|-------------|\n${altRows}`);
+  }
+
+  // Tradeoffs acknowledged
+  if (decision.tradeoffs.length > 0) {
+    const tradeoffs = decision.tradeoffs
+      .map((t) => `- ${t}`)
+      .join("\n");
+    sections.push(`## Tradeoffs\n\n${tradeoffs}`);
+  }
+
+  // Reversal triggers
+  if (decision.reversalTriggers.length > 0) {
+    const triggers = decision.reversalTriggers
+      .map((t) => `- ${t}`)
+      .join("\n");
+    sections.push(`## Reversal Triggers\n\nRevisit this decision if:\n\n${triggers}`);
+  }
+
+  // Depends on assumptions
+  if (decision.dependsOnAssumptions.length > 0) {
+    const links = decision.dependsOnAssumptions
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`## Depends On Assumptions\n\n${links}`);
+  }
+
+  // Affected products
+  if (decision.affectedProducts.length > 0) {
+    const links = decision.affectedProducts
+      .map((p) => `- [${p.title}](/product/${p.id})`)
+      .join("\n");
+    sections.push(`## Affects Products\n\n${links}`);
+  }
+
+  // Affected milestones
+  if (decision.affectedMilestones.length > 0) {
+    const links = decision.affectedMilestones
+      .map((m) => `- [${m.title}](/milestone/${m.id})`)
+      .join("\n");
+    sections.push(`## Affects Milestones\n\n${links}`);
+  }
+
+  // Superseded by
+  if (decision.supersededBy) {
+    sections.push(`## Superseded By\n\n- [${decision.supersededBy.title}](/decision/${decision.supersededBy.id})`);
+  }
+
+  // Supersedes (reverse relation)
+  const supersedes = relations.supersedes.get(decision) ?? [];
+  if (supersedes.length > 0) {
+    const links = supersedes
+      .map((d) => `- [${d.title}](/decision/${d.id})`)
+      .join("\n");
+    sections.push(`## Supersedes\n\n${links}`);
+  }
+
+  return sections.join("\n\n");
+}
+
 /**
- * Render the index/landing page
+ * Render the index/landing page (mum-friendly version)
  */
 function renderIndexPage(nodes: PlanNode[]): string {
+  const products = nodes.filter(isProduct);
+  const milestones = nodes.filter(isMilestone);
+
+  // Read hand-written content snippets
+  const intro = readContentSnippet("homepage/intro.mdx");
+  const whoItsFor = readContentSnippet("homepage/who-its-for.mdx");
+  const status = readContentSnippet("homepage/status.mdx");
+
+  const productSnippets: Record<string, string> = {
+    smartboxes: readContentSnippet("homepage/smartboxes.mdx"),
+    murphy: readContentSnippet("homepage/murphy.mdx"),
+    p4gent: readContentSnippet("homepage/p4gent.mdx"),
+    "nomos-cloud": readContentSnippet("homepage/nomos-cloud.mdx"),
+  };
+
+  const sections: string[] = [
+    "---",
+    'title: "Captain App"',
+    'description: "AI-powered tools that help businesses run more smoothly"',
+    "---",
+    "",
+    intro,
+    "",
+    ":::note",
+    "Early stage · 4 products · Looking for design partners",
+    ":::",
+    "",
+  ];
+
+  // Products - human-friendly descriptions
+  sections.push("## What We Make\n");
+
+  // Architecture diagram - shows how products and customer projects relate
+  sections.push("```");
+  sections.push("┌────────────────────────────────┐  ┌────────────────────────────────┐");
+  sections.push("│            PRODUCTS            │  │       CUSTOMER PROJECTS        │");
+  sections.push("│  Murphy • P4gent • SmartBoxes  │  │             CO2                │");
+  sections.push("│          Nomos Cloud           │  │             ...                │");
+  sections.push("└───────────────┬────────────────┘  └───────────────┬────────────────┘");
+  sections.push("                │                                   │");
+  sections.push("                └───────────────┬───────────────────┘");
+  sections.push("                                │ enabled by");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                           CAPABILITIES                              │");
+  sections.push("│               SmartBox Execution    •    Nomos Domains              │");
+  sections.push("└───────────────────────────────┬─────────────────────────────────────┘");
+  sections.push("                                │ built on");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                            PRIMITIVES                               │");
+  sections.push("│          Snapshot Materialisation  •  Capability-Scoped Exec        │");
+  sections.push("└───────────────────────────────┬─────────────────────────────────────┘");
+  sections.push("                                │ run on");
+  sections.push("                                ▼");
+  sections.push("┌─────────────────────────────────────────────────────────────────────┐");
+  sections.push("│                            SUPPLIERS                                │");
+  sections.push("│        Cloudflare   •   Anthropic   •   Firebase   •   Twilio       │");
+  sections.push("└─────────────────────────────────────────────────────────────────────┘");
+  sections.push("```");
+  sections.push("");
+
+  // Order: SmartBoxes, Murphy, P4gent, Nomos Cloud
+  const productOrder = ["smartboxes", "murphy", "p4gent", "nomos-cloud"];
+  for (const id of productOrder) {
+    const product = products.find((p) => p.id === id);
+    if (product) {
+      const snippet = productSnippets[id] || "";
+      sections.push(`### [${product.title}](/product/${product.id})\n`);
+      sections.push(snippet);
+      sections.push("");
+    }
+  }
+
+  // Who It's For
+  sections.push("---\n");
+  sections.push("## Who It's For\n");
+  sections.push(whoItsFor);
+  sections.push("");
+
+  // Current Status
+  sections.push("---\n");
+  sections.push("## Current Status\n");
+  sections.push(status);
+  sections.push("");
+
+  // Dynamic stats
+  sections.push(`${products.length} products · ${milestones.length} milestones planned · [View the timeline](/timeline)`);
+  sections.push("");
+
+  // Links to deeper pages
+  sections.push("---\n");
+  sections.push("[Technical Details](/technical) · [The Team](/team) · [Risks](/risk) · [Timeline](/timeline)");
+
+  return sections.join("\n");
+}
+
+/**
+ * Render the technical details page (for developers who want the full picture)
+ */
+function renderTechnicalPage(nodes: PlanNode[]): string {
   const theses = nodes.filter(isThesis);
   const capabilities = nodes.filter(isCapability);
   const products = nodes.filter(isProduct);
@@ -620,23 +1273,21 @@ function renderIndexPage(nodes: PlanNode[]): string {
   const tooling = nodes.filter(isTooling);
   const risks = nodes.filter(isRisk);
   const suppliers = nodes.filter(isSupplier);
-  const customers = nodes.filter(isCustomer);
-  const competitors = nodes.filter(isCompetitor);
   const milestones = nodes.filter(isMilestone);
   const repositories = nodes.filter(isRepository);
 
   const sections: string[] = [
     "---",
-    'title: "Graph of Plan"',
-    'description: "A business plan as a navigable dependency graph"',
+    'title: "Technical Details"',
+    'description: "The full graph: capabilities, primitives, suppliers, and how it all connects"',
     "---",
     "",
-    "Most business plans are documents. This one is a graph.",
+    "This page is for developers and technical folks who want to understand how Captain App is built.",
     "",
-    "Every product traces down to the capabilities that enable it. Every capability traces down to the primitives that make it possible. Every primitive traces to the suppliers who provide it. Click any node. Follow the links. See how it all connects.",
+    "Most business plans are documents. This one is a graph. Every product traces down to the capabilities that enable it. Every capability traces down to the primitives that make it possible. Every primitive traces to the suppliers who provide it. Click any node. Follow the links.",
     "",
     ":::note[Summary]",
-    "4 products · Small niche (~£14M) · Trying to reach £100K MRR in Year 1",
+    `${products.length} products · ${capabilities.length} capabilities · ${primitives.length} primitives · ${suppliers.length} suppliers`,
     ":::",
     "",
   ];
@@ -646,39 +1297,8 @@ function renderIndexPage(nodes: PlanNode[]): string {
     sections.push("## Thesis\n");
     sections.push(theses.map((t) => `**[${t.title}](/thesis/${t.id})**`).join("\n"));
     sections.push("");
-    sections.push("We think AI agents need purpose-built infrastructure. We might be wrong. The products below are our attempt to test this.");
+    sections.push("We think AI agents need purpose-built infrastructure. We might be wrong. The products are our attempt to test this.");
     sections.push("");
-  }
-
-  // Products - with descriptions
-  if (products.length > 0) {
-    sections.push("## Products\n");
-    sections.push("What we're building.\n");
-
-    const productDescriptions: Record<string, string> = {
-      "murphy": "Delivery autopilot. Reads your Jira/Linear/GitHub, tells you what will slip and why.",
-      "p4gent": "Purchasing assistant. Tracks suppliers, monitors spend, drafts emails with relationship context.",
-      "smartboxes": "Execution infrastructure for AI agents. Isolated, auditable, controllable.",
-      "nomos-cloud": "System of record. Event-sourced domains with generated APIs.",
-    };
-
-    for (const p of products) {
-      const desc = productDescriptions[p.id] || "";
-      sections.push(`### [${p.title}](/product/${p.id})\n`);
-      sections.push(desc);
-      sections.push("");
-    }
-  }
-
-  // Projects section
-  if (projects.length > 0) {
-    sections.push("## Customer Projects\n");
-    sections.push("Built on the platform.\n");
-
-    for (const p of projects) {
-      sections.push(`### [${p.title}](/project/${p.id})\n`);
-      sections.push("");
-    }
   }
 
   // Architecture diagram
@@ -711,8 +1331,20 @@ function renderIndexPage(nodes: PlanNode[]): string {
   sections.push("└─────────────────────────────────────────────────────────────────────┘");
   sections.push("```");
   sections.push("");
-  sections.push("Products and customer projects both depend on capabilities. Click through to see specific dependencies.");
-  sections.push("");
+
+  // Products - brief
+  if (products.length > 0) {
+    sections.push("## Products\n");
+    sections.push(products.map((p) => `- [${p.title}](/product/${p.id})`).join("\n"));
+    sections.push("");
+  }
+
+  // Projects section
+  if (projects.length > 0) {
+    sections.push("## Customer Projects\n");
+    sections.push(projects.map((p) => `- [${p.title}](/project/${p.id})`).join("\n"));
+    sections.push("");
+  }
 
   // Capabilities
   if (capabilities.length > 0) {
@@ -735,6 +1367,20 @@ function renderIndexPage(nodes: PlanNode[]): string {
     sections.push("## Suppliers\n");
     sections.push("The platforms we build on.\n");
     sections.push(suppliers.map((s) => `- [${s.title}](/supplier/${s.id})`).join("\n"));
+    sections.push("");
+  }
+
+  // Supplier Primitives
+  if (supplierPrimitives.length > 0) {
+    sections.push("## Supplier Primitives\n");
+    sections.push(supplierPrimitives.map((sp) => `- [${sp.title}](/supplier-primitive/${sp.id})`).join("\n"));
+    sections.push("");
+  }
+
+  // Tooling
+  if (tooling.length > 0) {
+    sections.push("## Tooling\n");
+    sections.push(tooling.map((t) => `- [${t.title}](/tooling/${t.id})`).join("\n"));
     sections.push("");
   }
 
@@ -779,23 +1425,6 @@ function renderIndexPage(nodes: PlanNode[]): string {
     sections.push("");
   }
 
-  // Footer - the rest in collapsed sections or just simpler
-  sections.push("---\n");
-  sections.push("## Full Index\n");
-  sections.push("Everything in the graph, by type.\n");
-
-  if (supplierPrimitives.length > 0) {
-    sections.push(`**Supplier Primitives** (${supplierPrimitives.length}): `);
-    sections.push(supplierPrimitives.map((sp) => `[${sp.title}](/supplier-primitive/${sp.id})`).join(" • "));
-    sections.push("");
-  }
-
-  if (tooling.length > 0) {
-    sections.push(`**Tooling** (${tooling.length}): `);
-    sections.push(tooling.map((t) => `[${t.title}](/tooling/${t.id})`).join(" • "));
-    sections.push("");
-  }
-
   return sections.join("\n");
 }
 
@@ -806,9 +1435,13 @@ export function writePages(
   nodes: PlanNode[],
   relations: DerivedRelations
 ): void {
-  // Write index page
+  // Write index page (mum-friendly)
   const indexContent = renderIndexPage(nodes);
   writeFileSync(resolve(SITE_DOCS, "index.mdx"), indexContent, "utf-8");
+
+  // Write technical details page
+  const technicalContent = renderTechnicalPage(nodes);
+  writeFileSync(resolve(SITE_DOCS, "technical.mdx"), technicalContent, "utf-8");
 
   // Write individual node pages
   for (const node of nodes) {

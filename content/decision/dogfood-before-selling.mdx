@@ -1,0 +1,87 @@
+# Dogfood Before Selling
+
+> We use SmartBoxes ourselves for real work before selling it to customers.
+
+## Context
+
+We could start selling SmartBoxes immediately after MVP, or use it internally first to validate and refine. This decision affects product quality, time-to-revenue, and our ability to speak authentically about the product.
+
+## Alternatives Considered
+
+| Option | Why Not Chosen |
+|--------|----------------|
+| **Immediate beta release** | Faster revenue but risk of poor first impressions, bugs in production, support burden |
+| **Paid alpha with early adopters** | Revenue earlier but requires support capacity we don't have, could damage reputation |
+| **Skip internal use entirely** | Fastest to market but we'd be selling something we don't believe in |
+
+## The Decision
+
+Use SmartBoxes ourselves for real work for at least 4 weeks before inviting external users.
+
+**What "real work" means:**
+- Using SmartBoxes to develop Murphy and other products
+- Running AI agents for actual tasks (code generation, data processing)
+- Treating it as our primary development environment, not a demo
+- Documenting what works, what breaks, what's confusing
+
+**Why dogfooding:**
+1. **Validates the product** — if we won't use it, why would anyone else?
+2. **Finds bugs before customers** — we're the first angry users
+3. **Generates authentic content** — real stories, not manufactured examples
+4. **Builds conviction** — we know the product intimately when selling
+5. **Creates case study** — "we built X with SmartBoxes" is credible proof
+
+## Tradeoffs Accepted
+
+**What we're giving up:**
+- Delays time to first external user by 4+ weeks
+- May over-optimise for our own use case (developer, solo, specific workflows)
+- Risk of building in a bubble (no external feedback)
+- Revenue starts later
+
+**What we're accepting:**
+- Need to balance dogfooding time with shipping pressure
+- Our use case may not represent typical customer
+- May discover product doesn't work for our needs (good to know early)
+
+## Reversal Triggers
+
+Revisit this decision if:
+- 4 weeks pass without meaningful internal use (we're not actually dogfooding)
+- External demand too strong to delay (waitlist overflowing, press interest)
+- Internal use case too different from target market (we're not learning relevant lessons)
+- Runway constraints require faster revenue (burn rate higher than expected)
+
+**Early warning signs:**
+- Finding excuses not to use SmartBoxes ourselves
+- Preferring other tools for "real work"
+- Internal bugs not being fixed (low priority)
+- No content/stories emerging from internal use
+
+## Review Schedule
+
+**Next review:** 2025-03-15 (or at 4-week mark)
+
+**Review questions:**
+1. Have we logged 10+ hours/week of SmartBoxes usage?
+2. What have we learned about the product?
+3. What bugs/issues have we found and fixed?
+4. Are we ready for external users?
+
+## Related
+
+**Depends on assumption:**
+- [Can Ship Fast Enough](/assumption/can-ship-fast-enough) — can only dogfood if we ship
+
+**Supports guiding policy:**
+- [Dogfood First](/guiding-policy/dogfood-first)
+
+**Affects product:**
+- [SmartBoxes](/product/smartboxes)
+
+**Affects milestone:**
+- [SmartBox MVP](/milestone/smartbox-mvp)
+
+**Tracked by:**
+- [Internal Usage Hours](/proxy-metric/internal-usage-hours)
+- [Commands Per Session](/proxy-metric/commands-per-session)

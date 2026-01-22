@@ -1,0 +1,25 @@
+# Event Sourcing Patterns
+
+We can design and implement event-sourced domain models with snapshot materialisation and audit trails.
+
+## Evidence
+
+This isn't a claimed capability - it's demonstrated by working code:
+
+- **Nomos Dart** - Full event-sourcing implementation with domain models, event stores, and materialised views
+
+## Why This Matters
+
+Event sourcing provides:
+- Complete audit trail of all state changes (critical for regulated industries)
+- Ability to replay history and reconstruct past states
+- Natural fit for AI observability (every action is an event)
+- Time-travel debugging for complex workflows
+
+## Depth of Knowledge
+
+- Event store design and optimisation
+- Snapshot materialisation strategies
+- Projection patterns for read models
+- Saga/process manager coordination
+- CQRS separation for performance

@@ -34,10 +34,33 @@ const KIND_LABELS: Record<NodeKind, string> = {
   supplier: "Suppliers",
   customer: "Customers",
   competitor: "Competitors",
+  // Rumelt's Good Strategy framework
+  constraint: "Constraints",
+  competency: "Competencies",
+  diagnosis: "Diagnosis",
+  "guiding-policy": "Guiding Policies",
+  "action-gate": "Action Gates",
+  "proxy-metric": "Proxy Metrics",
+  // Assumption tracking
+  assumption: "Assumptions",
+  // Decision tracking
+  decision: "Decisions",
 };
 
 const KIND_ORDER: NodeKind[] = [
   "thesis",
+  // Rumelt's Good Strategy framework (strategic hierarchy)
+  "diagnosis",
+  "guiding-policy",
+  "action-gate",
+  "constraint",
+  "competency",
+  "proxy-metric",
+  // Assumption tracking
+  "assumption",
+  // Decision tracking
+  "decision",
+  // Products and execution
   "product",
   "project",
   "milestone",
@@ -57,6 +80,12 @@ const KIND_ORDER: NodeKind[] = [
  */
 const STATIC_PAGES: StarlightNavGroup[] = [
   {
+    label: "Overview",
+    items: [
+      { label: "Technical Details", slug: "technical" },
+    ],
+  },
+  {
     label: "Timelines",
     items: [
       { label: "Overview", slug: "timeline" },
@@ -75,6 +104,7 @@ const STATIC_PAGES: StarlightNavGroup[] = [
     label: "Team & Strategy",
     items: [
       { label: "Team", slug: "team" },
+      { label: "GTM Strategy Spectrum", slug: "strategy/gtm-spectrum" },
       { label: "Go-to-Market Sequence", slug: "strategy/gtm-sequence" },
     ],
   },

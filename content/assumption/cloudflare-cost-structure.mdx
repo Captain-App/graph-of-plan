@@ -1,0 +1,94 @@
+# Cloudflare Cost Structure Works
+
+> Cloudflare's pricing model (Workers, Durable Objects, R2) will remain cost-competitive for our workload patterns and unit economics.
+
+## The Assumption
+
+Our entire technical architecture is built on Cloudflare primitives. We're betting that:
+1. Current pricing remains stable (no >50% increases)
+2. Our workload patterns align with their pricing model
+3. Costs scale sub-linearly with usage (economies of scale, not diseconomies)
+4. No hidden costs emerge at scale (egress, CPU limits, etc.)
+
+This is a supplier concentration risk we're explicitly accepting in exchange for developer experience and time-to-market.
+
+## Evidence
+
+**Current evidence:**
+- Dev costs tracking within projections (~$50/month at current scale)
+- Workers pricing stable for 2+ years (no significant changes)
+- Cloudflare's business model incentivises aggressive pricing (they want ecosystem lock-in)
+- No egress fees (unlike AWS/GCP)—reduces cost surprises
+
+**Pricing model analysis:**
+- Workers: $0.50/million requests (paid plan) — predictable
+- Durable Objects: $0.15/million requests + $0.15/GB-month storage — potentially expensive at scale
+- R2: $0.015/GB-month storage, no egress — very competitive
+- D1: $0.75/million reads, $1.00/million writes — reasonable
+
+**Risk factors:**
+- Durable Objects could become expensive with high-frequency access patterns
+- CPU time limits (50ms free, 30s paid) could limit compute-heavy agents
+- Cloudflare's pricing power increases as we become more dependent
+
+## Counter-Evidence
+
+**What would prove this wrong:**
+- Cloudflare raises prices >50% on core primitives
+- Our workload patterns hit expensive tiers unexpectedly
+- Gross margin under 50% at projected 1,000-customer scale
+- Egress fees introduced (breaking a key advantage)
+
+**Warning signs to monitor:**
+- Cloudflare quarterly earnings mentioning pricing changes
+- Developer community complaints about cost surprises
+- Our own bills growing faster than usage
+
+## Impact If Wrong
+
+**Products affected:** All products—SmartBoxes, Nomos Cloud, Murphy, P4gent
+
+**Technical impact:** Would need to:
+- Re-architect for AWS/GCP (6+ months of work)
+- Accept higher baseline costs
+- Lose edge-first deployment model
+- Rebuild around different primitives (Lambda, DynamoDB, etc.)
+
+**Financial impact:**
+- At 1,000 customers, 50% cost increase = ~£2,000/month additional COGS
+- Could flip unit economics from profitable to unprofitable
+- Runway consumed faster if we need to migrate
+
+**Mitigation strategies:**
+- Keep architecture portable where possible
+- Monitor costs weekly, not monthly
+- Set alerts for cost anomalies
+- Maintain relationship with Cloudflare (startup credits, communication)
+
+## Testing Plan
+
+**Ongoing monitoring:**
+1. Weekly cost review: Track spend per primitive
+2. Unit economics model: Update with real data as usage grows
+3. Cloudflare communications: Monitor announcements, earnings calls
+4. Competitive pricing: Track AWS/GCP/Fly.io/Modal alternatives
+
+**Stress testing:**
+- Model 10x usage scenarios before they happen
+- Identify which primitives become expensive at scale
+- Have migration plan documented (even if we never use it)
+
+**Review frequency:** Quarterly (or immediately if pricing announced)
+
+**Kill criteria:** If costs exceed 30% of revenue at target scale, evaluate migration.
+
+## Related
+
+**Creates risk:**
+- [Supplier Concentration Risk](/risk/supplier-concentration) — explicit dependency on Cloudflare
+
+**Enables decision:**
+- [Cloudflare-First Architecture](/decision/cloudflare-first) — this assumption justifies the decision
+
+**Affects products:**
+- [SmartBoxes](/product/smartboxes), [Nomos Cloud](/product/nomos-cloud), [Murphy](/product/murphy), [P4gent](/product/p4gent)

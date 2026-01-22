@@ -1,0 +1,74 @@
+# Developers Will Pay For Sandboxes
+
+> Developers and AI-native companies will pay for managed sandbox infrastructure rather than building their own.
+
+## The Assumption
+
+Given that agents need sandboxes (separate assumption), the question is whether developers will pay for a managed solution or build in-house.
+
+We're betting that the operational complexity of sandboxing—scaling, multi-tenancy, capability management, cold starts, state persistence—makes managed solutions worthwhile. Just as developers pay for managed databases rather than running Postgres themselves, they'll pay for managed sandboxes.
+
+The alternative hypothesis: sandboxing is "too simple" to outsource. Developers will containerise their own solutions using Docker, Firecracker, or basic VM isolation. If true, the market is much smaller—only enterprises with sophisticated needs would pay.
+
+## Evidence
+
+**Build vs. buy signals:**
+- E2B, Modal gaining traction with managed compute for AI
+- Developers consistently underestimate operational complexity until they hit scale
+- Cloud functions (Lambda, Cloudflare Workers) succeeded despite "just run containers yourself" being possible
+
+**Price sensitivity data:**
+- E2B charging $0.005/min for sandboxes—developers paying without complaint
+- Modal's compute pricing accepted by AI developers
+- Cloud functions have proven developers will pay premium for convenience
+
+**Counter-signals:**
+- Many early-stage startups just run agents on their own infra
+- Open source containerisation tools are mature and well-documented
+- Some developers pride themselves on not paying for "wrapper" services
+
+## Counter-Evidence
+
+**What would prove this wrong:**
+- Customers consistently build in-house when offered our solution
+- Open source sandbox solutions become adequate for production use
+- Price sensitivity prevents viable unit economics (developers won't pay enough to cover our costs)
+- The "just use Docker" approach proves sufficient for 90%+ of use cases
+
+## Impact If Wrong
+
+**Products affected:** SmartBoxes entirely
+
+**Revenue model impact:** If developers won't pay, we'd need to:
+- Pivot to enterprise-only (longer sales cycles, different GTM)
+- Find a different value prop (not isolation, maybe observability/debugging)
+- Bundle sandboxing free with a paid product
+
+**Unit economics:** At our target price ($50-200/month for active users), we need 150+ paying customers for sustainable MRR. If the market is 10x smaller, the business doesn't work.
+
+## Testing Plan
+
+**Minimum viable test:**
+1. Pricing page experiment: Show pricing before signup, track conversion
+2. Customer interviews: Ask about current solutions, pain points, willingness to pay
+3. Competitive analysis: How are E2B, Modal customers behaving?
+
+**Key questions to answer:**
+- What's the maximum developers will pay for sandboxing?
+- At what scale does build-in-house become more attractive?
+- What features justify premium pricing (persistence, snapshots, capability scoping)?
+
+**Timeline:** Validate within first 3 months of beta
+
+**Kill criteria:** If 0/10 early users convert to paid AND pricing experiments show under 1% conversion, revisit pricing model or pivot.
+
+## Related
+
+**Depends on:**
+- [Agents Need Sandboxes](/assumption/agents-need-sandboxes) — if agents don't need isolation, there's nothing to sell
+
+**Supports:**
+- [PLG Works For Infrastructure](/assumption/plg-works-for-infra) — if developers pay, self-serve can work
+
+**Validated by milestones:**
+- [SmartBox First Revenue](/milestone/smartbox-revenue) — first paying customers prove willingness to pay

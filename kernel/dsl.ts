@@ -25,6 +25,23 @@ import {
   Repository,
   StackLevel,
   RepoType,
+  Constraint,
+  ConstraintSeverity,
+  ConstraintCategory,
+  Competency,
+  Diagnosis,
+  GuidingPolicy,
+  ProxyMetric,
+  MeasurementFrequency,
+  ActionGate,
+  Assumption,
+  AssumptionStatus,
+  AssumptionCategory,
+  ReviewFrequency,
+  Decision,
+  DecisionStatus,
+  DecisionCategory,
+  RejectedAlternative,
 } from "./schema.js";
 
 // ============================================================================
@@ -129,6 +146,7 @@ interface MilestoneDef {
   dependsOnMilestones?: string[];
   dependsOnCapabilities?: string[];
   products?: string[];
+  gatedBy?: string[]; // ActionGate IDs
   timelines: {
     expected: TimelineConfigDef;
     aggressive: TimelineConfigDef;
@@ -152,6 +170,104 @@ interface RepositoryDef {
 }
 
 /**
+ * Constraint definition (Rumelt's framework)
+ */
+interface ConstraintDef {
+  title: string;
+  severity: ConstraintSeverity;
+  category: ConstraintCategory;
+}
+
+/**
+ * Competency definition (Rumelt's framework)
+ */
+interface CompetencyDef {
+  title: string;
+  evidencedBy: string[]; // Repository IDs
+}
+
+/**
+ * Diagnosis definition (Rumelt's framework)
+ */
+interface DiagnosisDef {
+  title: string;
+  evidencedBy: string[]; // Risk IDs
+  constrainedBy: string[]; // Constraint IDs
+}
+
+/**
+ * Guiding policy definition (Rumelt's framework)
+ */
+interface GuidingPolicyDef {
+  title: string;
+  addressesDiagnosis: string; // Diagnosis ID
+  leveragesCompetencies: string[]; // Competency IDs
+  worksAroundConstraints: string[]; // Constraint IDs
+}
+
+/**
+ * Proxy metric definition (Rumelt's framework)
+ */
+interface ProxyMetricDef {
+  title: string;
+  currentValue: number;
+  targetValue: number;
+  frequency: MeasurementFrequency;
+  unit: string;
+}
+
+/**
+ * Action gate definition (Rumelt's framework)
+ */
+interface ActionGateDef {
+  title: string;
+  action: string;
+  passCriteria: string[];
+  proxyMetrics: string[]; // ProxyMetric IDs
+  blockedBy?: string[]; // ActionGate IDs
+  unlocks?: string[]; // ActionGate IDs
+}
+
+/**
+ * Assumption definition - documented assumptions underpinning the plan
+ */
+interface AssumptionDef {
+  title: string;
+  statement: string;
+  category: AssumptionCategory;
+  status: AssumptionStatus;
+  testMethod: string;
+  validationCriteria: string[];
+  invalidationCriteria: string[];
+  currentEvidence?: string[];
+  confidence: number; // 0-100
+  reviewFrequency: ReviewFrequency;
+  dependentProducts?: string[]; // Product IDs
+  dependentMilestones?: string[]; // Milestone IDs
+  relatedRisks?: string[]; // Risk IDs
+}
+
+/**
+ * Decision definition - strategic choices made under scarcity
+ */
+interface DecisionDef {
+  title: string;
+  context: string;
+  category: DecisionCategory;
+  status: DecisionStatus;
+  alternatives: RejectedAlternative[];
+  choice: string;
+  rationale: string;
+  tradeoffs: string[];
+  reversalTriggers: string[];
+  reviewDate: string; // ISO date string
+  dependsOnAssumptions?: string[]; // Assumption IDs
+  affectedProducts?: string[]; // Product IDs
+  affectedMilestones?: string[]; // Milestone IDs
+  supersededBy?: string; // Decision ID (for self-reference)
+}
+
+/**
  * The complete graph definition
  */
 export interface GraphDef {
@@ -168,6 +284,17 @@ export interface GraphDef {
   milestones?: Record<string, MilestoneDef>;
   repositories?: Record<string, RepositoryDef>;
   thesis?: Record<string, ThesisDef>;
+  // Rumelt's Good Strategy framework
+  constraints?: Record<string, ConstraintDef>;
+  competencies?: Record<string, CompetencyDef>;
+  diagnoses?: Record<string, DiagnosisDef>;
+  guidingPolicies?: Record<string, GuidingPolicyDef>;
+  proxyMetrics?: Record<string, ProxyMetricDef>;
+  actionGates?: Record<string, ActionGateDef>;
+  // Assumption tracking
+  assumptions?: Record<string, AssumptionDef>;
+  // Decision tracking
+  decisions?: Record<string, DecisionDef>;
 }
 
 // ============================================================================
@@ -598,6 +725,385 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     );
   }
 
+  // ============================================================================
+  // RUMELT'S GOOD STRATEGY FRAMEWORK
+  // ============================================================================
+
+  // Phase 11: Create constraints (leaf nodes)
+  const constraints = new Map<string, Constraint>();
+
+  for (const [id, constDef] of Object.entries(def.constraints ?? {})) {
+    constraints.set(
+      id,
+      new Constraint(id, constDef.title, constDef.severity, constDef.category)
+    );
+  }
+
+  // Phase 12: Create proxy metrics (leaf nodes)
+  const proxyMetrics = new Map<string, ProxyMetric>();
+
+  for (const [id, pmDef] of Object.entries(def.proxyMetrics ?? {})) {
+    proxyMetrics.set(
+      id,
+      new ProxyMetric(
+        id,
+        pmDef.title,
+        pmDef.currentValue,
+        pmDef.targetValue,
+        pmDef.frequency,
+        pmDef.unit
+      )
+    );
+  }
+
+  // Phase 13: Create competencies (depend on repositories)
+  const competencies = new Map<string, Competency>();
+
+  for (const [id, compDef] of Object.entries(def.competencies ?? {})) {
+    const evidencedBy = compDef.evidencedBy.map((repoId) => {
+      const repo = repositories.get(repoId);
+      if (!repo) {
+        throw new Error(
+          `Competency "${id}" references unknown repository "${repoId}"`
+        );
+      }
+      return repo;
+    });
+    competencies.set(id, new Competency(id, compDef.title, evidencedBy));
+  }
+
+  // Phase 14: Create diagnoses (depend on risks and constraints)
+  const diagnoses = new Map<string, Diagnosis>();
+
+  for (const [id, diagDef] of Object.entries(def.diagnoses ?? {})) {
+    const evidencedBy = diagDef.evidencedBy.map((riskId) => {
+      const risk = risks.get(riskId);
+      if (!risk) {
+        throw new Error(
+          `Diagnosis "${id}" references unknown risk "${riskId}"`
+        );
+      }
+      return risk;
+    });
+
+    const constrainedBy = diagDef.constrainedBy.map((constId) => {
+      const constraint = constraints.get(constId);
+      if (!constraint) {
+        throw new Error(
+          `Diagnosis "${id}" references unknown constraint "${constId}"`
+        );
+      }
+      return constraint;
+    });
+
+    diagnoses.set(id, new Diagnosis(id, diagDef.title, evidencedBy, constrainedBy));
+  }
+
+  // Phase 15: Create action gates (depend on proxy metrics and other gates)
+  // Two-pass approach: first create with empty gate deps, then resolve
+  const actionGates = new Map<string, ActionGate>();
+  const actionGateDeps = new Map<string, { blockedBy: string[]; unlocks: string[] }>();
+
+  // Pass 1: Create action gates with empty blockedBy and unlocks
+  for (const [id, gateDef] of Object.entries(def.actionGates ?? {})) {
+    const gateMetrics = gateDef.proxyMetrics.map((pmId) => {
+      const pm = proxyMetrics.get(pmId);
+      if (!pm) {
+        throw new Error(
+          `ActionGate "${id}" references unknown proxy metric "${pmId}"`
+        );
+      }
+      return pm;
+    });
+
+    // Store deps for second pass
+    actionGateDeps.set(id, {
+      blockedBy: gateDef.blockedBy ?? [],
+      unlocks: gateDef.unlocks ?? [],
+    });
+
+    actionGates.set(
+      id,
+      new ActionGate(
+        id,
+        gateDef.title,
+        gateDef.action,
+        gateDef.passCriteria,
+        gateMetrics,
+        [], // Placeholder - resolved in pass 2
+        []  // Placeholder - resolved in pass 2
+      )
+    );
+  }
+
+  // Pass 2: Resolve action gate-to-action gate dependencies
+  for (const [id, deps] of actionGateDeps.entries()) {
+    if (deps.blockedBy.length === 0 && deps.unlocks.length === 0) continue;
+
+    const blockedBy = deps.blockedBy.map((gateId) => {
+      const gate = actionGates.get(gateId);
+      if (!gate) {
+        throw new Error(
+          `ActionGate "${id}" references unknown action gate "${gateId}" in blockedBy`
+        );
+      }
+      return gate;
+    });
+
+    const unlocks = deps.unlocks.map((gateId) => {
+      const gate = actionGates.get(gateId);
+      if (!gate) {
+        throw new Error(
+          `ActionGate "${id}" references unknown action gate "${gateId}" in unlocks`
+        );
+      }
+      return gate;
+    });
+
+    // Get the existing gate and recreate with resolved deps
+    const existing = actionGates.get(id)!;
+    actionGates.set(
+      id,
+      new ActionGate(
+        existing.id,
+        existing.title,
+        existing.action,
+        existing.passCriteria,
+        existing.proxyMetrics,
+        blockedBy,
+        unlocks
+      )
+    );
+  }
+
+  // Phase 16: Create guiding policies (depend on diagnoses, competencies, constraints)
+  const guidingPolicies = new Map<string, GuidingPolicy>();
+
+  for (const [id, gpDef] of Object.entries(def.guidingPolicies ?? {})) {
+    const diagnosis = diagnoses.get(gpDef.addressesDiagnosis);
+    if (!diagnosis) {
+      throw new Error(
+        `GuidingPolicy "${id}" references unknown diagnosis "${gpDef.addressesDiagnosis}"`
+      );
+    }
+
+    const leveragesCompetencies = gpDef.leveragesCompetencies.map((compId) => {
+      const comp = competencies.get(compId);
+      if (!comp) {
+        throw new Error(
+          `GuidingPolicy "${id}" references unknown competency "${compId}"`
+        );
+      }
+      return comp;
+    });
+
+    const worksAroundConstraints = gpDef.worksAroundConstraints.map((constId) => {
+      const constraint = constraints.get(constId);
+      if (!constraint) {
+        throw new Error(
+          `GuidingPolicy "${id}" references unknown constraint "${constId}"`
+        );
+      }
+      return constraint;
+    });
+
+    guidingPolicies.set(
+      id,
+      new GuidingPolicy(
+        id,
+        gpDef.title,
+        diagnosis,
+        leveragesCompetencies,
+        worksAroundConstraints
+      )
+    );
+  }
+
+  // Phase 17: Resolve milestone gatedBy (depends on action gates)
+  for (const [id, msDef] of Object.entries(def.milestones ?? {})) {
+    const gatedByIds = msDef.gatedBy ?? [];
+    if (gatedByIds.length === 0) continue;
+
+    const gatedBy = gatedByIds.map((gateId) => {
+      const gate = actionGates.get(gateId);
+      if (!gate) {
+        throw new Error(
+          `Milestone "${id}" references unknown action gate "${gateId}" in gatedBy`
+        );
+      }
+      return gate;
+    });
+
+    // Get the existing milestone and recreate with gatedBy
+    const existing = milestones.get(id)!;
+    milestones.set(
+      id,
+      new Milestone(
+        existing.id,
+        existing.title,
+        existing.expectedRevenue,
+        existing.expectedCosts,
+        existing.dependsOnMilestones,
+        existing.dependsOnCapabilities,
+        existing.products,
+        existing.timelines,
+        gatedBy
+      )
+    );
+  }
+
+  // Phase 18: Create assumptions (depend on products, milestones, risks)
+  const assumptions = new Map<string, Assumption>();
+
+  for (const [id, assumptionDef] of Object.entries(def.assumptions ?? {})) {
+    const dependentProducts = (assumptionDef.dependentProducts ?? []).map((prodId) => {
+      const prod = products.get(prodId);
+      if (!prod) {
+        throw new Error(
+          `Assumption "${id}" references unknown product "${prodId}"`
+        );
+      }
+      return prod;
+    });
+
+    const dependentMilestones = (assumptionDef.dependentMilestones ?? []).map((msId) => {
+      const ms = milestones.get(msId);
+      if (!ms) {
+        throw new Error(
+          `Assumption "${id}" references unknown milestone "${msId}"`
+        );
+      }
+      return ms;
+    });
+
+    const relatedRisks = (assumptionDef.relatedRisks ?? []).map((riskId) => {
+      const risk = risks.get(riskId);
+      if (!risk) {
+        throw new Error(
+          `Assumption "${id}" references unknown risk "${riskId}"`
+        );
+      }
+      return risk;
+    });
+
+    assumptions.set(
+      id,
+      new Assumption(
+        id,
+        assumptionDef.title,
+        assumptionDef.statement,
+        assumptionDef.category,
+        assumptionDef.status,
+        assumptionDef.testMethod,
+        assumptionDef.validationCriteria,
+        assumptionDef.invalidationCriteria,
+        assumptionDef.currentEvidence ?? [],
+        assumptionDef.confidence,
+        assumptionDef.reviewFrequency,
+        dependentProducts,
+        dependentMilestones,
+        relatedRisks
+      )
+    );
+  }
+
+  // Phase 19: Create decisions (depend on assumptions, products, milestones, and other decisions)
+  // Two-pass approach: first create with null supersededBy, then resolve
+  const decisions = new Map<string, Decision>();
+  const decisionSupersededBy = new Map<string, string | undefined>(); // Store for second pass
+
+  // Pass 1: Create decisions with null supersededBy
+  for (const [id, decisionDef] of Object.entries(def.decisions ?? {})) {
+    const dependsOnAssumptions = (decisionDef.dependsOnAssumptions ?? []).map((assumptionId) => {
+      const assumption = assumptions.get(assumptionId);
+      if (!assumption) {
+        throw new Error(
+          `Decision "${id}" references unknown assumption "${assumptionId}"`
+        );
+      }
+      return assumption;
+    });
+
+    const affectedProducts = (decisionDef.affectedProducts ?? []).map((prodId) => {
+      const prod = products.get(prodId);
+      if (!prod) {
+        throw new Error(
+          `Decision "${id}" references unknown product "${prodId}"`
+        );
+      }
+      return prod;
+    });
+
+    const affectedMilestones = (decisionDef.affectedMilestones ?? []).map((msId) => {
+      const ms = milestones.get(msId);
+      if (!ms) {
+        throw new Error(
+          `Decision "${id}" references unknown milestone "${msId}"`
+        );
+      }
+      return ms;
+    });
+
+    // Store supersededBy for second pass
+    decisionSupersededBy.set(id, decisionDef.supersededBy);
+
+    decisions.set(
+      id,
+      new Decision(
+        id,
+        decisionDef.title,
+        decisionDef.context,
+        decisionDef.category,
+        decisionDef.status,
+        decisionDef.alternatives,
+        decisionDef.choice,
+        decisionDef.rationale,
+        decisionDef.tradeoffs,
+        decisionDef.reversalTriggers,
+        decisionDef.reviewDate,
+        dependsOnAssumptions,
+        affectedProducts,
+        affectedMilestones,
+        null // Placeholder - resolved in pass 2
+      )
+    );
+  }
+
+  // Pass 2: Resolve decision-to-decision supersededBy references
+  for (const [id, supersededById] of decisionSupersededBy.entries()) {
+    if (!supersededById) continue;
+
+    const supersededBy = decisions.get(supersededById);
+    if (!supersededBy) {
+      throw new Error(
+        `Decision "${id}" references unknown decision "${supersededById}" in supersededBy`
+      );
+    }
+
+    // Get the existing decision and recreate with resolved supersededBy
+    const existing = decisions.get(id)!;
+    decisions.set(
+      id,
+      new Decision(
+        existing.id,
+        existing.title,
+        existing.context,
+        existing.category,
+        existing.status,
+        existing.alternatives,
+        existing.choice,
+        existing.rationale,
+        existing.tradeoffs,
+        existing.reversalTriggers,
+        existing.reviewDate,
+        existing.dependsOnAssumptions,
+        existing.affectedProducts,
+        existing.affectedMilestones,
+        supersededBy
+      )
+    );
+  }
+
   // Combine all nodes in dependency order
   return [
     ...primitives.values(),
@@ -613,5 +1119,16 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     ...milestones.values(),
     ...repositories.values(),
     ...theses.values(),
+    // Rumelt's Good Strategy framework
+    ...constraints.values(),
+    ...proxyMetrics.values(),
+    ...competencies.values(),
+    ...diagnoses.values(),
+    ...actionGates.values(),
+    ...guidingPolicies.values(),
+    // Assumption tracking
+    ...assumptions.values(),
+    // Decision tracking
+    ...decisions.values(),
   ];
 }
