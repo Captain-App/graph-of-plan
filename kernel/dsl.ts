@@ -37,6 +37,7 @@ import {
   Assumption,
   AssumptionStatus,
   AssumptionCategory,
+  AssumptionCriticality,
   ReviewFrequency,
   Decision,
   DecisionStatus,
@@ -236,6 +237,7 @@ interface AssumptionDef {
   statement: string;
   category: AssumptionCategory;
   status: AssumptionStatus;
+  criticality: AssumptionCriticality;
   testMethod: string;
   validationCriteria: string[];
   invalidationCriteria: string[];
@@ -245,6 +247,7 @@ interface AssumptionDef {
   dependentProducts?: string[]; // Product IDs
   dependentMilestones?: string[]; // Milestone IDs
   relatedRisks?: string[]; // Risk IDs
+  dependsOnAssumptions?: string[]; // Assumption IDs - forms the dependency chain
 }
 
 /**
@@ -952,9 +955,12 @@ export function defineGraph(def: GraphDef): PlanNode[] {
     );
   }
 
-  // Phase 18: Create assumptions (depend on products, milestones, risks)
+  // Phase 18: Create assumptions (depend on products, milestones, risks, and other assumptions)
+  // Two-pass approach: first create with empty assumption deps, then resolve
   const assumptions = new Map<string, Assumption>();
+  const assumptionDeps = new Map<string, string[]>(); // Store deps for second pass
 
+  // Pass 1: Create assumptions with empty dependsOnAssumptions
   for (const [id, assumptionDef] of Object.entries(def.assumptions ?? {})) {
     const dependentProducts = (assumptionDef.dependentProducts ?? []).map((prodId) => {
       const prod = products.get(prodId);
@@ -986,6 +992,9 @@ export function defineGraph(def: GraphDef): PlanNode[] {
       return risk;
     });
 
+    // Store assumption deps for second pass
+    assumptionDeps.set(id, assumptionDef.dependsOnAssumptions ?? []);
+
     assumptions.set(
       id,
       new Assumption(
@@ -994,6 +1003,7 @@ export function defineGraph(def: GraphDef): PlanNode[] {
         assumptionDef.statement,
         assumptionDef.category,
         assumptionDef.status,
+        assumptionDef.criticality,
         assumptionDef.testMethod,
         assumptionDef.validationCriteria,
         assumptionDef.invalidationCriteria,
@@ -1002,7 +1012,47 @@ export function defineGraph(def: GraphDef): PlanNode[] {
         assumptionDef.reviewFrequency,
         dependentProducts,
         dependentMilestones,
-        relatedRisks
+        relatedRisks,
+        [] // Placeholder - resolved in pass 2
+      )
+    );
+  }
+
+  // Pass 2: Resolve assumption-to-assumption dependencies
+  for (const [id, depIds] of assumptionDeps.entries()) {
+    if (depIds.length === 0) continue;
+
+    const dependsOnAssumptions = depIds.map((assumptionId) => {
+      const assumption = assumptions.get(assumptionId);
+      if (!assumption) {
+        throw new Error(
+          `Assumption "${id}" references unknown assumption "${assumptionId}"`
+        );
+      }
+      return assumption;
+    });
+
+    // Get the existing assumption and recreate with resolved deps
+    const existing = assumptions.get(id)!;
+    assumptions.set(
+      id,
+      new Assumption(
+        existing.id,
+        existing.title,
+        existing.statement,
+        existing.category,
+        existing.status,
+        existing.criticality,
+        existing.testMethod,
+        existing.validationCriteria,
+        existing.invalidationCriteria,
+        existing.currentEvidence,
+        existing.confidence,
+        existing.reviewFrequency,
+        existing.dependentProducts,
+        existing.dependentMilestones,
+        existing.relatedRisks,
+        dependsOnAssumptions
       )
     );
   }

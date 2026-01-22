@@ -372,6 +372,15 @@ export type AssumptionCategory =
 export type ReviewFrequency = "weekly" | "monthly" | "quarterly";
 
 /**
+ * How critical is this assumption to the overall plan
+ * - foundation: If wrong, the entire thesis fails
+ * - critical: If wrong, major products fail
+ * - important: If wrong, specific features or GTM fails
+ * - supporting: If wrong, we adapt but continue
+ */
+export type AssumptionCriticality = "foundation" | "critical" | "important" | "supporting";
+
+/**
  * A documented assumption that underpins the plan
  */
 export class Assumption extends PlanNode {
@@ -381,6 +390,7 @@ export class Assumption extends PlanNode {
     public readonly statement: string,
     public readonly category: AssumptionCategory,
     public readonly status: AssumptionStatus,
+    public readonly criticality: AssumptionCriticality,
     public readonly testMethod: string,
     public readonly validationCriteria: string[],
     public readonly invalidationCriteria: string[],
@@ -389,7 +399,8 @@ export class Assumption extends PlanNode {
     public readonly reviewFrequency: ReviewFrequency,
     public readonly dependentProducts: Product[],
     public readonly dependentMilestones: Milestone[],
-    public readonly relatedRisks: Risk[]
+    public readonly relatedRisks: Risk[],
+    public readonly dependsOnAssumptions: Assumption[]
   ) {
     super("assumption", id, title);
   }

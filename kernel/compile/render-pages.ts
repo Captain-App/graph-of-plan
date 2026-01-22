@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant, Repository, StackLevel, RepoType, Constraint, ConstraintSeverity, ConstraintCategory, Competency, Diagnosis, GuidingPolicy, ActionGate, ProxyMetric, MeasurementFrequency, Assumption, AssumptionStatus, AssumptionCategory, ReviewFrequency, Decision, DecisionStatus, DecisionCategory } from "../schema.js";
+import type { PlanNode, Thesis, Capability, Risk, Product, Project, Supplier, SupplierPrimitive, Tooling, Customer, Competitor, RiskStatus, ThreatLevel, Milestone, TimelineVariant, Repository, StackLevel, RepoType, Constraint, ConstraintSeverity, ConstraintCategory, Competency, Diagnosis, GuidingPolicy, ActionGate, ProxyMetric, MeasurementFrequency, Assumption, AssumptionStatus, AssumptionCategory, AssumptionCriticality, ReviewFrequency, Decision, DecisionStatus, DecisionCategory } from "../schema.js";
 import { isThesis, isCapability, isRisk, isProduct, isProject, isPrimitive, isSupplierPrimitive, isTooling, isSupplier, isCustomer, isCompetitor, isMilestone, isRepository, isConstraint, isCompetency, isDiagnosis, isGuidingPolicy, isActionGate, isProxyMetric, isAssumption, isDecision } from "../schema.js";
 import { loadContent } from "./load-content.js";
 import type { DerivedRelations } from "./derive-relations.js";
@@ -141,6 +141,26 @@ function formatReviewFrequency(frequency: ReviewFrequency): string {
   return labels[frequency];
 }
 
+function formatAssumptionCriticality(criticality: AssumptionCriticality): string {
+  const labels: Record<AssumptionCriticality, string> = {
+    foundation: "Foundation",
+    critical: "Critical",
+    important: "Important",
+    supporting: "Supporting",
+  };
+  return labels[criticality];
+}
+
+function formatAssumptionCriticalityEmoji(criticality: AssumptionCriticality): string {
+  const emojis: Record<AssumptionCriticality, string> = {
+    foundation: "🏛️",
+    critical: "🔴",
+    important: "🟠",
+    supporting: "🟢",
+  };
+  return emojis[criticality];
+}
+
 function formatDecisionStatus(status: DecisionStatus): string {
   const labels: Record<DecisionStatus, string> = {
     active: "Active",
@@ -225,7 +245,7 @@ export function renderPage(node: PlanNode, relations: DerivedRelations): string 
 
   // Add assumption badge
   const assumptionBadge = isAssumption(node)
-    ? `:::note[${formatAssumptionStatusEmoji(node.status)} ${formatAssumptionStatus(node.status)} · ${formatAssumptionCategory(node.category)} · ${node.confidence}% confidence]\nReview: ${formatReviewFrequency(node.reviewFrequency)}\n:::\n\n`
+    ? `:::note[${formatAssumptionCriticalityEmoji(node.criticality)} ${formatAssumptionCriticality(node.criticality)} · ${formatAssumptionStatusEmoji(node.status)} ${formatAssumptionStatus(node.status)} · ${node.confidence}% confidence]\n${formatAssumptionCategory(node.category)} assumption · Review: ${formatReviewFrequency(node.reviewFrequency)}\n:::\n\n`
     : "";
 
   // Add decision badge
@@ -1016,6 +1036,23 @@ function renderAssumptionRelations(
   // Statement
   sections.push(`## Assumption\n\n> ${assumption.statement}`);
 
+  // Dependency chain - what this assumption depends on
+  if (assumption.dependsOnAssumptions.length > 0) {
+    const links = assumption.dependsOnAssumptions
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionCriticalityEmoji(a.criticality)} ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`## Depends On\n\nThis assumption only matters if these are true:\n\n${links}`);
+  }
+
+  // What this assumption enables (reverse relation)
+  const enables = relations.enablesAssumptions.get(assumption) ?? [];
+  if (enables.length > 0) {
+    const links = enables
+      .map((a) => `- [${a.title}](/assumption/${a.id}) — ${formatAssumptionCriticalityEmoji(a.criticality)} ${formatAssumptionStatusEmoji(a.status)} ${a.confidence}%`)
+      .join("\n");
+    sections.push(`## Enables\n\nIf this assumption is true, these become relevant:\n\n${links}`);
+  }
+
   // Test method
   sections.push(`## How To Test\n\n${assumption.testMethod}`);
 
@@ -1429,6 +1466,197 @@ function renderTechnicalPage(nodes: PlanNode[]): string {
 }
 
 /**
+ * Render the assumptions overview page with dependency DAG
+ */
+function renderAssumptionsPage(nodes: PlanNode[], relations: DerivedRelations): string {
+  const assumptions = nodes.filter(isAssumption);
+
+  // Group by criticality
+  const foundation = assumptions.filter(a => a.criticality === "foundation");
+  const critical = assumptions.filter(a => a.criticality === "critical");
+  const important = assumptions.filter(a => a.criticality === "important");
+  const supporting = assumptions.filter(a => a.criticality === "supporting");
+
+  // Group by status
+  const untested = assumptions.filter(a => a.status === "untested");
+  const testing = assumptions.filter(a => a.status === "testing");
+  const validated = assumptions.filter(a => a.status === "validated");
+  const invalidated = assumptions.filter(a => a.status === "invalidated");
+  const partial = assumptions.filter(a => a.status === "partially-validated");
+
+  const sections: string[] = [
+    "---",
+    'title: "Assumptions"',
+    'description: "The bets this plan makes and how they connect"',
+    "---",
+    "",
+    "Every plan is built on assumptions. These are ours, organised by how critical they are to the overall thesis.",
+    "",
+    ":::note[Summary]",
+    `${assumptions.length} assumptions · ${foundation.length} foundational · ${critical.length} critical · ${important.length} important · ${supporting.length} supporting`,
+    ":::",
+    "",
+    "## How to Read This",
+    "",
+    "- **Foundation** 🏛️ — If wrong, the entire thesis fails",
+    "- **Critical** 🔴 — If wrong, major products fail",
+    "- **Important** 🟠 — If wrong, specific features or GTM fails",
+    "- **Supporting** 🟢 — If wrong, we adapt but continue",
+    "",
+    "Click any assumption to see its evidence, counter-evidence, and testing plan.",
+    "",
+  ];
+
+  // Dependency DAG visualisation
+  sections.push("## Dependency Structure\n");
+  sections.push("Assumptions form a directed graph. Foundational assumptions sit at the root—everything else builds on them.\n");
+  sections.push("```");
+  sections.push("Foundation Layer (if wrong, everything fails)");
+  sections.push("├── Agents Need Sandboxes ─────────────┬─────────────────────────────────┐");
+  sections.push("│                                      │                                 │");
+  sections.push("│                                      ▼                                 ▼");
+  sections.push("│   ┌─────────────────────────────────────────────┐    ┌────────────────────────────┐");
+  sections.push("│   │ Critical: Developers Will Pay for Sandboxes │    │ Foundation: Market Timing  │");
+  sections.push("│   └──────────────────────┬──────────────────────┘    └────────────────────────────┘");
+  sections.push("│                          │");
+  sections.push("│                          ▼");
+  sections.push("│   ┌─────────────────────────────────────────────┐");
+  sections.push("│   │ Important: PLG Works for Infrastructure     │");
+  sections.push("│   └──────────────────────┬──────────────────────┘");
+  sections.push("│                          │");
+  sections.push("│                          ▼");
+  sections.push("│   ┌─────────────────────────────────────────────┐");
+  sections.push("│   │ Supporting: Content Marketing Works         │");
+  sections.push("│   └─────────────────────────────────────────────┘");
+  sections.push("│");
+  sections.push("├── Non-Devs Want AI Tools (Important)");
+  sections.push("│");
+  sections.push("└── Audit Trails Required (Important) ←── Market Timing");
+  sections.push("");
+  sections.push("Independent:");
+  sections.push("├── Cloudflare Cost Structure (Critical) — unit economics");
+  sections.push("├── Can Ship Fast Enough (Critical) — execution");
+  sections.push("└── Agencies Feel Delivery Pain (Important) — Murphy-specific");
+  sections.push("```");
+  sections.push("");
+
+  // Foundation assumptions
+  if (foundation.length > 0) {
+    sections.push("## 🏛️ Foundation Assumptions\n");
+    sections.push("If any of these are wrong, the entire thesis needs rethinking.\n");
+    for (const a of foundation) {
+      sections.push(`### [${a.title}](/assumption/${a.id})`);
+      sections.push("");
+      sections.push(`${formatAssumptionStatusEmoji(a.status)} **${formatAssumptionStatus(a.status)}** · Confidence: ${a.confidence}% · Review: ${formatReviewFrequency(a.reviewFrequency)}`);
+      sections.push("");
+      sections.push(`> ${a.statement}`);
+      sections.push("");
+      const enables = relations.enablesAssumptions.get(a) ?? [];
+      if (enables.length > 0) {
+        sections.push(`**Enables:** ${enables.map(e => `[${e.title}](/assumption/${e.id})`).join(", ")}`);
+        sections.push("");
+      }
+    }
+  }
+
+  // Critical assumptions
+  if (critical.length > 0) {
+    sections.push("## 🔴 Critical Assumptions\n");
+    sections.push("If wrong, major products fail.\n");
+    for (const a of critical) {
+      sections.push(`### [${a.title}](/assumption/${a.id})`);
+      sections.push("");
+      sections.push(`${formatAssumptionStatusEmoji(a.status)} **${formatAssumptionStatus(a.status)}** · Confidence: ${a.confidence}% · Review: ${formatReviewFrequency(a.reviewFrequency)}`);
+      sections.push("");
+      sections.push(`> ${a.statement}`);
+      sections.push("");
+      if (a.dependsOnAssumptions.length > 0) {
+        sections.push(`**Depends on:** ${a.dependsOnAssumptions.map(d => `[${d.title}](/assumption/${d.id})`).join(", ")}`);
+        sections.push("");
+      }
+      const enables = relations.enablesAssumptions.get(a) ?? [];
+      if (enables.length > 0) {
+        sections.push(`**Enables:** ${enables.map(e => `[${e.title}](/assumption/${e.id})`).join(", ")}`);
+        sections.push("");
+      }
+    }
+  }
+
+  // Important assumptions
+  if (important.length > 0) {
+    sections.push("## 🟠 Important Assumptions\n");
+    sections.push("If wrong, specific features or go-to-market strategy fails.\n");
+    for (const a of important) {
+      sections.push(`### [${a.title}](/assumption/${a.id})`);
+      sections.push("");
+      sections.push(`${formatAssumptionStatusEmoji(a.status)} **${formatAssumptionStatus(a.status)}** · Confidence: ${a.confidence}% · Review: ${formatReviewFrequency(a.reviewFrequency)}`);
+      sections.push("");
+      sections.push(`> ${a.statement}`);
+      sections.push("");
+      if (a.dependsOnAssumptions.length > 0) {
+        sections.push(`**Depends on:** ${a.dependsOnAssumptions.map(d => `[${d.title}](/assumption/${d.id})`).join(", ")}`);
+        sections.push("");
+      }
+      const enables = relations.enablesAssumptions.get(a) ?? [];
+      if (enables.length > 0) {
+        sections.push(`**Enables:** ${enables.map(e => `[${e.title}](/assumption/${e.id})`).join(", ")}`);
+        sections.push("");
+      }
+    }
+  }
+
+  // Supporting assumptions
+  if (supporting.length > 0) {
+    sections.push("## 🟢 Supporting Assumptions\n");
+    sections.push("If wrong, we adapt but continue.\n");
+    for (const a of supporting) {
+      sections.push(`### [${a.title}](/assumption/${a.id})`);
+      sections.push("");
+      sections.push(`${formatAssumptionStatusEmoji(a.status)} **${formatAssumptionStatus(a.status)}** · Confidence: ${a.confidence}% · Review: ${formatReviewFrequency(a.reviewFrequency)}`);
+      sections.push("");
+      sections.push(`> ${a.statement}`);
+      sections.push("");
+      if (a.dependsOnAssumptions.length > 0) {
+        sections.push(`**Depends on:** ${a.dependsOnAssumptions.map(d => `[${d.title}](/assumption/${d.id})`).join(", ")}`);
+        sections.push("");
+      }
+    }
+  }
+
+  // Validation status summary
+  sections.push("## Validation Status\n");
+  sections.push("| Status | Count | Assumptions |");
+  sections.push("|--------|-------|-------------|");
+  if (validated.length > 0) {
+    sections.push(`| ✅ Validated | ${validated.length} | ${validated.map(a => `[${a.title}](/assumption/${a.id})`).join(", ")} |`);
+  }
+  if (partial.length > 0) {
+    sections.push(`| 🟡 Partially Validated | ${partial.length} | ${partial.map(a => `[${a.title}](/assumption/${a.id})`).join(", ")} |`);
+  }
+  if (testing.length > 0) {
+    sections.push(`| 🔄 Testing | ${testing.length} | ${testing.map(a => `[${a.title}](/assumption/${a.id})`).join(", ")} |`);
+  }
+  if (untested.length > 0) {
+    sections.push(`| ⚪ Untested | ${untested.length} | ${untested.map(a => `[${a.title}](/assumption/${a.id})`).join(", ")} |`);
+  }
+  if (invalidated.length > 0) {
+    sections.push(`| ❌ Invalidated | ${invalidated.length} | ${invalidated.map(a => `[${a.title}](/assumption/${a.id})`).join(", ")} |`);
+  }
+  sections.push("");
+
+  // Related: Decisions
+  const decisions = nodes.filter(isDecision);
+  if (decisions.length > 0) {
+    sections.push("## Related: Decisions\n");
+    sections.push("Decisions are choices we've made under scarcity. Many depend on assumptions holding true.\n");
+    sections.push(decisions.map(d => `- [${d.title}](/decision/${d.id})`).join("\n"));
+    sections.push("");
+  }
+
+  return sections.join("\n");
+}
+
+/**
  * Write all pages to src/content/docs
  */
 export function writePages(
@@ -1442,6 +1670,10 @@ export function writePages(
   // Write technical details page
   const technicalContent = renderTechnicalPage(nodes);
   writeFileSync(resolve(SITE_DOCS, "technical.mdx"), technicalContent, "utf-8");
+
+  // Write assumptions overview page
+  const assumptionsContent = renderAssumptionsPage(nodes, relations);
+  writeFileSync(resolve(SITE_DOCS, "assumptions.mdx"), assumptionsContent, "utf-8");
 
   // Write individual node pages
   for (const node of nodes) {

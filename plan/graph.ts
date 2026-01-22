@@ -851,6 +851,7 @@ export const PLAN = defineGraph({
       statement: "AI agents executing code need isolated, capability-scoped environments rather than running directly on user machines or in shared infrastructure.",
       category: "market",
       status: "untested",
+      criticality: "foundation",
       testMethod: "Customer discovery interviews with AI developers; analysis of agent failure modes in production systems.",
       validationCriteria: [
         "5+ enterprise teams cite isolation as a blocker",
@@ -866,12 +867,14 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes"],
       relatedRisks: ["market-timing"],
+      // Foundation: no dependencies, everything else builds on this
     },
     "developers-will-pay-for-sandboxes": {
       title: "Developers Will Pay For Sandboxes",
       statement: "Developers and AI-native companies will pay for managed sandbox infrastructure rather than building their own.",
       category: "customer",
       status: "untested",
+      criticality: "critical",
       testMethod: "Pricing experiments; competitor analysis; customer interviews on build vs. buy decisions.",
       validationCriteria: [
         "3+ paying customers at target price point",
@@ -887,12 +890,14 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes"],
       dependentMilestones: ["smartbox-revenue"],
+      dependsOnAssumptions: ["agents-need-sandboxes"],
     },
     "cloudflare-cost-structure": {
       title: "Cloudflare Cost Structure Works",
       statement: "Cloudflare's pricing model (Workers, Durable Objects, R2) will remain cost-competitive for our workload patterns and unit economics.",
       category: "financial",
       status: "testing",
+      criticality: "critical",
       testMethod: "Track actual costs as usage scales; model break-even points; monitor Cloudflare pricing announcements.",
       validationCriteria: [
         "Gross margin over 70% at scale",
@@ -912,12 +917,14 @@ export const PLAN = defineGraph({
       reviewFrequency: "quarterly",
       dependentProducts: ["smartboxes", "nomos-cloud"],
       relatedRisks: ["supplier-concentration"],
+      // Critical: foundational for unit economics but doesn't depend on market assumptions
     },
     "content-marketing-works": {
       title: "Content Marketing Works For Us",
       statement: "Technical content about edge computing and agent infrastructure will generate qualified leads for our products.",
       category: "market",
       status: "untested",
+      criticality: "supporting",
       testMethod: "Publish content; track engagement, followers, and conversion to signups.",
       validationCriteria: [
         "100+ engaged followers from content",
@@ -932,12 +939,14 @@ export const PLAN = defineGraph({
       confidence: 40,
       reviewFrequency: "monthly",
       relatedRisks: ["execution-team-capacity"],
+      dependsOnAssumptions: ["plg-works-for-infra"],
     },
     "market-timing-right": {
       title: "Market Timing Is Right",
       statement: "The market for agent infrastructure is emerging now, and we're early enough to establish position but not so early that we'll exhaust runway waiting.",
       category: "market",
       status: "untested",
+      criticality: "foundation",
       testMethod: "Track agent adoption curves; monitor competitor funding; assess customer urgency in sales conversations.",
       validationCriteria: [
         "Competitors raising significant funding",
@@ -953,12 +962,15 @@ export const PLAN = defineGraph({
       reviewFrequency: "quarterly",
       dependentProducts: ["smartboxes", "nomos-cloud", "murphy", "p4gent"],
       relatedRisks: ["market-timing"],
+      // Foundation: timing affects everything; depends on agents-need-sandboxes being true
+      dependsOnAssumptions: ["agents-need-sandboxes"],
     },
     "non-devs-want-ai-tools": {
       title: "Non-Developers Want AI Tools",
       statement: "Non-technical users (SMB founders, operators) will want and use AI-powered tools that currently require developer skills.",
       category: "customer",
       status: "untested",
+      criticality: "important",
       testMethod: "User research with non-technical founders; beta testing with SMB operators; analysis of no-code AI tool adoption.",
       validationCriteria: [
         "Non-devs complete onboarding without support",
@@ -973,12 +985,14 @@ export const PLAN = defineGraph({
       confidence: 55,
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes", "p4gent"],
+      dependsOnAssumptions: ["agents-need-sandboxes"],
     },
     "agencies-feel-delivery-pain": {
       title: "Agencies Feel Delivery Pain",
       statement: "Digital agencies and consultancies experience significant pain around project delivery prediction, and would pay for a solution.",
       category: "customer",
       status: "untested",
+      criticality: "important",
       testMethod: "Discovery calls with agency owners; analysis of agency failure modes; competitive research on project management tools.",
       validationCriteria: [
         "5+ agencies express strong interest",
@@ -994,12 +1008,14 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["murphy"],
       dependentMilestones: ["murphy-alpha", "murphy-revenue"],
+      // Murphy-specific assumption, independent of agent/sandbox assumptions
     },
     "audit-trails-required": {
       title: "Audit Trails Will Be Required",
       statement: "As AI agents make autonomous decisions in production, enterprises will require comprehensive audit trails for compliance, debugging, and governance.",
       category: "market",
       status: "untested",
+      criticality: "important",
       testMethod: "Monitor regulatory developments; enterprise customer interviews; analysis of AI governance frameworks.",
       validationCriteria: [
         "Regulatory guidance mandates audit trails",
@@ -1016,12 +1032,14 @@ export const PLAN = defineGraph({
       dependentProducts: ["nomos-cloud"],
       dependentMilestones: ["nomos-revenue", "nomos-enterprise"],
       relatedRisks: ["regulatory-ai-autonomy"],
+      dependsOnAssumptions: ["agents-need-sandboxes", "market-timing-right"],
     },
     "can-ship-fast-enough": {
       title: "Can Ship Fast Enough",
       statement: "A single founder with AI assistance can ship four products fast enough to test them before runway exhausts.",
       category: "operational",
       status: "testing",
+      criticality: "critical",
       testMethod: "Track actual shipping velocity against plan; measure AI productivity gains; monitor runway burn.",
       validationCriteria: [
         "MVP shipped within 2x planned timeline",
@@ -1040,12 +1058,14 @@ export const PLAN = defineGraph({
       confidence: 60,
       reviewFrequency: "weekly",
       relatedRisks: ["execution-team-capacity"],
+      // Execution assumption: independent of market assumptions
     },
     "plg-works-for-infra": {
       title: "PLG Works For Infrastructure",
       statement: "Product-led growth (self-serve signup, usage-based expansion) will work for developer infrastructure products like SmartBoxes and Nomos Cloud.",
       category: "market",
       status: "untested",
+      criticality: "important",
       testMethod: "Track self-serve conversion rates; analyse expansion revenue patterns; compare to PLG benchmarks.",
       validationCriteria: [
         "Self-serve signup rate over 100/month",
@@ -1061,6 +1081,7 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes", "nomos-cloud"],
       dependentMilestones: ["smartbox-beta", "nomos-beta"],
+      dependsOnAssumptions: ["developers-will-pay-for-sandboxes"],
     },
   },
 

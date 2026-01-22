@@ -119,6 +119,8 @@ export interface DerivedRelations {
   assumptionsForMilestone: Map<PlanNode, Assumption[]>;
   /** Which assumptions relate to this risk (reverse of relatedRisks) */
   assumptionsForRisk: Map<PlanNode, Assumption[]>;
+  /** Which assumptions this assumption enables (reverse of dependsOnAssumptions) */
+  enablesAssumptions: Map<PlanNode, Assumption[]>;
   // Decision tracking reverse relations
   /** Which decisions depend on this assumption (reverse of dependsOnAssumptions) */
   decisionsForAssumption: Map<PlanNode, Decision[]>;
@@ -172,6 +174,7 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
   const assumptionsForProduct = new Map<PlanNode, Assumption[]>();
   const assumptionsForMilestone = new Map<PlanNode, Assumption[]>();
   const assumptionsForRisk = new Map<PlanNode, Assumption[]>();
+  const enablesAssumptions = new Map<PlanNode, Assumption[]>();
   // Decision tracking
   const decisionsForAssumption = new Map<PlanNode, Decision[]>();
   const decisionsForProduct = new Map<PlanNode, Decision[]>();
@@ -218,6 +221,7 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     assumptionsForProduct.set(node, []);
     assumptionsForMilestone.set(node, []);
     assumptionsForRisk.set(node, []);
+    enablesAssumptions.set(node, []);
     // Decision tracking
     decisionsForAssumption.set(node, []);
     decisionsForProduct.set(node, []);
@@ -376,6 +380,10 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
       for (const risk of node.relatedRisks) {
         assumptionsForRisk.get(risk)?.push(node);
       }
+      // Reverse of dependsOnAssumptions: which assumptions this enables
+      for (const dep of node.dependsOnAssumptions) {
+        enablesAssumptions.get(dep)?.push(node);
+      }
     }
 
     // Decision tracking reverse relations
@@ -434,6 +442,7 @@ export function deriveRelations(nodes: PlanNode[]): DerivedRelations {
     assumptionsForProduct,
     assumptionsForMilestone,
     assumptionsForRisk,
+    enablesAssumptions,
     // Decision tracking
     decisionsForAssumption,
     decisionsForProduct,
