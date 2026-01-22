@@ -1,0 +1,67 @@
+# Cloudflare Welcomes Agent Sandbox Workloads
+
+> Cloudflare will continue to welcome agent sandbox workloads on their platform and not view them as abuse or undesirable traffic.
+
+## The Assumption
+
+We're building agent sandboxes on Cloudflare's infrastructure. But does Cloudflare actually want this use case? They might view agent execution as:
+- Abuse of their platform
+- Unprofitable traffic pattern
+- Security risk to other customers
+- Competition with their own products
+
+If Cloudflare decides our workloads are unwelcome, we could be shut down with minimal warning.
+
+## Evidence
+
+**Supporting signals:**
+- Cloudflare has launched @cloudflare/sandbox for agent workloads
+- Their pricing model suggests they want compute-heavy traffic
+- No ToS language prohibiting our use case
+- History of welcoming developer tooling companies
+
+**Counter-signals:**
+- Cloudflare could launch competing sandbox product
+- Unprofitable customers get deprioritised
+- Terms of Service can change
+- Single tenant abuse could affect our account
+
+## What Would Prove This Wrong
+
+- Cloudflare ToS changes to prohibit agent execution
+- Account warned or suspended for usage patterns
+- Cloudflare launches competing product and restricts third-party access
+- Cloudflare sales tells us we're not a desired customer
+
+## Impact If Wrong
+
+If Cloudflare doesn't want us:
+- Forced migration to AWS/GCP (6+ months work)
+- Lost edge-first architecture advantage
+- Higher costs, different developer experience
+- Potential customer churn during migration
+
+## Testing Plan
+
+**Proactive:**
+- Reach out to Cloudflare developer relations
+- Ask explicitly if our use case is welcome
+- Monitor their product roadmap for competing offerings
+
+**Monitoring:**
+- ToS changes
+- Account health metrics
+- Cloudflare announcements about agent workloads
+
+**Mitigation:**
+- Keep architecture as portable as possible
+- Document migration path to alternatives
+- Don't overly customise to Cloudflare-specific features
+
+## Related
+
+**Depends on:**
+- [Cloudflare Cost Structure Works](/assumption/cloudflare-cost-structure) — platform relationship is part of cost bet
+
+**Creates risk:**
+- [Supplier Concentration](/risk/supplier-concentration)

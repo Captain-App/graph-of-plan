@@ -1,0 +1,53 @@
+# Security Incidents Will Drive Demand
+
+> Security incidents in AI agent systems will occur and create market pressure for isolation, similar to how browser security incidents drove sandboxing adoption.
+
+## The Assumption
+
+This is the hidden foundation beneath "Agents Need Sandboxes". We're not betting on current pain—we're betting on future pain. The browser sandboxing analogy only works if security incidents actually occur and drive demand.
+
+Today, many developers run Claude Code, Cursor, and other AI agents directly on their machines without sandboxing. No high-profile security incidents have occurred yet. Our thesis requires this to change.
+
+## Evidence
+
+**Supporting signals:**
+- Security researchers actively exploring prompt injection → code execution chains
+- Academic papers documenting theoretical attack vectors
+- Historical pattern: browsers, Flash, Java all required incidents before sandboxing
+- Attack surface expanding as agents gain more capabilities
+
+**Counter-signals:**
+- No major incidents despite widespread agent adoption
+- Agent code is typically user-approved, unlike browser code from untrusted sites
+- Attack surface may remain theoretical
+- Users may accept risk in exchange for convenience
+
+## What Would Prove This Wrong
+
+- 24 months pass with no significant agent security incidents
+- Agents deployed widely without isolation and nothing bad happens
+- Security community consensus emerges that agent risks are overstated
+- Users consistently choose convenience over security
+
+## Impact If Wrong
+
+If security incidents don't occur, the urgency for sandboxing evaporates. SmartBoxes becomes a "nice to have" rather than a "must have". We'd need to pivot the value proposition from security to convenience, developer experience, or operational simplicity.
+
+## Testing Plan
+
+**Monitoring:**
+- CVE databases for agent-related vulnerabilities
+- Security research publications and conference talks
+- Hacker News, Reddit discussions of agent security
+- Enterprise security team concerns in customer discovery
+
+**Timeline:** 12 months to initial signal
+
+**Kill criteria:** If 24 months pass with no incidents and no enterprise security concerns, the foundation of our thesis is shaky.
+
+## Related
+
+**This is a bedrock assumption** that "Agents Need Sandboxes" implicitly depends on.
+
+**Enables:**
+- [Agents Need Sandboxes](/assumption/agents-need-sandboxes) — the parent assumption

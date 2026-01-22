@@ -1,0 +1,70 @@
+# Non-Developers Can Verify Agent Output
+
+> Non-technical users can verify that AI agent output is correct without understanding the underlying code, enabling trust in agent actions.
+
+## The Assumption
+
+"Non-Developers Want AI Tools" assumes non-devs can use agents. But can they trust the output? If an agent writes code and executes it:
+- How does a non-dev know if it worked?
+- How do they catch errors?
+- How do they verify correctness?
+
+If non-devs can't verify output, they either:
+- Trust blindly (dangerous)
+- Require developer review (defeats the purpose)
+- Don't use agents at all
+
+## Evidence
+
+**Supporting signals:**
+- Non-devs verify Excel formula results by checking outputs
+- No-code tools have visual feedback loops
+- AI can explain its reasoning in plain language
+- Sandboxing limits blast radius of errors
+
+**Counter-signals:**
+- Code output is often invisible (database changes, API calls)
+- Errors may not be immediately apparent
+- "It ran without errors" ≠ "It did the right thing"
+- Non-devs don't know what questions to ask
+
+## What Would Prove This Wrong
+
+- Non-devs frequently accept incorrect agent output
+- Trust gap prevents non-dev adoption entirely
+- Non-devs require developer review for all actions
+- Support burden from "is this right?" questions unsustainable
+
+## Impact If Wrong
+
+If non-devs can't verify output:
+- SmartBoxes TAM shrinks to developer-only
+- P4gent becomes unviable
+- Need to build heavy guardrails and approval workflows
+- "AI for non-devs" positioning fails
+
+## Testing Plan
+
+**User testing:**
+- Give non-devs tasks with known-incorrect agent output
+- Measure: Do they catch the errors?
+- Track trust levels and confidence
+
+**Product design:**
+- Build verification UX (show what agent did, in plain language)
+- Test whether this enables non-dev verification
+- Measure error catch rate
+
+**Metrics:**
+- Error detection rate by non-devs
+- Trust scores over time
+- Support ticket analysis
+
+## Related
+
+**Depends on:**
+- [Non-Developers Want AI Tools](/assumption/non-devs-want-ai-tools) — this is the hidden enabler
+
+**Affects:**
+- [SmartBoxes](/product/smartboxes) TAM
+- [P4gent](/product/p4gent) viability

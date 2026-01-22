@@ -1,0 +1,63 @@
+# Developers Control Purchasing
+
+> Individual developers can make purchasing decisions for tools under $200/month without procurement approval in their organisations.
+
+## The Assumption
+
+PLG (product-led growth) assumes developers can self-serve. But can they actually pay? In many organisations, developers don't have purchasing authority. Even a $50/month tool might require:
+- Manager approval
+- Procurement review
+- Security assessment
+- Vendor onboarding
+
+If developers can't buy without friction, PLG fails. We'd need enterprise sales from day one.
+
+## Evidence
+
+**Supporting signals:**
+- Vercel, Netlify, Supabase grew through individual developer purchases
+- Many developers have corporate cards for small tool purchases
+- "Shadow IT" exists—developers buy tools and expense them
+- Startups and small teams have minimal procurement friction
+
+**Counter-signals:**
+- Enterprise security increasingly blocks unapproved tools
+- Zero-trust security models require vendor review
+- Developers at big companies often lack purchasing authority
+- Remote work increased security scrutiny on tool usage
+
+## What Would Prove This Wrong
+
+- Most deals stall at procurement review
+- Average sales cycle exceeds 30 days even for small amounts
+- Enterprise security consistently blocks SmartBoxes
+- Developers self-report no purchasing authority in surveys
+
+## Impact If Wrong
+
+If developers can't buy, PLG doesn't work. We'd need to:
+- Sell to enterprises top-down
+- Build for procurement (SOC 2, security questionnaires, legal review)
+- Accept longer sales cycles and higher CAC
+- Price higher to cover sales costs
+
+## Testing Plan
+
+**Early signals:**
+- Track time from signup to paid conversion
+- Ask in onboarding: "Do you have purchasing authority?"
+- Monitor where deals stall in the funnel
+
+**Validation:**
+- Over 50% of conversions without procurement involvement
+- Average signup-to-paid under 7 days
+
+**Kill criteria:** If less than 20% of signups can self-convert, pivot to sales-led.
+
+## Related
+
+**Depends on:**
+- [PLG Works For Infrastructure](/assumption/plg-works-for-infra) — this is a hidden prerequisite
+
+**Affects:**
+- [SmartBoxes](/product/smartboxes), [Nomos Cloud](/product/nomos-cloud)
