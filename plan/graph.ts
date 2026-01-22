@@ -867,7 +867,8 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes"],
       relatedRisks: ["market-timing"],
-      // Foundation: no dependencies, everything else builds on this
+      // Depends on hidden foundation surfaced in Cycle 1
+      dependsOnAssumptions: ["security-incidents-will-occur"],
     },
     "developers-will-pay-for-sandboxes": {
       title: "Developers Will Pay For Sandboxes",
@@ -890,7 +891,7 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes"],
       dependentMilestones: ["smartbox-revenue"],
-      dependsOnAssumptions: ["agents-need-sandboxes"],
+      dependsOnAssumptions: ["agents-need-sandboxes", "stated-wtp-equals-actual"],
     },
     "cloudflare-cost-structure": {
       title: "Cloudflare Cost Structure Works",
@@ -917,7 +918,8 @@ export const PLAN = defineGraph({
       reviewFrequency: "quarterly",
       dependentProducts: ["smartboxes", "nomos-cloud"],
       relatedRisks: ["supplier-concentration"],
-      // Critical: foundational for unit economics but doesn't depend on market assumptions
+      // Depends on Cloudflare actually wanting our use case
+      dependsOnAssumptions: ["cloudflare-welcomes-use-case"],
     },
     "content-marketing-works": {
       title: "Content Marketing Works For Us",
@@ -962,8 +964,8 @@ export const PLAN = defineGraph({
       reviewFrequency: "quarterly",
       dependentProducts: ["smartboxes", "nomos-cloud", "murphy", "p4gent"],
       relatedRisks: ["market-timing"],
-      // Foundation: timing affects everything; depends on agents-need-sandboxes being true
-      dependsOnAssumptions: ["agents-need-sandboxes"],
+      // Foundation: timing affects everything; depends on first mover advantage existing
+      dependsOnAssumptions: ["agents-need-sandboxes", "first-mover-advantage-exists"],
     },
     "non-devs-want-ai-tools": {
       title: "Non-Developers Want AI Tools",
@@ -985,7 +987,7 @@ export const PLAN = defineGraph({
       confidence: 55,
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes", "p4gent"],
-      dependsOnAssumptions: ["agents-need-sandboxes"],
+      dependsOnAssumptions: ["agents-need-sandboxes", "non-devs-can-verify-output"],
     },
     "agencies-feel-delivery-pain": {
       title: "Agencies Feel Delivery Pain",
@@ -1008,7 +1010,8 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["murphy"],
       dependentMilestones: ["murphy-alpha", "murphy-revenue"],
-      // Murphy-specific assumption, independent of agent/sandbox assumptions
+      // Murphy depends on prediction being possible
+      dependsOnAssumptions: ["software-prediction-possible"],
     },
     "audit-trails-required": {
       title: "Audit Trails Will Be Required",
@@ -1032,7 +1035,7 @@ export const PLAN = defineGraph({
       dependentProducts: ["nomos-cloud"],
       dependentMilestones: ["nomos-revenue", "nomos-enterprise"],
       relatedRisks: ["regulatory-ai-autonomy"],
-      dependsOnAssumptions: ["agents-need-sandboxes", "market-timing-right"],
+      dependsOnAssumptions: ["agents-need-sandboxes", "market-timing-right", "regulations-will-bite"],
     },
     "can-ship-fast-enough": {
       title: "Can Ship Fast Enough",
@@ -1058,7 +1061,8 @@ export const PLAN = defineGraph({
       confidence: 60,
       reviewFrequency: "weekly",
       relatedRisks: ["execution-team-capacity"],
-      // Execution assumption: independent of market assumptions
+      // Depends on AI productivity and portfolio strategy
+      dependsOnAssumptions: ["ai-productivity-sustained", "breadth-beats-depth"],
     },
     "plg-works-for-infra": {
       title: "PLG Works For Infrastructure",
@@ -1081,7 +1085,7 @@ export const PLAN = defineGraph({
       reviewFrequency: "monthly",
       dependentProducts: ["smartboxes", "nomos-cloud"],
       dependentMilestones: ["smartbox-beta", "nomos-beta"],
-      dependsOnAssumptions: ["developers-will-pay-for-sandboxes"],
+      dependsOnAssumptions: ["developers-will-pay-for-sandboxes", "developers-control-purchasing"],
     },
 
     // ========================================================================
