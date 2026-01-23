@@ -783,8 +783,8 @@ export const PLAN = defineGraph({
 
   // DIAGNOSES - the critical challenge we face
   diagnoses: {
-    "distribution-cold-start": {
-      title: "Distribution Cold Start",
+    "chain-link-illegibility": {
+      title: "Chain-Link Illegibility",
       evidencedBy: ["execution-team-capacity", "market-timing"],
       constrainedBy: ["no-audience", "single-founder", "limited-capital"],
     },
@@ -829,13 +829,13 @@ export const PLAN = defineGraph({
   guidingPolicies: {
     "dogfood-first": {
       title: "Dogfood First",
-      addressesDiagnosis: "distribution-cold-start",
+      addressesDiagnosis: "chain-link-illegibility",
       leveragesCompetencies: ["cloudflare-native-dev", "event-sourcing-patterns"],
       worksAroundConstraints: ["no-audience", "single-founder"],
     },
     "build-in-public": {
       title: "Build In Public",
-      addressesDiagnosis: "distribution-cold-start",
+      addressesDiagnosis: "chain-link-illegibility",
       leveragesCompetencies: ["cloudflare-native-dev", "event-sourcing-patterns"],
       worksAroundConstraints: ["no-audience", "limited-capital"],
     },
