@@ -339,13 +339,8 @@ function validateActionGate(gate: ActionGate, errors: ValidationError[]): void {
     });
   }
 
-  // ActionGate must have at least one proxy metric
-  if (gate.proxyMetrics.length === 0) {
-    errors.push({
-      nodeId: gate.id,
-      message: "Action gate must have at least one proxy metric",
-    });
-  }
+  // Proxy metrics are optional - some gates are binary validation gates
+  // without leading quantitative indicators
 }
 
 function validateProxyMetric(metric: ProxyMetric, errors: ValidationError[]): void {

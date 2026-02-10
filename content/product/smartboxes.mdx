@@ -2,11 +2,23 @@
 
 SmartBoxes is a persistent agent sandbox you can leave running. It's a power tool with best-effort safety—users accept responsibility for what they permit.
 
+## Strategic Position: The Wedge
+
+SmartBoxes is our **wedge**—the infrastructure that enables [Murphy](/product/murphy) to exist. By itself, SmartBoxes is potentially commodity infrastructure (anyone could build isolated sandboxes). But it's the *required architecture* for Murphy agents to do their job effectively across systems.
+
+This is the [chain-link structure](/diagnosis/chain-link-illegibility): SmartBoxes without Murphy is commodity infrastructure. Murphy without SmartBoxes doesn't work. Each link makes the other valuable.
+
 ## The Short Version
 
 Picture this: you wake up, and overnight your AI has documented your entire codebase, fixed three bugs, and deployed a new feature to production. Not because you asked it to—because you enabled autonomous mode and it noticed they needed doing. SmartBox is an always-on AI coding agent that lives in its own persistent environment. It has a filesystem, memory, and the ability to build its own capabilities over time.
 
-## The Problem
+## The Problem: The n² Integration Trap
+
+Systems of record are specialised and siloed. Even with integrations between every platform, that's n² OAuth flows per user, n² custom agents that can be chained together. Context doesn't flow. Users drown in fragmented agents and siloed data.
+
+**Developers already solved this for themselves.** Coding agents like Claude Code give developers filesystem access, capability-scoped tokens, persistent context across systems. They have cohesive conversations with agents that can operate across their entire workflow.
+
+**SmartBoxes = that same pattern for everyone else.** Personal, organised like repositories, persistent context. The bitter lesson applied to enabling everyone to be aided by AI—not just developers.
 
 Right now, the best AI coding experiences require developers who can set up Claude Code, configure MCP servers, manage API keys, and orchestrate complex toolchains. Projects like Daniel Miessler's Personal AI Infrastructure show what's possible—AI that remembers, learns, and evolves. But they require technical skill to deploy and maintain.
 

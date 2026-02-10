@@ -1,10 +1,44 @@
-# Thesis: AI agents need proper infrastructure
+# Thesis: The Bitter Lesson for Everyone Else
 
 AI agents are getting deployed into production. Most of them run in environments designed for humans—with human-sized permissions, human-oriented interfaces, and audit trails that assume a person is at the keyboard.
 
-This seems like a problem worth solving.
+This seems like a problem worth solving. But the real opportunity is in *who* we solve it for.
 
-## The bet
+## The Insight
+
+**Developers already have this solved.** Coding agents like Claude Code and Cursor give developers persistent context, filesystem access, capability-scoped tokens, and cohesive conversations with agents that operate across systems. They have their own repositories—organised spaces where AI can write notes and scripts to aid future requests.
+
+**Everyone else is stuck in the n² integration trap.** Systems of record are specialised and siloed. Even with integrations between every platform, that's n² OAuth flows per user, n² custom agents that can be chained together. Context doesn't flow. Users drown in fragmented agents and siloed data.
+
+**SmartBoxes = the bitter lesson applied to non-developers.** Give everyone their own "repository"—a personal, organised space with persistent context across systems. Not a chat interface. Not another SaaS tool. A proper environment where AI agents can do real work.
+
+## The Chain-Link Structure
+
+We're building two linked products that only make sense together:
+
+```
+SmartBoxes (wedge / infrastructure)
+    ↓ enables
+Murphy (moat / value capture)
+    ↓ protected by
+"Too political for big players"
+```
+
+**SmartBoxes is the wedge**: infrastructure that enables agent-native workflows. By itself, it's potentially commodity infrastructure—anyone could build isolated sandboxes.
+
+**Murphy is the moat**: an AI-assisted planning engine that acts as a "contract with oneself" describing future actions and commitments. This is *too political* for big players to provide on top of the tools used to implement the plan. Planning must be separate, owned by the user, independent of the execution layer.
+
+**The chain is linked.** Murphy without SmartBoxes doesn't work—agents need the infrastructure. SmartBoxes without Murphy is commodity infrastructure—no defensible value capture. Each link makes the other valuable.
+
+## Why Incumbents Can't Copy This
+
+Anthropic, OpenAI, Google, and Microsoft all understand this trajectory. But with 1B+ users, their appetite for autonomy backlash is zero. They'll inch forward slowly, constrained by their median user's comfort level.
+
+Google couldn't sell Gemini without OpenAI first normalising the form through ChatGPT. Now ChatGPT is the incumbent, avoiding backlash too.
+
+**Our advantage:** We don't cater to the median. We target early adopters who want more agency than incumbents will ship. We can build power tools that big players won't touch.
+
+## The Bet (Updated)
 
 We think purpose-built infrastructure for AI agents will be more useful than retrofitting human tools. Specifically:
 
@@ -13,7 +47,7 @@ We think purpose-built infrastructure for AI agents will be more useful than ret
 3. **Typed interfaces**: Agents work better with structured APIs than raw HTTP
 4. **Capability-based permissions**: Fine-grained, revocable, auditable
 
-This might be wrong. The existing tools might be good enough. But we're building as if they're not.
+But the deeper bet is about *defensibility*: the chain-link structure creates value that's illegible until demonstrated, and too political for incumbents to copy once proven.
 
 ## Why now (and why it might be too early)
 

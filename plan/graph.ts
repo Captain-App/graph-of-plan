@@ -265,6 +265,7 @@ export const PLAN = defineGraph({
 
   // ==========================================================================
   // PRODUCTS - what we ship, enabled by capabilities
+  // Chain-link structure: SmartBoxes (wedge) enables Murphy (moat)
   // ==========================================================================
   products: {
     "smartboxes": {
@@ -273,6 +274,8 @@ export const PLAN = defineGraph({
       tooling: ["smartbox-cli", "wrangler-cli"],
       customers: ["agencies", "enterprise-ai-teams", "smb-founders"],
       competitors: ["cursor", "replit"],
+      // Chain-link: SmartBoxes is the WEDGE - infrastructure that enables Murphy
+      // Without Murphy, SmartBoxes is commodity infrastructure
     },
     "nomos-cloud": {
       title: "Nomos Cloud",
@@ -294,6 +297,9 @@ export const PLAN = defineGraph({
       tooling: ["smartbox-cli", "nomos-codegen"],
       customers: ["agencies", "enterprise-ai-teams"],
       competitors: ["linear", "forecast-app"],
+      // Chain-link: Murphy is the MOAT - where we capture long-term value
+      // "Planning is too political" for incumbents to provide on execution tools
+      // Without SmartBoxes, Murphy doesn't work (agents need infrastructure)
     },
   },
 
@@ -362,6 +368,7 @@ export const PLAN = defineGraph({
       dependsOnMilestones: ["smartbox-mvp"],
       dependsOnCapabilities: ["smartbox", "nomos-domain-api"],
       products: ["murphy"],
+      gatedBy: ["client-roadmap-validation"],
       timelines: {
         expected: { startMonth: 4, durationMonths: 3, included: true },
         aggressive: { startMonth: 2, durationMonths: 2, included: true },
@@ -767,6 +774,13 @@ export const PLAN = defineGraph({
       frequency: "daily",
       unit: "commands",
     },
+    "murphy-client-projects": {
+      title: "Client Projects Using Murphy",
+      currentValue: 0,
+      targetValue: 1,
+      frequency: "weekly",
+      unit: "projects",
+    },
   },
 
   // COMPETENCIES - what we can demonstrably do, with evidence
@@ -785,6 +799,11 @@ export const PLAN = defineGraph({
   diagnoses: {
     "chain-link-illegibility": {
       title: "Chain-Link Illegibility",
+      evidencedBy: ["execution-team-capacity", "market-timing"],
+      constrainedBy: ["no-audience", "single-founder", "limited-capital"],
+    },
+    "distribution-cold-start": {
+      title: "Distribution Cold Start",
       evidencedBy: ["execution-team-capacity", "market-timing"],
       constrainedBy: ["no-audience", "single-founder", "limited-capital"],
     },
@@ -822,6 +841,18 @@ export const PLAN = defineGraph({
         "3+ posts with 50+ meaningful engagements",
       ],
       proxyMetrics: ["posts-per-week", "engagement-per-post"],
+    },
+    "client-roadmap-validation": {
+      title: "Client Uses Murphy for Roadmap",
+      action: "Get at least one client to use Murphy to agree the roadmap of their project",
+      passCriteria: [
+        "External user (not us)",
+        "Real stakes (actual project with deliverables)",
+        "Murphy thesis validated (planning as contract works)",
+        "Transferability proven (works for someone who didn't build it)",
+      ],
+      proxyMetrics: ["murphy-client-projects"],
+      blockedBy: ["internal-daily-use"],
     },
   },
 
